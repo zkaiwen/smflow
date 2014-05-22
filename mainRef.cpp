@@ -69,7 +69,7 @@ int main( int argc, char *argv[] )
 	printf("*\tCopyright 2012–2014\n");
 	printf("* \n");
 	printf("********************************************************************************\n");
-	printf("********************************************************************************\n\n\n\n\n\n\n\n\n\n");
+	printf("********************************************************************************\n\n");
 
 	if(argc < 4){
 		printf("./xfpgeniusRef <input G file> <primitive file> <database file>\n\n\n");
@@ -141,7 +141,7 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* Import Circuit Function Database 
 	//**************************************************************************
-	printStatement("Preprocessing circuit database");
+	printStatement("Preprocessing circuit database: " + database);
 	indb.open(database.c_str());
 	std::string circuitName = "";
 
@@ -195,18 +195,13 @@ int main( int argc, char *argv[] )
 	//* Processing Reference circuit for comparison 
 	//**************************************************************************
 	//printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-	printf("\n\n\n\n\n\n\n\n\n\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-	printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-	printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-	printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
 	std::map<std::string, std::set<unsigned long> > rDatabase;
 
-	printStatement("IMPORTING REFERENCE CIRCUIT:\t" + referenceCircuit);
+	printStatement("Processing Reference Circuit:\t" + referenceCircuit);
 	Graph* ckt2 = new Graph(referenceCircuit);
 	ckt2->importGraph(referenceCircuit, 0);
 
 	if(counterFlag){
-		printStatement("PERFORMING COUNTER ENUMERATION:\t" + referenceCircuit);
 		gettimeofday(&cnt_b, NULL);
 		Graph* copy = new Graph("copy");
 		*copy = *ckt2;
@@ -218,26 +213,20 @@ int main( int argc, char *argv[] )
 	SEQUENTIAL::replaceLUTs(ckt2);
 
 	//Converting circuit to AIG
-	printStatement("CONVERTING CIRCUIT TO AIG");
 	gettimeofday(&aig_b, NULL);
 	AIG* aigraph2 = new AIG();
 	aigraph2->convertGraph2AIG(ckt2, false);
 	gettimeofday(&aig_e, NULL);
 
 	//PERFORM K CUT ENUMERATION
-	printStatement("Performing Cut Enumeration");
-	printf(" * Finding K Feasible Cuts: K=%d\n", k);
 	gettimeofday(&ce_b, NULL);
 	CutEnumeration* cut2 = new CutEnumeration (aigraph2);
 	cut2->findKFeasibleCuts(k);
 	gettimeofday(&ce_e, NULL);
 
 	//PERFORM BOOLEAN MATCHING
-	printStatement("Performing Cut Function Calculation");
 	gettimeofday(&func_b, NULL);
-	printf(" * Setting Parameters\n");
 	functionCalc->setParams(cut2, aigraph2);
-	printf(" * Calculating function for all cuts\n");
 	functionCalc->processAIGCuts(false);
 	gettimeofday(&func_e, NULL);
 

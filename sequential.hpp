@@ -40,8 +40,7 @@ namespace SEQUENTIAL{
 	* @PARAMS: ckt- circuit to look for counters
 	*****************************************************************************/
 	void counterIdentification(Graph* ckt){
-		printf("\n\n\n");
-		printf("[SEQ] -- Counter Identification-------------------------------\n");
+		printf("[SEQ] -- Counter Identification\n");
 
 		std::set<int> ffset;
 		std::set<int>::iterator itff;

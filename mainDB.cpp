@@ -45,9 +45,9 @@ void printStatement(std::string statement){
 	struct tm *current;
 	now = time(0);
 	current = localtime(&now);
-	printf("\n\n=============================================================\n");
+	printf("\n\n================================================================================\n");
 	printf("[%02d:%02d:%02d]\t%s\n", current->tm_hour, current->tm_min, current->tm_sec, statement.c_str());
-	printf("=============================================================\n");
+	printf("================================================================================\n");
 
 }
 
@@ -58,15 +58,15 @@ int main( int argc, char *argv[] )
 	printf("\n\n*************************************************************\n");
 	printf("*************************************************************\n");
 	printf("*\n");
-	printf("*	BOOLEAN MATCHING USING CUT ENUMERATION\n");
-	printf("*   Database Preprocessing\n");
+	printf("*   BOOLEAN MATCHING USING CUT ENUMERATION\n");
+	printf("*      Database Preprocessing\n");
 	printf("* \n");
 	printf("*\tVirginia Polytechnic Institute and State University\n");
 	printf("*\tAUTHOR:\tKevin Zeng\n");
 	printf("*\tCopyright 2012–2014\n");
 	printf("* \n");
 	printf("*************************************************************\n");
-	printf("*************************************************************\n\n\n\n\n\n\n\n\n\n");
+	printf("*************************************************************\n\n");
 	if(argc < 4)
 	{
 
@@ -148,7 +148,6 @@ int main( int argc, char *argv[] )
 
 	std::string aigComponentDefinition;
 	getline(infile, aigComponentDefinition);
-	printf("AIG COMP DEF: %s\n", aigComponentDefinition.c_str());
 	AIG::s_SourcePrim = aigComponentDefinition;
 	
 	outdb.open(outDatabase.c_str());
@@ -159,43 +158,30 @@ int main( int argc, char *argv[] )
 	std::vector<std::string> name;
 	//Go through each circuit in the database and preprocess data/signature 
 	while(getline(infile, file)){
-		printf("\n\n\n\n\n\n\n\n\n\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-		printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-		printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-		printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
-
-
 		//Handles empty lines in files
 		if(file == "\n")
 			continue;
 
-		printf("FILE: %s\n", file.c_str());
+		printStatement("Processing File: " +  file);
 		Graph* ckt = new Graph(file);
-		printStatement("Importing Circuit");
 
 		//Import circuit and convert to AIG
 		gettimeofday(&aig_b, NULL);
 		ckt->importGraph(file, 0);
-		printf("[*] -- Replacing LUTs with comninational logic\n");
 		SEQUENTIAL::replaceLUTs(ckt);
 		AIG* aigraph = new AIG();
 		aigraph->convertGraph2AIG(ckt, false);
 		gettimeofday(&aig_e, NULL);
 
 		//PERFORM K CUT ENUMERATION
-		printStatement("Performing Cut Enumeration");
 		gettimeofday(&ce_b, NULL);
 		CutEnumeration* cut = new CutEnumeration (aigraph);
-		printf(" * Finding K Feasible Cuts: K=%d\n", k);
 		cut->findKFeasibleCuts(k);
 		gettimeofday(&ce_e, NULL);
 
 		//PERFORM BOOLEAN MATCHING
-		printStatement("Performing Cut Function Calculation");
 		gettimeofday(&func_b, NULL);
-		printf(" * Setting Parameters\n");
 		functionCalc->setParams(cut, aigraph);
-		printf(" * Calculating function for all cuts\n");
 		functionCalc->processAIGCuts(true);
 		gettimeofday(&func_e, NULL);
 
@@ -243,6 +229,7 @@ int main( int argc, char *argv[] )
 		delete aigraph;
 		delete cut;
 		delete ckt;
+		printf("\n");
 	}
 
 	outdb << "END\n";

@@ -333,7 +333,7 @@ void AIG::importAIG(std::string fileName){
  *      * fileName: Name of file to write AIG to
  ********************************************************/
 void AIG::writeAiger(std::string filename, bool isBinary){
-	printf("[AIG]--Writing AIG to file...AIGER Format\n");
+	//printf("[AIG]--Writing AIG to file...AIGER Format\n");
 	enum aiger_mode mode;
 	if(isBinary)
 		mode = aiger_binary_mode;
@@ -347,9 +347,7 @@ void AIG::writeAiger(std::string filename, bool isBinary){
 	//Return code is zero if error
 	int returnCode = aiger_write_to_file(m_Aiger, mode, file);
 	if(returnCode == 0)
-		printf("Error with writing to file...\n");
-	else
-		printf("Write success:\t%s\n", filename.c_str());
+		printf("[AIG] -- Error with writing to file...\n");
 }
 
 
@@ -379,7 +377,7 @@ void AIG::writeAiger(std::string filename, bool isBinary){
  *      * ckt:    Graph to convert to AIG
  ********************************************************/
 void AIG::convertGraph2AIG(Graph* ckt, bool sub){
-	printf("[AIG]--Converting Graph to AIG\n");
+	//printf("[AIG]--Converting Graph to AIG\n");
 
 	//Overwrite AIG if one exists
 	if(getSize() != 0){
@@ -580,7 +578,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 
 	//CONSTANT 0 AND 1
-	printf(" * Creating AIG Datastructure\n");
+	//printf(" * Creating AIG Datastructure\n");
 
 	//Given an ID from graph, find the representing AIG node ID
 
@@ -681,22 +679,19 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//}
 	//printf("\n");
 
-	printf("[AIG]--Checking AIG...");
+	//printf("[AIG]--Checking AIG...");
 	const char* msg;
 	msg = aiger_check(m_Aiger);
 	if(msg != NULL){
-		printf("FAIL!!\n%s\n", msg);
+		printf("[AIG] -- AIG CHECK FAIL!!\n%s\n", msg);
 	}
-	else
-		printf("SUCCESS!!\n");
-	//print();
-	printf("[AIG]--Conversion Complete\n");
+	//printf("[AIG]--Conversion Complete\n");
 
 	std::string cktname = ckt->getName();
 	ckt->getName().rfind("/");
 	int index = cktname.rfind("/")+1;
 	cktname = cktname.substr(index, cktname.length()-index-1);
-	printf("FILE NAME: %s\n", cktname.c_str());
+	//printf("FILE NAME: %s\n", cktname.c_str());
 	writeAiger("aiger/" + cktname + "aag", true);
 }
 

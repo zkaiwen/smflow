@@ -214,8 +214,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 		delete [] permutation;
 		delete m_AIG;
 		delete circuit;
-		printf("\n");
-
 	}
 
 
@@ -233,6 +231,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
  *    is a match in function
  ********************************************************/
 void CutFunction::processAIGCuts(bool np){
+	printf("[CutFunction] -- Calculating Function of Cuts\n");
 
 	//Go through each node and process all the cuts
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
