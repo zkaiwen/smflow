@@ -28,6 +28,7 @@
 #include "cutfunction.hpp"
 #include "graph_b.hpp"
 #include "sequential.hpp"
+#include "topoDescriptors.hpp"
 #include "aggregation.hpp"
 
 using namespace boost;
@@ -115,6 +116,7 @@ int main( int argc, char *argv[] )
 
 	//Option flags
 	bool counterFlag = false;
+	bool topoFlag = false;
 
 
 
@@ -133,6 +135,8 @@ int main( int argc, char *argv[] )
 		verbose = true;
 	if(option.find("c") != std::string::npos)
 		counterFlag = true;
+	if(option.find("t") != std::string::npos)
+		topoFlag = true;
 
 
 
@@ -211,6 +215,13 @@ int main( int argc, char *argv[] )
 	}
 	
 	SEQUENTIAL::replaceLUTs(ckt2);
+
+	if(topoFlag){
+		TOPOLOGY::weinerIndex(ckt2);
+		delete ckt2;
+		delete functionCalc;
+		return 0;
+	}
 
 	//Converting circuit to AIG
 	gettimeofday(&aig_b, NULL);

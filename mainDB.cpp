@@ -29,6 +29,7 @@
 #include "cutenumeration.hpp"
 #include "cutfunction.hpp"
 #include "sequential.hpp"
+#include "topoDescriptors.hpp"
 #include "aggregation.hpp"
 
 using namespace boost;
@@ -104,6 +105,12 @@ int main( int argc, char *argv[] )
 	//function, count
 	std::map<unsigned long, int>::iterator fcit;
 
+	//Circuit statistic
+	std::vector<std::map<std::string, int> > stat_compCount;   //Component, count
+	std::vector<unsigned int> stat_wienerIndex;
+	std::vector<unsigned int> stat_aigSize;
+	std::vector<unsigned int> stat_ffSize;
+
 
 
 
@@ -169,8 +176,31 @@ int main( int argc, char *argv[] )
 		gettimeofday(&aig_b, NULL);
 		ckt->importGraph(file, 0);
 		SEQUENTIAL::replaceLUTs(ckt);
+		
+		//Count the number of specific components
+		std::map<int, Vertex<std::string>*>::iterator cktit;
+		std::map<std::string, int> compCount;   //Component, count
+		unsigned int ffcount = 0; 
+		for(cktit = ckt->begin(); cktit != ckt->end(); cktit++){
+			if(compCount.find(cktit->second->getType()) != compCount.end())
+				compCount[cktit->second->getType()]++;
+			else
+				compCount[cktit->second->getType()] = 1; 
+
+			if(cktit->second->getType().find("FD") != std::string::npos){
+				ffcount++;
+			}
+		}
+		stat_compCount.push_back(compCount);
+		stat_ffSize.push_back(ffcount);
+
+		unsigned int wIndex = TOPOLOGY::weinerIndex(ckt);
+		stat_wienerIndex.push_back(wIndex);
+
+
 		AIG* aigraph = new AIG();
 		aigraph->convertGraph2AIG(ckt, false);
+		stat_aigSize.push_back(aigraph->getSize());
 		gettimeofday(&aig_e, NULL);
 
 		//PERFORM K CUT ENUMERATION
@@ -184,7 +214,6 @@ int main( int argc, char *argv[] )
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
 		gettimeofday(&func_e, NULL);
-
 
 		//Aggregation
 		/*
@@ -236,8 +265,11 @@ int main( int argc, char *argv[] )
 	outdb.close();
 	printStatement("Build Database Complete");
 	printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
+		printf("%-15s\t%7s\t%7s\t%7s\t%7s\n", "Circuit", "Func", "Wiener", "AIGsize", "FFsize");
+		printf("--------------------------------------------------------------------------------\n");
 	for(unsigned int i = 0; i < count.size(); i++){
-		printf("%-40s\t%d\n", name[i].c_str(), count[i]);
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-15s\t%7d\t%7d\t%7d\t%7d\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str(), count[i], stat_wienerIndex[i], stat_aigSize[i], stat_ffSize[i]);
 	}
 	printf("\n");
 
