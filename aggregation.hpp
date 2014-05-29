@@ -705,7 +705,7 @@ namespace AGGREGATION{
 
 	void findMux(CutFunction* cf, AIG* aigraph){
 		printf("\n\n\n");
-		printf("[AGG] -- SEARCHING FOR MUXES -------------------------------");
+		printf("[AGG] -- SEARCHING FOR MUXES -------------------------------\n");
 
 		std::map<unsigned long, std::string>::iterator it;
 		std::map<unsigned long, std::string> hmap;
@@ -715,19 +715,19 @@ namespace AGGREGATION{
 		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
-		//Functions that are carry and sum operations
+		//Functions that are mux  operations
 		std::vector<unsigned long> muxes;
 
-		printf(" * Parsing function database for multiplexor blocks...");
+		printf(" * Parsing function database for multiplexor blocks...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("mux") != std::string::npos)
 				muxes.push_back(it->first);
 		}
 
+		printf("Multiplexor Bitslices found: %d\n", (int)muxes.size());
 
-		//List of inputs of sum components. Last index is the output
+		//List of inputs of mux components. Last index is the output
 		std::vector<std::vector<unsigned> > muxlist;
-
 
 		//Get the Inputs and outputs of all the sum and carry componenets
 		for(unsigned int i = 0; i < muxes.size(); i++){
@@ -807,7 +807,7 @@ namespace AGGREGATION{
 		printf("done\n");
 
 
-
+/*
 		//4-1 Mux search
 		printf("\n\n");
 		printf("[AGG] -- SEARCHING FOR MUXES 4-1-------------------------------\n");
@@ -1018,6 +1018,7 @@ namespace AGGREGATION{
 			else mit = muxSet.begin();
 		}
 		printf("done\n");
+		*/
 
 
 		printf("\n\n\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1079,7 +1080,7 @@ namespace AGGREGATION{
 
 
 
-
+/*
 		printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
 		for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
 			printf("    %2d-bit mux\n", (int) muxset4it->second.size());
@@ -1090,6 +1091,7 @@ namespace AGGREGATION{
 			printf("\n");
 
 		}
+		*/
 
 
 

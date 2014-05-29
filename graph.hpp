@@ -65,6 +65,7 @@ class Graph
 		void getOutputs(std::vector<int>&);
 		unsigned int getNumVertex();
 		unsigned int getNumInputs();
+		unsigned int getNumOutputs();
 		int getNumGate(std::string);
 		int getLast();
 		unsigned int getMaxLevel();

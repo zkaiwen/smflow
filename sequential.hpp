@@ -512,21 +512,22 @@ namespace SEQUENTIAL{
 				for(unsigned int i = 0; i < inputs.size(); i++){
 					numbers*=2;
 					pname[1] = startChar + i;
-					//printf("%s:", pname.c_str());
+					printf("%s:", pname.c_str());
 					for(unsigned int j = 0; j < inports.size(); j++){
 						if(inports[j] == pname){
 							lutin.push_back(inputs[j]->getVertexID());
-							//printf("%d ", inputs[j]->getVertexID());
+							printf("%d ", inputs[j]->getVertexID());
 						}
 					}
 				}
-				//printf("\n");
+				printf("\n");
 
 				unsigned long function = it->second->getLUT();
-				//printf("%lx Possible numbers: %d\n", function, numbers); 
+				printf("%lx Possible numbers: %d\n", function, numbers); 
+
 				Graph* lutgraph = new Graph ("LUT");
 				//Pre-Invert inputs for later use;
-				//printf("ASSIGNING INPUTS\n");
+				printf("ASSIGNING INPUTS\n");
 				for(unsigned int i = 0; i < lutin.size(); i++){
 					std::stringstream ss; 
 					ss<<"I"<<i;
@@ -539,7 +540,7 @@ namespace SEQUENTIAL{
 					vin->addOutput(vinv, "O");
 
 					lutgraph->addInput(ss.str(), i);
-					//printf("LUTIN: %d\tLUTGID: %d\tPORTNAME: %s\n", lutin[i], i, ss.str().c_str());
+					printf("LUTIN: %d\tLUTGID: %d\tPORTNAME: %s\n", lutin[i], i, ss.str().c_str());
 				}
 
 				int andIndexStart = lutgraph->getNumVertex();

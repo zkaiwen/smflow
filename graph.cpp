@@ -523,6 +523,15 @@ unsigned int Graph::getNumInputs(){
 }
 
 
+/***************************************************************************
+ *  getNumOutputs
+ *    Gets the number of outputs to the graph
+ *
+ *  @Return: Number of outputs
+ ****************************************************************************/
+unsigned int Graph::getNumOutputs(){
+	return m_Outputs.size();
+}
 
 /***************************************************************************
  *  getInputs

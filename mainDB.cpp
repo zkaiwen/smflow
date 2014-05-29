@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
 	double funct = 0.0;
 	double aggt = 0.0;
 	double elapsedTime;
-	int k = 5;                              //k-Cut enumeration value 
+	int k = 3;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long> > pDatabase;
@@ -110,6 +110,8 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned int> stat_wienerIndex;
 	std::vector<unsigned int> stat_aigSize;
 	std::vector<unsigned int> stat_ffSize;
+	std::vector<unsigned int> stat_numInput;
+	std::vector<unsigned int> stat_numOutput;
 
 
 
@@ -175,6 +177,9 @@ int main( int argc, char *argv[] )
 		//Import circuit and convert to AIG
 		gettimeofday(&aig_b, NULL);
 		ckt->importGraph(file, 0);
+
+		stat_numInput.push_back(ckt->getNumInputs());
+		stat_numOutput.push_back(ckt->getNumOutputs());
 		SEQUENTIAL::replaceLUTs(ckt);
 		
 		//Count the number of specific components
@@ -265,11 +270,11 @@ int main( int argc, char *argv[] )
 	outdb.close();
 	printStatement("Build Database Complete");
 	printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
-		printf("%-15s\t%7s\t%7s\t%7s\t%7s\n", "Circuit", "Func", "Wiener", "AIGsize", "FFsize");
+		printf("%-15s\t%3s\t%3s\t%7s\t%7s\t%7s\t%7s\n", "Circuit", "In", "Out", "Func", "Wiener", "AIGsize", "FFsize");
 		printf("--------------------------------------------------------------------------------\n");
 	for(unsigned int i = 0; i < count.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-15s\t%7d\t%7d\t%7d\t%7d\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str(), count[i], stat_wienerIndex[i], stat_aigSize[i], stat_ffSize[i]);
+		printf("%-15s\t%3d\t%3d\t%7d\t%7d\t%7d\t%7d\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str(), stat_numInput[i], stat_numOutput[i], count[i], stat_wienerIndex[i], stat_aigSize[i], stat_ffSize[i]);
 	}
 	printf("\n");
 

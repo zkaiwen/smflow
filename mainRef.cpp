@@ -101,7 +101,7 @@ int main( int argc, char *argv[] )
 	double libt = 0.0;
 	double elapsedTime;
 
-	int k = 5;                              //k-Cut enumeration value 
+	int k = 3;                              //k-Cut enumeration value 
 
 	std::ifstream indb;                     //Input stream for reading data base file
 	std::map<std::string, std::set<unsigned long> > pDatabase;
@@ -162,7 +162,12 @@ int main( int argc, char *argv[] )
 
 		unsigned int size;
 		indb >> size;
-		printf("%-40s\tSIZE: %d\n", circuitName.c_str(), size);
+
+		std::string name = circuitName;
+		int lastSlashIndex = name.find_last_of("/") + 1;
+		printf("%-15s\t", name.substr(lastSlashIndex, name.length()-lastSlashIndex-2).c_str());
+		printf("SIZE: %d\n", size);
+
 		for(unsigned int i = 0; i < size; i++){
 			unsigned long function;
 			int count;
@@ -225,6 +230,9 @@ int main( int argc, char *argv[] )
 
 	//Converting circuit to AIG
 	gettimeofday(&aig_b, NULL);
+	Graph* originalCkt = new Graph(referenceCircuit);
+	*originalCkt = *ckt2;
+
 	AIG* aigraph2 = new AIG();
 	aigraph2->convertGraph2AIG(ckt2, false);
 	gettimeofday(&aig_e, NULL);
@@ -265,7 +273,10 @@ int main( int argc, char *argv[] )
 
 	//For each circuit in teh database
 	for(fcmit = functionCountMap.begin(); fcmit != functionCountMap.end(); fcmit++){
-		printf("%-40s\t", fcmit->first.c_str());
+		std::string name = fcmit->first;
+		int lastSlashIndex = name.find_last_of("/") + 1;
+		printf("%-15s\t", name.substr(lastSlashIndex, name.length()-lastSlashIndex-2).c_str());
+
 		//printf("Total Match\tDB: %d\tREF:%d\n", (int) fcmit->second.size(), (int)functionCount.size());
 		double numFMatch = 0.0;
 		double numFMatchCount = 0.0;
@@ -316,12 +327,17 @@ int main( int argc, char *argv[] )
 
 	}	
 
+aigraph2->print();
+printf("\n\n");
+originalCkt->print();
+functionCalc->printStat();
+functionCalc->printLibrary();
+	AGGREGATION::findMux(functionCalc, aigraph2);
 
 	/*
 	//Aggregating reference circuit data
 	findHA(functionCalc, aigraph2);
 	findDecoder(functionCalc, aigraph2);
-	findMux2(functionCalc, aigraph2);
 	printf("\n\n\n");
 	printStatement("RESULTS");
 	gettimeofday(&agg_b, NULL);
