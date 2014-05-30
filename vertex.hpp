@@ -99,6 +99,10 @@ class Vertex
 		int getNumInputs(){
 			return m_Input.size();
 		}
+		 
+		int getNumOutputs(){
+			return m_Output.size();
+		}
 		
 		
 		void getInPorts(std::vector<std::string>& portlist){

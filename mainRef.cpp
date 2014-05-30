@@ -219,6 +219,7 @@ int main( int argc, char *argv[] )
 		delete copy;
 	}
 	
+
 	SEQUENTIAL::replaceLUTs(ckt2);
 
 	if(topoFlag){
@@ -227,6 +228,7 @@ int main( int argc, char *argv[] )
 		delete functionCalc;
 		return 0;
 	}
+	//ckt2->print();
 
 	//Converting circuit to AIG
 	gettimeofday(&aig_b, NULL);

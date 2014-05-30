@@ -143,6 +143,7 @@ Graph& Graph::operator=(const Graph& copy){
 		it->second->getInput(input);
 
 		//Make sure the two sizes are the same
+		//printf("in: %d\tport:%d\n", input.size(), inputPort.size());
 		assert(input.size() == inputPort.size());
 
 		for(unsigned int i = 0; i < input.size(); i++){
