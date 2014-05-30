@@ -488,7 +488,6 @@ namespace SEQUENTIAL{
 							loutput[i]->addInPort(portname);
 
 							linput[0]->addOutput(loutput[i],outportname);
-
 						}
 
 
@@ -733,7 +732,6 @@ namespace SEQUENTIAL{
 		for(unsigned int i = 0; i < tobedeleted.size(); i++){
 			ckt->removeVertex(tobedeleted[i]);	
 		}
-
 	}
 
 

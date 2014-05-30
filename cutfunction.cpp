@@ -230,8 +230,8 @@ void CutFunction::processAIGCuts(bool np){
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
 		unsigned node = i * 2;
-		//printf("############################################################################################################\n");
-		//printf("--------------------------------\nProcessing node %d\n", node);
+		printf("################################################################################\n");
+		printf("--------------------------------\nProcessing node %d\n", node);
 		std::list<std::set<unsigned>*>* cutList;
 		std::list<std::set<unsigned>*>::iterator cuts;
 
@@ -250,10 +250,10 @@ void CutFunction::processAIGCuts(bool np){
 			unsigned int* permutation = setPermutation(inputSize);
 			std::set<unsigned>::iterator cutIT;
 
-			//printf("CUTS\n");
-			//for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++)
-			//	printf("%d ", *cutIT);
-			//printf("\n");
+			printf("CUTS: ");
+			for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++)
+				printf("%d ", *cutIT);
+			printf("\n");
 
 			//P-Equivalence Check
 
@@ -290,10 +290,9 @@ void CutFunction::processAIGCuts(bool np){
 			//Calculate the output at each node up to the current node
 			calculate(node);
 			unsigned long functionVal = m_NodeValue[node];
-			unsigned long negateVal = ~(functionVal);
-			//printf("OUTPUT: %x\n", negate);
+			unsigned long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
+			printf("FUNCTION: %x\tNEGATE:: %x\n",  functionVal, negateVal);
 
-			//N-Equivalence Check the negation of the output
 
 
 			//Count the number of occurances for each unique function
@@ -322,6 +321,11 @@ void CutFunction::processAIGCuts(bool np){
 						delete gateInputs;
 						continue;
 					}
+					printf("Gateinputs pushed back:\t");
+					for(unsigned int k = 0; k < gateInputs->size(); k++){
+						printf("%d ", gateInputs->at(k));
+					}
+					printf("\n");
 					m_NodeFunction[negateVal].insert(i);
 					gateInputs->push_back(i);
 					m_PortMap[negateVal].push_back(gateInputs);
@@ -334,6 +338,12 @@ void CutFunction::processAIGCuts(bool np){
 					delete gateInputs;
 					continue;
 				}
+				printf("Gateinputs pushed back\n");
+					for(unsigned int k = 0; k < gateInputs->size(); k++){
+						printf("%d ", gateInputs->at(k));
+					}
+					printf("\n");
+
 				m_NodeFunction[functionVal].insert(i);
 				gateInputs->push_back(i);
 				m_PortMap[functionVal].push_back(gateInputs);
@@ -366,140 +376,6 @@ void CutFunction::processAIGCuts(bool np){
 
 
 
-
-
-	void CutFunction::processLUTs(Graph* ckt, std::map<std::string, std::set<unsigned long> >& pDatabase){
-		printf("\n\n\n\nPROCESSING LUTs...\n");
-		std::map<int, Vertex<std::string>*>::iterator it;
-		//Loop through graph to find LUTs
-		for(it = ckt->begin(); it!=ckt->end(); it++){
-			//printf("Graph Node : %d\n", it->first);
-			//If vertex type is a LUT
-			if(it->second->getType().find("LUT") != std::string::npos){
-				unsigned long function = it->second->getLUT();
-
-				unsigned int inputSize = it->second->getNumInputs();	
-
-				unsigned int* permutation = setPermutation(inputSize);
-				if(permutation == NULL)
-					continue;
-
-				printf("LUT FUNCTION: %lx\t LUT SIZE: %d\n", function, inputSize);
-
-				//FORM TRUTH TABLE
-				std::map<std::string, unsigned int> truthTable;
-				std::stringstream ss;
-				unsigned int loopSize = 1 << inputSize ;
-
-				/*for(unsigned int i = 0; i < 64; i++){
-				  unsigned int tmpi = i; 
-				  for(unsigned int j = 0; j < 6; j++){
-				  if(tmpi & 0x20) ss<<1;
-				  else ss<<0;
-
-				  tmpi = tmpi << 1;
-				  }
-
-				  if(i == loopSize){
-				  function = it->second->getLUT();
-				  loopSize = loopSize + (1 << inputSize);
-				  }
-
-				  truthTable[ss.str()] = function & 0x1;
-
-				  printf("%s bit: %d\n", ss.str().c_str(), function & 0x1);
-				  function = function >> 1;
-				  ss.str("");
-				  }*/
-
-				//Make Truth Table
-				unsigned int mask = 1 << (inputSize -1);
-				for(unsigned int i = 0; i < loopSize; i++){
-					unsigned int tmpi = i; 
-					//Make the string for input values
-					for(unsigned int j = 0; j < inputSize; j++){
-						if(tmpi & mask) ss<<1;
-						else ss<<0;
-
-						tmpi = tmpi << 1;
-					}
-
-					//Assign the output bit for the specific input pattern. 
-					truthTable[ss.str()] = function & 0x1;
-
-					printf("%s bit: %ld\n", ss.str().c_str(), (function & 0x1));
-					function = function >> 1;
-					ss.str("");
-				}
-
-
-				//Permute the inputs to find corresponding output bit. 
-				std::set<unsigned long> LUTDatabase;
-				do{
-					//printf("Permutation:\n");
-
-					unsigned int negationLimit = 1 << inputSize;
-					for(unsigned int j = 0; j < negationLimit; j++){
-						std::vector<unsigned long> truthTableInput;
-						int count = j; 
-						for(unsigned int i = 0; i < inputSize; i++){
-							unsigned int permVal = permutation[i];
-							unsigned long input = m_Xval[permVal];
-
-							if((count & 0x1) != 0){
-								//printf("-%d ", permutation[i]);
-								input = ~input;
-							}
-							//else
-							//printf("%d ", permutation[i]);
-
-							truthTableInput.push_back(input);
-							count = count >> 1;		
-						}
-						//printf("\nInput:\n");
-
-
-						unsigned int mask = 0x1;
-						unsigned int pFunction = 0;;
-						for(unsigned int i = 0; i < loopSize; i++){
-							ss.str("");
-							for(unsigned int k = 0; k < inputSize; k++){
-								ss<<(truthTableInput[k] & mask);
-								truthTableInput[k] = truthTableInput[k] >> 1;
-							}
-							pFunction = pFunction << 1;
-							pFunction = truthTable[ss.str()] | pFunction;
-							//printf("%s VAL: %d FUNC%x\n", ss.str().c_str(), truthTable[ss.str()], pFunction);
-						}
-
-						//printf("PERMUTED FUNCTION: %x\n", pFunction);
-						unsigned long pFunction64 = 0;
-						for(unsigned int i = 0; i < 64/loopSize; i++){
-							pFunction64 = pFunction64<<loopSize;
-							pFunction64 = pFunction64 | pFunction;
-						}
-
-						pDatabase[ckt->getName()].insert(pFunction64);
-
-					}
-					//printf("\n");
-				}while(std::next_permutation(permutation, permutation+inputSize));
-
-				delete permutation;
-
-			}
-		}
-		/*
-		   std::map<std::string, std::set<unsigned long> >::iterator pit;
-		   std::set<unsigned long>::iterator sit;
-		   for(pit = pDatabase.begin(); pit != pDatabase.end(); pit++){
-		   printf("CIRCUIT: %s\n", pit->first.c_str());
-		   for(sit = pit->second.begin(); sit != pit->second.end(); sit++){
-		   printf("%lx\n", *sit);
-		   }
-		   printf("\n");
-		   }*/
-	}
 
 
 
@@ -652,28 +528,32 @@ void CutFunction::processAIGCuts(bool np){
 		printf("FUNCTION: %s\t%lx\nNUMBER OF MATCH: %d\n",m_HashTable[it->first].c_str(), it->first, (unsigned int)  it->second.size());
 		std::set<unsigned int>::iterator sit;
 
+		//For each outputnode
 		for(sit = it->second.begin(); sit != it->second.end(); sit++){
 			printf("NODE: %d\tIN:", (*sit)*2); //AIG NODES are even, ODD is inverse
-			std::list<std::set<unsigned int>*>* cuts;
-			cuts = m_CutEnumeration->getCuts(*sit);
 
-			
-			std::list<std::set<unsigned int>*>::iterator cutIterator;
-			std::set<unsigned int>::iterator cit;
-			int count = 0; 
-			int cutIndex = m_CutInputIndex[it->first][*sit];
-			printf("(INDEX: %d) ", cutIndex);
-			for(cutIterator = cuts->begin(); cutIterator != cuts->end(); cutIterator++){
-				if(count == cutIndex){
-					break;
+		//Finding Inputs to function
+		//Iterator for m_PortMap
+		std::vector<std::vector<unsigned>*>* inputSet;
+		inputSet = &m_PortMap[it->first];
+		unsigned int inputSetSize = inputSet->size();
+
+		for(unsigned int i = 0; i < inputSetSize; i++){
+			unsigned output = inputSet->at(i)->at(inputSet->at(i)->size()-1); 
+			//output *=2; //AIG NODES ARE EVEN
+
+			//printf("Output: %d\n", output);
+			if(output== (*sit)){
+				for(unsigned int j = 0; j < inputSet->at(i)->size()-1; j++){
+					printf("%3d ", inputSet->at(i)->at(j));
 				}
-				count++;
+				printf("\n");
+				break;
 			}
-				
-			for(cit = (*cutIterator)->begin(); cit != (*cutIterator)->end(); cit++){
-				printf("%d ", *cit);
-			}
-			printf("\n");
+		}
+
+	
+		
 
 		}
 		printf("\n\n");
@@ -733,7 +613,6 @@ void CutFunction::processAIGCuts(bool np){
 
 	void CutFunction::getPortMap(std::map<unsigned long, std::vector<std::vector<unsigned>*> >& pmap){
 		pmap =	m_PortMap;
-
 	}
 
 
@@ -744,3 +623,141 @@ void CutFunction::processAIGCuts(bool np){
 	void CutFunction::getFunctionCount(std::map<unsigned long, int>& fc){
 		fc = m_FunctionCount;	
 	}
+
+	
+/*
+	void CutFunction::processLUTs(Graph* ckt, std::map<std::string, std::set<unsigned long> >& pDatabase){
+		printf("\n\n\n\nPROCESSING LUTs...\n");
+		std::map<int, Vertex<std::string>*>::iterator it;
+		//Loop through graph to find LUTs
+		for(it = ckt->begin(); it!=ckt->end(); it++){
+			//printf("Graph Node : %d\n", it->first);
+			//If vertex type is a LUT
+			if(it->second->getType().find("LUT") != std::string::npos){
+				unsigned long function = it->second->getLUT();
+
+				unsigned int inputSize = it->second->getNumInputs();	
+
+				unsigned int* permutation = setPermutation(inputSize);
+				if(permutation == NULL)
+					continue;
+
+				printf("LUT FUNCTION: %lx\t LUT SIZE: %d\n", function, inputSize);
+
+				//FORM TRUTH TABLE
+				std::map<std::string, unsigned int> truthTable;
+				std::stringstream ss;
+				unsigned int loopSize = 1 << inputSize ;
+*/
+				/*for(unsigned int i = 0; i < 64; i++){
+				  unsigned int tmpi = i; 
+				  for(unsigned int j = 0; j < 6; j++){
+				  if(tmpi & 0x20) ss<<1;
+				  else ss<<0;
+
+				  tmpi = tmpi << 1;
+				  }
+
+				  if(i == loopSize){
+				  function = it->second->getLUT();
+				  loopSize = loopSize + (1 << inputSize);
+				  }
+
+				  truthTable[ss.str()] = function & 0x1;
+
+				  printf("%s bit: %d\n", ss.str().c_str(), function & 0x1);
+				  function = function >> 1;
+				  ss.str("");
+				  }*/
+/*
+				//Make Truth Table
+				unsigned int mask = 1 << (inputSize -1);
+				for(unsigned int i = 0; i < loopSize; i++){
+					unsigned int tmpi = i; 
+					//Make the string for input values
+					for(unsigned int j = 0; j < inputSize; j++){
+						if(tmpi & mask) ss<<1;
+						else ss<<0;
+
+						tmpi = tmpi << 1;
+					}
+
+					//Assign the output bit for the specific input pattern. 
+					truthTable[ss.str()] = function & 0x1;
+
+					printf("%s bit: %ld\n", ss.str().c_str(), (function & 0x1));
+					function = function >> 1;
+					ss.str("");
+				}
+
+
+				//Permute the inputs to find corresponding output bit. 
+				std::set<unsigned long> LUTDatabase;
+				do{
+					//printf("Permutation:\n");
+
+					unsigned int negationLimit = 1 << inputSize;
+					for(unsigned int j = 0; j < negationLimit; j++){
+						std::vector<unsigned long> truthTableInput;
+						int count = j; 
+						for(unsigned int i = 0; i < inputSize; i++){
+							unsigned int permVal = permutation[i];
+							unsigned long input = m_Xval[permVal];
+
+							if((count & 0x1) != 0){
+								//printf("-%d ", permutation[i]);
+								input = ~input;
+							}
+							//else
+							//printf("%d ", permutation[i]);
+
+							truthTableInput.push_back(input);
+							count = count >> 1;		
+						}
+						//printf("\nInput:\n");
+
+
+						unsigned int mask = 0x1;
+						unsigned int pFunction = 0;;
+						for(unsigned int i = 0; i < loopSize; i++){
+							ss.str("");
+							for(unsigned int k = 0; k < inputSize; k++){
+								ss<<(truthTableInput[k] & mask);
+								truthTableInput[k] = truthTableInput[k] >> 1;
+							}
+							pFunction = pFunction << 1;
+							pFunction = truthTable[ss.str()] | pFunction;
+							//printf("%s VAL: %d FUNC%x\n", ss.str().c_str(), truthTable[ss.str()], pFunction);
+						}
+
+						//printf("PERMUTED FUNCTION: %x\n", pFunction);
+						unsigned long pFunction64 = 0;
+						for(unsigned int i = 0; i < 64/loopSize; i++){
+							pFunction64 = pFunction64<<loopSize;
+							pFunction64 = pFunction64 | pFunction;
+						}
+
+						pDatabase[ckt->getName()].insert(pFunction64);
+
+					}
+					//printf("\n");
+				}while(std::next_permutation(permutation, permutation+inputSize));
+
+				delete permutation;
+
+			}
+		}
+		*/
+		/*
+		   std::map<std::string, std::set<unsigned long> >::iterator pit;
+		   std::set<unsigned long>::iterator sit;
+		   for(pit = pDatabase.begin(); pit != pDatabase.end(); pit++){
+		   printf("CIRCUIT: %s\n", pit->first.c_str());
+		   for(sit = pit->second.begin(); sit != pit->second.end(); sit++){
+		   printf("%lx\n", *sit);
+		   }
+		   printf("\n");
+		   }
+	}
+	*/
+

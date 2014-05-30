@@ -72,7 +72,7 @@ class CutFunction{
 		//Boolean Matching
 		void preProcessLibrary(std::string);
 		void processAIGCuts(bool);
-		void processLUTs(Graph*, std::map<std::string, std::set<unsigned long> >&);
+		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long> >&);
 		unsigned long calculate(int);
 		unsigned int* setPermutation(int);
 

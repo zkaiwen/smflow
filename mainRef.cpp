@@ -237,6 +237,7 @@ int main( int argc, char *argv[] )
 
 	AIG* aigraph2 = new AIG();
 	aigraph2->convertGraph2AIG(ckt2, false);
+	aigraph2->print();
 	gettimeofday(&aig_e, NULL);
 
 	//PERFORM K CUT ENUMERATION
@@ -330,8 +331,9 @@ int main( int argc, char *argv[] )
 	}	
 
 aigraph2->print();
-printf("\n\n");
-originalCkt->print();
+//aigraph2->printMap();
+//printf("\n\n");
+//originalCkt->print();
 functionCalc->printStat();
 functionCalc->printLibrary();
 	AGGREGATION::findMux(functionCalc, aigraph2);

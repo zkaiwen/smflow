@@ -270,11 +270,26 @@ int main( int argc, char *argv[] )
 	outdb.close();
 	printStatement("Build Database Complete");
 	printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
-		printf("%-15s\t%3s\t%3s\t%7s\t%7s\t%7s\t%7s\n", "Circuit", "In", "Out", "Func", "Wiener", "AIGsize", "FFsize");
+
+		printf("%-15s", "Circuit");
+		printf("%5s", "In");
+		printf("%5s", "Out");
+		printf("%8s", "Func");
+		printf("%8s", "Wiener");
+		printf("%8s", "|AIG|");
+		printf("%8s", "|FF|");
+		printf("\n");
 		printf("--------------------------------------------------------------------------------\n");
 	for(unsigned int i = 0; i < count.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-15s\t%3d\t%3d\t%7d\t%7d\t%7d\t%7d\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str(), stat_numInput[i], stat_numOutput[i], count[i], stat_wienerIndex[i], stat_aigSize[i], stat_ffSize[i]);
+		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%5d", stat_numInput[i]);
+		printf("%5d", stat_numOutput[i]);
+		printf("%8d", count[i]);
+		printf("%8d", stat_wienerIndex[i]);
+		printf("%8d", stat_aigSize[i]);
+		printf("%8d", stat_ffSize[i]);
+		printf("\n");
 	}
 	printf("\n");
 

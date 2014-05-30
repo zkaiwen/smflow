@@ -49,5 +49,5 @@ test:
 	g++ -o testProgram $(OBJ) test.cpp -lboost_graph
 
 clean:
-	rm -f *.o *fpgenius* *out* cnf testProgram cDatabase
+	rm -f *.o *fpgenius* *.out* *.in*  cnf testProgram cDatabase
 

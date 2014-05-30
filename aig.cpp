@@ -377,7 +377,7 @@ void AIG::writeAiger(std::string filename, bool isBinary){
  *      * ckt:    Graph to convert to AIG
  ********************************************************/
 void AIG::convertGraph2AIG(Graph* ckt, bool sub){
-	//printf("[AIG]--Converting Graph to AIG\n");
+	printf("[AIG]--Converting Graph to AIG\n");
 
 	//Overwrite AIG if one exists
 	if(getSize() != 0){
@@ -414,8 +414,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			break;
 
 		//Read in the necessary primitive type
-		//printf("CONVERTING V%d to AIG PRIM\n", it->first);
-		//printf("GATE: %s\n", it->second->getType().c_str());
+		printf("CONVERTING V%d to AIG PRIM\n", it->first);
+		printf("GATE: %s\n", it->second->getType().c_str());
 		std::string gateType = it->second->getType();
 		if(gateType.find("XORCY") != std::string::npos)
 			circuitType = xorAIGFile_c + "cy";
@@ -517,12 +517,11 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		}
 
 
-		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 		int gateSizeNum = it->second->getIVSize();
 		char gateSize = '0' + gateSizeNum;
 
 		circuitType = circuitType + gateSize + ".g";
-		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
+		printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 
 		Graph* primCkt = new Graph(circuitType);
 		primCkt->importPrimitive(circuitType, ckt->getLast() +1);
@@ -600,13 +599,14 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else{
 			unsigned int input= create_input();
 			m_GateMap[vLevel[0][i]->getVertexID()] = input; 
-			//printf("INPUT: %u\n", input);
+			printf("INPUT:  %d\tAIG: %u\n", vLevel[0][i]->getVertexID(),input);
 		}
 	}
 
 	//printf("vLevel size: %d\n", vLevel.size());
 	unsigned int vlevelSize = vLevel.size();
 	unsigned int maxLevel = ckt->getMaxLevel();
+
 	//Create the rest of the AIG Graph LEVEL 1 and UP
 	for(unsigned int i = 1; i <= maxLevel; i++){
 		//printf("\n\n\n\n\n\n\n\nLEVEL %d, SIZE: %d\n", i, vLevel[i].size());
@@ -615,23 +615,25 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			exit(1);
 		}
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
-			//printf("VERTEX ID: %d\n", vLevel[i][j]->getVertexID());
+			printf("VERTEX ID: %d\n", vLevel[i][j]->getVertexID());
 			if(vLevel[i][j]->getType().find("AND") != std::string::npos){
-				//printf("GATE: AND\n");
 				std::vector<Vertex<std::string>*> in;
 				vLevel[i][j]->getInput(in);
-				//printf("VIN: %d %d\n", in[0]->getVertexID(), in[1]->getVertexID());
+				printf("GATE: AND\t");
+				printf("VIN: %d %d\n", in[0]->getVertexID(), in[1]->getVertexID());
 
 				unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
-				//printf("AIG: %d- %d %d\n", output, m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
+				printf("AIG: %d- %d %d\n", output, m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
 				int vertexID = vLevel[i][j]->getVertexID();
 				m_GateMap[vertexID] = output;
 			}
 			else if(vLevel[i][j]->getType().find("INV") != std::string::npos){
-				//printf("GATE: INVERTER\n");
 				std::vector<Vertex<std::string>*> in;
 				vLevel[i][j]->getInput(in);
-				//printf("VIN: %d\n", in[0]->getVertexID());
+
+				printf("GATE: INVERTER\n");
+				printf("VIN: %d\n", in[0]->getVertexID());
+
 				if(m_GateMap[in[0]->getVertexID()] == 0)
 					m_GateMap[vLevel[i][j]->getVertexID()] = 1;
 				else if(m_GateMap[in[0]->getVertexID()] == 1)
@@ -645,7 +647,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				}
 				if(vLevel[i][j]->getOVSize() == 0 ){
 
-					//printf("INTYPE: %s\tINID:%d\tAIGID:%d\n", in[0]->getType().c_str(), in[0]->getVertexID(), m_GateMap[in[0]->getVertexID()]);
+					printf("INTYPE: %s\tINID:%d\tAIGID:%d\n", in[0]->getType().c_str(), in[0]->getVertexID(), m_GateMap[in[0]->getVertexID()]);
 					m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
 					aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
 				}
@@ -664,6 +666,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				m_Outputs.push_back(m_GateMap[vLevel[i][j]->getVertexID()]);
 				aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
 			}
+			printf("\n");
 		}
 	}
 	//ckt->printg();
@@ -687,12 +690,17 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	}
 	//printf("[AIG]--Conversion Complete\n");
 
+	/*
+	WRITING AIG TO OUTPUT AIGER FILE (.AAG)
 	std::string cktname = ckt->getName();
 	ckt->getName().rfind("/");
 	int index = cktname.rfind("/")+1;
 	cktname = cktname.substr(index, cktname.length()-index-1);
 	//printf("FILE NAME: %s\n", cktname.c_str());
 	writeAiger("aiger/" + cktname + "aag", true);
+	printf("END\n");
+	print();
+	*/
 }
 
 
