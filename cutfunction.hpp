@@ -47,7 +47,7 @@ class CutFunction{
 
 		//Function, Nodes with the function output
 		std::map<unsigned long, std::set<unsigned> > m_NodeFunction;
-		std::map<unsigned long, std::map<unsigned,unsigned> >m_CutInputIndex;
+		//std::map<unsigned long, std::map<unsigned,unsigned> >m_CutInputIndex;
 
 
 		//Function, List of inputs that have that specific output

@@ -229,9 +229,9 @@ void CutFunction::processAIGCuts(bool np){
 	//Go through each node and process all the cuts
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
-		unsigned node = i * 2;
-		printf("################################################################################\n");
-		printf("--------------------------------\nProcessing node %d\n", node);
+		unsigned node = i * 2; //AIG FORMAT Evens are the nodes, Odds are inv 
+		//printf("################################################################################\n");
+		//printf("--------------------------------\nProcessing node %d\n", node);
 		std::list<std::set<unsigned>*>* cutList;
 		std::list<std::set<unsigned>*>::iterator cuts;
 
@@ -250,10 +250,12 @@ void CutFunction::processAIGCuts(bool np){
 			unsigned int* permutation = setPermutation(inputSize);
 			std::set<unsigned>::iterator cutIT;
 
+			/*
 			printf("CUTS: ");
 			for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++)
 				printf("%d ", *cutIT);
 			printf("\n");
+			*/
 
 			//P-Equivalence Check
 
@@ -291,7 +293,7 @@ void CutFunction::processAIGCuts(bool np){
 			calculate(node);
 			unsigned long functionVal = m_NodeValue[node];
 			unsigned long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
-			printf("FUNCTION: %x\tNEGATE:: %x\n",  functionVal, negateVal);
+			//printf("FUNCTION: %x\tNEGATE:: %x\n",  functionVal, negateVal);
 
 
 
@@ -321,13 +323,16 @@ void CutFunction::processAIGCuts(bool np){
 						delete gateInputs;
 						continue;
 					}
-					printf("Gateinputs pushed back:\t");
+					
+					/*printf("Gateinputs pushed back:\t");
 					for(unsigned int k = 0; k < gateInputs->size(); k++){
 						printf("%d ", gateInputs->at(k));
 					}
-					printf("\n");
-					m_NodeFunction[negateVal].insert(i);
-					gateInputs->push_back(i);
+					printf("\nOutput: %d\n", node);
+					*/
+					
+					m_NodeFunction[negateVal].insert(node);
+					gateInputs->push_back(node);
 					m_PortMap[negateVal].push_back(gateInputs);
 				}
 				else
@@ -338,14 +343,16 @@ void CutFunction::processAIGCuts(bool np){
 					delete gateInputs;
 					continue;
 				}
-				printf("Gateinputs pushed back\n");
+				/*printf("Gateinputs pushed back\n");
 					for(unsigned int k = 0; k < gateInputs->size(); k++){
 						printf("%d ", gateInputs->at(k));
 					}
-					printf("\n");
+					printf("\nOutput: %d\n", i);
+					*/
+					
 
-				m_NodeFunction[functionVal].insert(i);
-				gateInputs->push_back(i);
+				m_NodeFunction[functionVal].insert(node);
+				gateInputs->push_back(node);
 				m_PortMap[functionVal].push_back(gateInputs);
 			}
 
@@ -525,12 +532,12 @@ void CutFunction::processAIGCuts(bool np){
 	printf("*********************************\n\n");
 	std::map<unsigned long, std::set<unsigned> >::iterator it;
 	for(it = m_NodeFunction.begin(); it != m_NodeFunction.end(); it++){
-		printf("FUNCTION: %s\t%lx\nNUMBER OF MATCH: %d\n",m_HashTable[it->first].c_str(), it->first, (unsigned int)  it->second.size());
+		//printf("FUNCTION: %s\t%lx\nNUMBER OF MATCH: %d\n",m_HashTable[it->first].c_str(), it->first, (unsigned int)  it->second.size());
 		std::set<unsigned int>::iterator sit;
 
 		//For each outputnode
 		for(sit = it->second.begin(); sit != it->second.end(); sit++){
-			printf("NODE: %d\tIN:", (*sit)*2); //AIG NODES are even, ODD is inverse
+			//printf("NODE: %d\tIN:", (*sit)*2); //AIG NODES are even, ODD is inverse
 
 		//Finding Inputs to function
 		//Iterator for m_PortMap

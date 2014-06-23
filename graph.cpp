@@ -396,8 +396,13 @@ bool Graph::importGraph(std::string fileName, int offset){
 		//printf("VID: %d\n", vID);
 
 		inFile >> type;
-		if(type!= "VCC" && type != "GND")
+		if(type!= "VCC" && type != "GND"){
 			inFile >> name;
+			m_NodeName[vID] = name;
+		}
+			
+
+
 		
 		//printf("ID: %d\tTYPE: %s\n", vID, type.c_str());
 		Vertex<std::string>* vertex;
@@ -471,6 +476,233 @@ bool Graph::importGraph(std::string fileName, int offset){
 }
 
 
+/***************************************************************************
+ * exportGraph 
+ *   exports graph into a G file 
+ *   @PARAM: filename- File name of the new G file
+ ****************************************************************************/
+bool Graph::exportGraph(std::string filename){
+
+	filename = filename + "out";
+	printf("[GRP] -- Exporting circuit to file: %s\n", filename.c_str());
+
+	std::ofstream ofs(filename.c_str(), std::ofstream::out);
+	
+	//Size
+	std::map<int, Vertex<std::string>*>::iterator it;
+	ofs<<m_GraphV.size()<<"\n";
+	std::cout<<m_GraphV.size()<<"\n";
+	
+	//Inputs
+	std::map<std::string, int>::iterator it2;
+	ofs<<m_Inputs.size()<< " ";
+	std::cout<<m_Inputs.size()<< " ";
+	for(it2 = m_Inputs.begin(); it2 != m_Inputs.end(); it2++){
+		printf("%d %s  ", it2->second, it2->first.c_str());
+		ofs<<it2->second<<" "<<it2->first<< "  ";
+	}
+	printf("\n");
+	ofs<<"\n";
+
+	//Graph Content
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		//VID
+		printf("%d ", it->first);
+		ofs<<it->first<<" ";
+		
+		//Type
+		printf("%s ", it->second->getType().c_str());
+		ofs<<it->second->getType()<<" ";
+
+		//TODO:Node name
+		//printf("%s ", m_NodeName[it->first].c_str());
+
+		//Inputs
+		std::vector<Vertex<std::string>*> in;
+		std::vector<std::string> port;
+		it->second->getInput(in);
+		it->second->getInPorts(port);
+		ofs<<in.size()<<" ";
+		std::cout<<in.size()<<" ";
+		for(unsigned int i = 0; i < in.size(); i++){
+			printf("%d %s ", in[i]->getVertexID(), port[i].c_str() );
+			ofs<<in[i]->getVertexID()<<" "<<port[i]<<" ";
+		}
+
+		std::vector<Vertex<std::string>*> out;
+		it->second->getOutput(out);
+		ofs<<out.size()<<" ";
+		std::cout<<out.size()<<" ";
+		for(unsigned int i = 0; i < out.size(); i++){
+			printf("%d %s ", out[i]->getVertexID(), it->second->getOutputPortName(out[i]->getVertexID()).c_str());
+			ofs<<out[i]->getVertexID()<<" "<< it->second->getOutputPortName(out[i]->getVertexID())<<" ";
+		}
+
+		if(it->second->getType().find("LUT") != std::string::npos){
+			printf("%lx", it->second->getLUT());	
+			ofs<<it->second->getLUT();
+		}
+		ofs<<"\n";
+		printf("\n");
+	}
+
+	printf("\n\n");
+	ofs.close();
+	return true;
+}	
+
+
+
+/***************************************************************************
+ * exportGraphSDFV2000
+ *   exports graph into a SDF V2000 file 
+ *   @PARAM: filename- File name of the new G file
+ ****************************************************************************/
+bool Graph::exportGraphSDFV2000(std::string cname, int ID){
+
+	std::string filename = "converted/" + cname  + ".sdf";
+	printf("[GRP] -- Exporting circuit to V2000 file: %s\n", filename.c_str());
+
+	std::ofstream ofs(filename.c_str(), std::ofstream::out);
+	
+	//Header
+	std::map<int, Vertex<std::string>*>::iterator it;
+	std::cout<<"11280714432D 1   1.00000     0.00000     0\n\n\n";
+	ofs<<"\n          11280714432D 1   1.00000     0.00000     0\n\n";
+	
+	//Size
+	std::cout<<m_GraphV.size()<<" "<<getNumNets()<<" 0 0 0 999 V2000\n";
+	ofs<<m_GraphV.size()<<" "<<getNumNets()<<"  0  0  0  0  0  0  0  0  1 V2000\n";
+	
+	//vid, sequential value
+	std::map<int,int> mapping;
+	std::map<int,int>::iterator mit;
+	int val = 1;
+
+	//NODES
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		//VID
+		std::string type = it->second->getType();
+		std::string element;
+
+		if(type.find("INV") != std::string::npos)
+			element = "C";
+		else if(type.find("AND") != std::string::npos)
+			element = "O";
+		else if(type.find("FF") != std::string::npos)
+			element = "N";
+		else if(type.find("IN") != std::string::npos)
+			element = "H";
+		else
+			element = "Cl";
+
+		std::cout<<"0.0000 0.0000\t0.0000 "<<element<<" ("<<it->second->getType()<<") 0 0 0 0 0 0\t0 0 0\n";
+		ofs<<"    3.4042  -19.7042    0.0000 "<<element<<"   0  0  0  0  0  0  0  0  0  0  0  0\n";
+		mapping[it->first] = val;
+		val++;
+	}
+
+	//Nets
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		std::vector<Vertex<std::string>*> out;
+		it->second->getOutput(out);
+		for(unsigned int i = 0; i < out.size(); i++){
+			printf("%d %d 1 0\t0 0\n", mapping[it->first], mapping[out[i]->getVertexID()]);
+			ofs<<mapping[it->first]<<"  "<<mapping[out[i]->getVertexID()]<<"  1  0     0  0\n";
+		}
+	}
+
+
+	ofs<<"M  END\n>  <chebi_id>\n"<<cname<<ID<<"\n\n$$$$\n";
+	std::cout<<"M  END\n>  <chebi_id>\n"<<cname<<ID<<"\n\n$$$$\n";
+
+	ofs.close();
+	return true;
+}	
+
+
+
+
+
+/***************************************************************************
+ * exportGraphSDFV3000
+ *   exports graph into a SDF V3000 file 
+ *   @PARAM: filename- File name of the new G file
+ ****************************************************************************/
+bool Graph::exportGraphSDFV3000(std::string cname, int ID){
+
+	std::string filename = "converted/" + cname  + ".sdf";
+	printf("[GRP] -- Exporting circuit to V3000 file: %s\n", filename.c_str());
+
+	std::ofstream ofs(filename.c_str(), std::ofstream::out);
+	
+	//Header
+	std::map<int, Vertex<std::string>*>::iterator it;
+    ofs<<cname<<"\n\n\n  0  0  0     0  0            999 V3000\n"; 
+    //std::cout<<cname<<"\n\n\n  0  0  0     0  0            999 V3000\n"; 
+	
+	//Size
+	ofs<<"M  V30 BEGIN CTAB\nM  V30 COUNTS "<<m_GraphV.size()<<" "<<getNumNets()<<" 0 0 0\n";
+	//std::cout<<"M  V30 BEGIN CTAB\nM  V30 COUNTS "<<m_GraphV.size()<<" "<<getNumNets()<<" 0 0 0\n";
+	
+	//vid, sequential value
+	std::map<int,int> mapping;
+	std::map<int,int>::iterator mit;
+	int val = 1;
+
+	//NODES
+	ofs<<"M  V30 BEGIN ATOM\n";
+	//std::cout<<"M  V30 BEGIN ATOM\n";
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		//VID
+		std::string type = it->second->getType();
+		std::string element;
+
+		if(type.find("INV") != std::string::npos)
+			element = "C";
+		else if(type.find("AND") != std::string::npos)
+			element = "O";
+		else if(type.find("FF") != std::string::npos)
+			element = "N";
+		else if(type.find("IN") != std::string::npos)
+			element = "H";
+		else
+			element = "Cl";
+
+		ofs<<"M  V30 "<<val<<" " <<element<<" 7.90196 6.19608 0.00000 0\n";
+		//std::cout<<"M  V30 "<<val<<" " <<element<<" 7.90196 6.19608 0.00000 0\n";
+		mapping[it->first] = val;
+		val++;
+	}
+	ofs<<"M  V30 END ATOM\n";
+	//std::cout<<"M  V30 END ATOM\n";
+
+	//Nets
+	ofs<<"M  V30 BEGIN BOND\n";
+	//std::cout<<"M  V30 BEGIN BOND\n";
+	val = 1;
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		std::vector<Vertex<std::string>*> out;
+		it->second->getOutput(out);
+		for(unsigned int i = 0; i < out.size(); i++){
+			ofs<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getVertexID()]<<"\n";
+			//std::cout<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getVertexID()]<<"\n";
+			val++;
+		}
+	}
+	ofs<<"M  V30 END BOND\nM  V30 END CTAB\n";
+	//std::cout<<"M  V30 END BOND\nM  V30 END CTAB\n";
+
+
+	ofs<<"M  END\n>  <chebi_id>\n"<<cname<<ID<<"\n\n$$$$\n";
+	//std::cout<<"M  END\n>  <chebi_id>\n"<<cname<<ID<<"\n\n$$$$\n";
+
+	ofs.close();
+	return true;
+}	
+
+
+
 
 
 
@@ -479,11 +711,56 @@ bool Graph::importGraph(std::string fileName, int offset){
 #####################################################
 ##########################################################
 ###############################################################
-####*
+####	return numNets;*
 #### *    Getters 
 ####*
 ############################################################## 
 ##############################################################*/
+
+/***************************************************************************
+ *  getNumNets
+ *    Gets the number of nets 
+ *
+ *  @Return: Number of nets 
+ ****************************************************************************/
+int Graph::getNumNets(){
+	int numNets = 0; 
+
+	//BFS
+	std::list<unsigned int> queue;
+	std::set<unsigned int> marked;
+
+	//Put initial inputs into BFS and marked
+	std::map<std::string, int>::iterator it;
+	for(it = m_Inputs.begin(); it != m_Inputs.end(); it++){
+		queue.push_back(it->second);
+		marked.insert(it->second);
+	}
+
+	while(queue.size() != 0){
+		int item = queue.front();
+		queue.pop_front();
+
+		std::vector<Vertex<std::string>*> outputs;
+		m_GraphV[item]->getOutput(outputs);
+			
+		for(unsigned int i = 0; i < outputs.size(); i++){
+			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
+				marked.insert(outputs[i]->getVertexID());
+				queue.push_back(outputs[i]->getVertexID());
+			}
+			numNets++;
+		}
+	}
+	//END BFS
+	return numNets;	
+}
+
+
+
+
+
+	
 /***************************************************************************
  *  getVertex 
  *    Gets the vertex given the VID
@@ -803,6 +1080,8 @@ void Graph::print(){
 	printf("\n");
 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
+		if(it->first > 9000)
+			break;
 		printf("V%d\tL:%d\tT: %s\tIN: ", it->first, it->second->getLevel(),it->second->getType().c_str());
 		std::vector<Vertex<std::string>*> in;
 		std::vector<std::string> port;
@@ -1110,6 +1389,15 @@ void Graph::removeVertex(Vertex<std::string>* vertex){
 	delete m_GraphV[id];
 	m_GraphV.erase(id);
 
+	//Check to see if it is in input list
+	std::map<std::string, int>::iterator it;
+	for(it = m_Inputs.begin(); it != m_Inputs.end(); it++){
+		if(it->second == id){
+			m_Inputs.erase(it->first);
+			break;
+		}
+	}
+
 }
 
 
@@ -1126,6 +1414,15 @@ void Graph::removeVertex(Vertex<std::string>* vertex){
 void Graph::removeVertex(int vertex){
 	delete m_GraphV[vertex];
 	m_GraphV.erase(vertex);
+
+	//Check to see if it is in input list
+	std::map<std::string, int>::iterator it;
+	for(it = m_Inputs.begin(); it != m_Inputs.end(); it++){
+		if(it->second == vertex){
+			m_Inputs.erase(it->first);
+			break;
+		}
+	}
 }
 
 
@@ -1181,92 +1478,88 @@ void Graph::addConstant( int node){
  ****************************************************************************/
 void Graph::substitute(int node, Graph* sub){
 	//printf("SUBSTITUTION! NODE: %d\n", node);
-	std::map<int, Vertex<std::string>*>::iterator begin;
-	std::map<int, Vertex<std::string>*>::iterator end;
 	std::map<int, Vertex<std::string>*>::iterator it; 
 
-	std::vector<Vertex<std::string>*> inputNode;
-	std::vector<Vertex<std::string>*> outputNode;
-	std::vector<std::string> inputPort;
+
+	//Get IO from the Subgraph
 	std::vector<int> subInputs;
 	std::vector<int> subOutputs;
-
-	//Get Inputs from the Subgraph
 	sub->getInputs(subInputs);
 	sub->getOutputs(subOutputs);
 
-	//Get input output and ports of the substituting node
-	m_GraphV[node]->getInput(inputNode);
-	m_GraphV[node]->getInPorts(inputPort);
-	m_GraphV[node]->getOutput(outputNode);
+
+	//Get IO of the substituting node
+	std::vector<Vertex<std::string>*> nodeInputs;
+	std::vector<Vertex<std::string>*> nodeOutputs;
+	std::vector<std::string> nodeInputPorts;
+
+	m_GraphV[node]->getInput(nodeInputs);
+	m_GraphV[node]->getInPorts(nodeInputPorts);
+	m_GraphV[node]->getOutput(nodeOutputs);
 
 
-	if(inputNode.size() != subInputs.size()){
 
-		printf("Number of Inputs for substitution does not match.\nExiting\n");
-		//printf("INPUT NODE: %d\t SUB GRAPH INPUT: %d\n", inputNode.size(), subInputs.size());
-		exit(1);
-	}
 
-	//printf("FIXING INPUTS\n");
-	for(unsigned int i = 0; i < inputNode.size(); i++){
+	/********************
+	   HANDLE INPUTS
+	********************/
+	//Make sure inputs to node and inputs to subgraph are the same
+	assert(nodeInputs.size() == subInputs.size());
+
+	//Have inputs of the node point to inputs of subgraph
+	for(unsigned int i = 0; i < nodeInputs.size(); i++){
+
 		//Remove node from the output of its inputs
-		std::string outPort = inputNode[i]->removeOutputValue(node);
-		std::string portName = inputPort[i];
-		//printf("INPUT: %d\n", inputNode[i]->getVertexID());
-		//printf("OUTPUTPORT REMOVED %s\n", outPort.c_str());
-		//printf("Input Port %s\n", inputPort[i].c_str());
+		std::string outPortName = nodeInputs[i]->removeOutputValue(node);
 
+		//Get the portname of input to match to sub
+		std::string inPortName = nodeInputPorts[i];
+		int subInputIndex = sub->findInPort(inPortName);
 
+		//Get the outputs of IN to sub
+		std::vector<Vertex<std::string>*> sub_Out_of_In;
+		sub->getVertex(subInputIndex)->getOutput(sub_Out_of_In);
 
-		//Get all the output node from a input of sub
-		std::vector<Vertex<std::string>*> inOutputs;
-		//printf("PORTNAME: %s\n", portName.c_str());
-		int subInputIndex = sub->findInPort(portName);
-		//printf("SUBINPUTINDEX: %d\n", subInputIndex);
-
-		//int subInputIndex = subInputs[i];
-		sub->getVertex(subInputIndex)->getOutput(inOutputs);
-
-		//For each output, add it to the output
-		for(unsigned int j = 0; j < inOutputs.size(); j++){
-			inputNode[i]->addOutput(inOutputs[j], outPort);
+		//Connect the inputNode to the input of sub
+		for(unsigned int j = 0; j < sub_Out_of_In.size(); j++){
+			nodeInputs[i]->addOutput(sub_Out_of_In[j], outPortName);
 
 			//Remove the original input of the currently added output
-			//printf("INOUT %d\n", inOutputs[j]->getVertexID());
-			std::string inName = inOutputs[j]->getInputPortName(subInputIndex);
-			int index = inOutputs[j]->removeInputValue(subInputIndex);
-			if(index != -1)
-				inOutputs[j]->removeInPortValue(index);
-			else
-				printf("INDEX IS NEG\n");
-
-			inOutputs[j]->addInput(inputNode[i]);
-			inOutputs[j]->addInPort(inName);
+			std::string inName = sub_Out_of_In[j]->getInputPortName(subInputIndex);
+			int index = sub_Out_of_In[j]->removeInputValue(subInputIndex);
+			assert(index != -1);
+			
+			sub_Out_of_In[j]->removeInPortValue(index);
+			sub_Out_of_In[j]->addInput(nodeInputs[i]);
+			sub_Out_of_In[j]->addInPort(inName);
 		}
-		//printf("\n");
 	}
-	//printf("HERE\n");
 
+
+
+
+
+	
+	/********************
+	   HANDLE OUTPUTS 
+	********************/
+	//TODO: Add output parameter in graph. 
 	//Makes sure there is an output from the sub		
 	bool found = false;
-	sub->getIterators(begin, end);
-	for(it = begin; it != end; it++){
+	for(it = sub->begin(); it != sub->end(); it++){
 		if(it->second->getOVSize() == 0){
 			found = true;
 			break;
 		}
 	}
 
-	if(!found){
-		printf("ERROR: No output found in circuit\n");
-		exit(1);
-	}
-	//printf("HERE\n");
+	assert(found);
 
-	//printf("\nFixing output\n");
+
+
 	std::vector<std::string> outPortNames;
 	m_GraphV[node]->getOutputPorts(outPortNames);
+
 	for(unsigned int i = 0; i < outPortNames.size(); i++){
 		//printf("Outport of node: %s\n", outPortNames[i].c_str());
 		std::vector<Vertex<std::string>*> outputs;
@@ -1291,34 +1584,18 @@ void Graph::substitute(int node, Graph* sub){
 		}
 	}
 
-	/*
-	   printf("Fixing output 2\n");
-	   for(unsigned int i = 0; i < outputNode.size(); i++){
-//Remove node from the output of its inputs
-printf("removing input %d from %d\n", node, outputNode[i]->getVertexID());
-int index = outputNode[i]->removeInputValue(node);
-printf("adding input %d\n", it->second->getVertexID());
-outputNode[i]->addInput(it->second);
-
-std::vector<std::string> outPorts;
-outputNode[i]->getInPorts(outPorts);
-outputNode[i]->addInPort(outPorts[index]);
-outputNode[i]->removeInPortValue(index);
-}
-
-	 */
-//Add the new vertices into the graph
-sub->getIterators(begin, end);
-for(it = begin; it != end; it++){
-	if(it->second->getType() != "IN"){
-		addVertex(it->second->getVertexID(), it->second);
-		it->second = NULL;
+	//Add the new vertices into the graph
+	for(it = sub->begin(); it != sub->end(); it++){
+		if(it->second->getType() != "IN"){
+			addVertex(it->second->getVertexID(), it->second);
+			it->second = NULL; //Make sure delete sub does not delete content
+		}
 	}
-}
-
-delete sub;
-//printf("SUBSTITUTION COMPLETE\n");
-//print();
+	
+	delete sub;
+	//printf("SUBSTITUTION COMPLETE\n");
+	//print();
+	//printf("DONE SUB\n");
 
 }
 
@@ -1332,21 +1609,6 @@ void Graph::renumber(int lb){
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		int newID = it->second->getVertexID()+lb;
 		it->second->setVertexID(newID);
-		/*
-		   std::vector<Vertex<std::string>*> in;
-		   it->second->getInput(in);
-		   for(unsigned int i = 0; i < in.size(); i++){
-		   int newInID = in[i]->getVertexID()+lb;
-		   in[i]->setVertexID(newInID);
-		   }
-
-		   std::vector<Vertex<std::string>*> out;
-		   it->second->getOutput(out);
-		   for(unsigned int i = 0; i < out.size(); i++){
-		   int newOutID= out[i]->getVertexID()+lb;
-		   out[i]->setVertexID(newOutID);
-		   }
-		 */
 		newGraph[newID] = it->second;
 	}
 

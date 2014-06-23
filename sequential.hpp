@@ -29,16 +29,17 @@ using namespace boost;
 //Counter
 namespace SEQUENTIAL{
 	std::string primFunction;	
-	void replaceLUTs(Graph* ckt);
+	unsigned int replaceLUTs(Graph* ckt); //Returns number of LUTS replaced
 	int DFS(std::list<int>& mark, Vertex<std::string>* start, Graph* ckt, std::vector<std::vector<int> >& clauses);
+	bool verifyLUT(unsigned long lutFunction, Graph* lutGraph);
 
 
 	/*****************************************************************************
-	* counterIdentification
-	*   Looks for counters given a circuit
-	*
-	* @PARAMS: ckt- circuit to look for counters
-	*****************************************************************************/
+	 * counterIdentification
+	 *   Looks for counters given a circuit
+	 *
+	 * @PARAMS: ckt- circuit to look for counters
+	 *****************************************************************************/
 	void counterIdentification(Graph* ckt){
 		printf("[SEQ] -- Counter Identification\n");
 
@@ -136,17 +137,17 @@ namespace SEQUENTIAL{
 			//printf("\n\n##########################################\n");
 			//printf("Observing FF: %d\t", gFFVertex);
 			//adjChild.clear();
-			
+
 			//Get the adjacent ffs. 
 			lcg->getAdjacentOut(ff, adjChild);
 
-				/*printf("ADJ: ");
-				for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
-					gFFVertex = gb2ffmap[*iti];
-					printf("%d ", gFFVertex);
-				}
-				printf("\n");
-				*/
+			/*printf("ADJ: ");
+			  for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
+			  gFFVertex = gb2ffmap[*iti];
+			  printf("%d ", gFFVertex);
+			  }
+			  printf("\n");
+			 */
 
 			//For each adjacent node to the src check to see if what is already found connects to it
 			std::vector<int> currentCount;
@@ -158,7 +159,7 @@ namespace SEQUENTIAL{
 
 			for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
 				int gFFVertex =  gb2ffmap[*iti];
-			//	printf("\nObserving ADJ: %d\n", gFFVertex);
+				//	printf("\nObserving ADJ: %d\n", gFFVertex);
 
 				//Skip if same
 				if(*iti == (int)ff){
@@ -170,13 +171,13 @@ namespace SEQUENTIAL{
 				adjChild2.clear();
 				lcg->getAdjacentIn(*iti, adjChild2);
 
-			/*	printf("NODES INTO DEST: %d\tSRC: ", gFFVertex);
-				  for(ititem = adjChild2.begin(); ititem != adjChild2.end(); ititem++){
+				/*	printf("NODES INTO DEST: %d\tSRC: ", gFFVertex);
+					for(ititem = adjChild2.begin(); ititem != adjChild2.end(); ititem++){
 					gFFVertex = gb2ffmap[*ititem];
 					printf("%d ", gFFVertex);
-				  }
-				  printf("\n");
-				*/
+					}
+					printf("\n");
+				 */
 
 				bool fail = false;
 				unsigned int insertIndex; 
@@ -191,7 +192,7 @@ namespace SEQUENTIAL{
 						break;
 					}
 				}
-					
+
 				if(fail){
 					fail = false;
 					//printf("Checking to see if node connects to rest of the current count\n");
@@ -223,7 +224,7 @@ namespace SEQUENTIAL{
 			//Observe counters of size 3 and greater
 			if(currentCount.size() < 3)
 				continue;
-			
+
 			//Sort by size
 			for(it_cand = candidateFF.begin(); it_cand != candidateFF.end(); it_cand++){
 				if(it_cand->size()< currentCount.size()){
@@ -233,24 +234,24 @@ namespace SEQUENTIAL{
 			candidateFF.insert(it_cand, currentCount);
 
 
-		
+
 
 
 		}
 
 		/*printf("CANDIDATE COUNTERS ******************************\n");
-		for(it_cand = candidateFF.begin(); it_cand != candidateFF.end(); it_cand++){
-			for(unsigned int i = 0; i < it_cand->size() ; i++){
-				int gFFVertex =  gb2ffmap[(*it_cand)[i]];
-				printf("%d ", gFFVertex);
-			}
-			printf("\n");
+		  for(it_cand = candidateFF.begin(); it_cand != candidateFF.end(); it_cand++){
+		  for(unsigned int i = 0; i < it_cand->size() ; i++){
+		  int gFFVertex =  gb2ffmap[(*it_cand)[i]];
+		  printf("%d ", gFFVertex);
+		  }
+		  printf("\n");
 
-		}
-		lcg->print();
-		printf("Early Termination\n");
+		  }
+		  lcg->print();
+		  printf("Early Termination\n");
 		//exit(1);
-		*/
+		 */
 		//Get Combinational fanin for each
 		std::set<int> gFF;
 		printf("\n * Searching for clauses...\n");
@@ -455,15 +456,96 @@ namespace SEQUENTIAL{
 
 
 
+	bool verifyLUT(unsigned long lutFunction, Graph* lutGraph){
+		//printf("[SEQ] -- Verifying LUT Transformation...");
+
+		//node vid, function
+		std::map<unsigned int, unsigned long> nodeVal;
+
+		const unsigned long tt[6] = {
+			0xAAAAAAAAAAAAAAAA,
+			0xCCCCCCCCCCCCCCCC,
+			0xF0F0F0F0F0F0F0F0,
+			0xFF00FF00FF00FF00,
+			0xFFFF0000FFFF0000,
+			0xFFFFFFFF00000000,
+		};
+
+		const int sizeOffset = 2; //Smallest lut is size 2;
+		const unsigned long maskList[5] = {
+			0xF,
+			0xFF,
+			0xFFFF,
+			0xFFFFFFFF,
+			0xFFFFFFFFFFFFFFFF
+		};
+
+		unsigned long mask = maskList[lutGraph->getNumInputs() - sizeOffset];
+		unsigned long result;
+
+		//LSB->MSB
+		try{
+			int inputIndex = 0;
+			std::map<int, Vertex<std::string>*>::iterator it;
+			for(it = lutGraph->begin(); it != lutGraph->end(); it++){
+				//printf("TYPE: %s\n", it->second->getType().c_str());
+				std::vector<Vertex<std::string>*> input;
+				it->second->getInput(input);
+
+				if(it->second->getType() == "IN"){
+					nodeVal[it->first] = tt[inputIndex];	
+					//printf("NODE: %3d\tRESULT: %lx\n", it->first, tt[inputIndex]);
+					inputIndex++;
+				}
+				else if(it->second->getType() == "INV"){
+					result = ~nodeVal[input[0]->getVertexID()];
+					nodeVal[it->first] = result;
+					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+				}
+				else if(it->second->getType().find("AND") != std::string::npos){
+					result = nodeVal[input[0]->getVertexID()];
+					for(unsigned int i = 1; i < input.size(); i++)
+						result = result & nodeVal[input[i]->getVertexID()];
+
+					nodeVal[it->first] = result;
+					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+				}
+				else if(it->second->getType().find("OR") != std::string::npos){
+					result = nodeVal[input[0]->getVertexID()];
+					for(unsigned int i = 1; i < input.size(); i++)
+						result = result | nodeVal[input[i]->getVertexID()];
+
+					nodeVal[it->first] = result;
+					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+				}
+				//printf("\n");
+			}
+
+			result = result & mask;
+			//lutGraph->print();
+			//printf("LUT FUNCTION: %lx\tCALCULATED FUNCTION = %lx\n", lutFunction, result);
+			assert(result == lutFunction);
+			//printf("SUCCESS!\n");
 
 
-	void replaceLUTs(Graph* ckt){
+		}
+		catch(...){
+			printf("\n[SEQ] -- Try: Probably node not found (verifyLUT)\n");
+			exit(1);
+		}
+		return true;
+	}
+
+
+	unsigned int replaceLUTs(Graph* ckt){
 		printf("[SEQ] -- Replacing LUTs with combinational Logic\n");
 		std::map<int, Vertex<std::string>*>::iterator it;
-		std::vector<int> tobedeleted;
+		std::list<int> tobedeleted;
+		unsigned int numLUTs = 0;
+
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
-				tobedeleted.push_back(it->first);
+				numLUTs++;
 				std::vector<Vertex<std::string>*> inputs;
 				it->second->getInput(inputs);
 
@@ -489,18 +571,20 @@ namespace SEQUENTIAL{
 
 							linput[0]->addOutput(loutput[i],outportname);
 						}
-
-
+					
+						tobedeleted.push_back(it->first);
 					}
 					else{
 						printf("FUNCTION IS INVERTER\n");
-						exit(1);
+						it->second->setType("INV");	
 					}
 
 					continue;
 				}
+				
 				std::vector<std::string> inports;
 				it->second->getInputPorts(inports);
+				tobedeleted.push_back(it->first);
 
 				//LSB-MSB
 				std::vector<int> lutin;
@@ -545,9 +629,10 @@ namespace SEQUENTIAL{
 				}
 				out<<".e\n";
 				out.close();
-			
-				printf("[SEQ] -- Running Espresso...\n");
+
+				printf("[SEQ] -- Running Espresso...%d...", it->first);
 				std::system("./espresso espresso.in > espresso.out");
+				printf("done\n");
 
 				//Read in output from espresso	
 				std::ifstream in("espresso.out");
@@ -555,7 +640,8 @@ namespace SEQUENTIAL{
 					fprintf(stderr, "[ERROR] -- Cannot open the database for import\n");
 					exit(-1);
 				}
-			
+
+				//First two lines are dummy lines
 				std::string dummyLines;
 				getline(in, dummyLines);
 				getline(in, dummyLines);
@@ -563,6 +649,11 @@ namespace SEQUENTIAL{
 				if(dummyLines == ".p"){
 					in >> bitlength;
 				}
+
+
+
+
+
 
 				//Create subgraph for combinational logic of LUT	
 				Graph* lutgraph = new Graph ("LUT");
@@ -577,57 +668,89 @@ namespace SEQUENTIAL{
 
 					vinv->addInput(vin);
 					vinv->addInPort("I");
-
 					vin->addOutput(vinv, "O");
 
 					lutgraph->addInput(ss.str(), i);
 					//printf("LUTIN: %d\tLUTGID: %d\tPORTNAME: %s\n", lutin[i], i, ss.str().c_str());
 				}
 
-				int andIndexStart = lutgraph->getNumVertex();
+				std::vector<int> clauses;
+				//lutgraph->print();
 
 				for(int i = 0; i < bitlength; i++){
 					std::string inputSum;
+					std::string onset;
 					in>>inputSum;
+					in>>onset;
+					assert(onset == "1"); //Make sure it is an onset	
+
 					//printf("INPUT SUM: %s\n", inputSum.c_str());
-						
-						std::stringstream ss; 
-						ss<<"AND";   //Set the size later. Some input may be don't care
-						Vertex<std::string>* aGate = lutgraph->addVertex(lutgraph->getNumVertex(), ss.str());
-						//printf("Making %s gate\n", ss.str().c_str());
-						
-						int numAndInput= 0;
-						int inputPortIndex = 0;
 
-						for(unsigned int j = 0; j < inputSum.length(); j++){
-							char bit = inputSum[inputSum.length()-1-j];
-							//printf("BIT: %c\n", bit);
+					//Check if clause is a literal
+					int numLiteral = 0; 
+					int singleInputBit;
+					for(unsigned int j = 0; j < inputSum.length(); j++){
+						char bit = inputSum[inputSum.length()-1-j];
 
-							//Set inputs
-							if(bit == '-') continue; //Don't care bit
-							else if (bit == '1'){
-								aGate->addInput(lutgraph->getVertex(j));
-								lutgraph->getVertex(j)->addOutput(aGate, "O");
-								numAndInput++;
-							}
-							else{
-								aGate->addInput(lutgraph->getVertex(lutin.size()+j));
-								lutgraph->getVertex(lutin.size()+j)->addOutput(aGate, "O");
-								numAndInput++;
-							}
+						if(bit != '-'){
+							numLiteral++;
 
-							//Add port name
-							std::stringstream portname; 
-							portname<<"I"<<inputPortIndex;
-							inputPortIndex++;
-							aGate->addInPort(portname.str());
-
+							if(numLiteral > 1) break;
+							else if(bit == '0')
+								singleInputBit = lutin.size() + j; 
+							else if (bit == '1')
+								singleInputBit = j; 
 						}
-						ss<<numAndInput;
-						aGate->setType(ss.str());
-						
-					in>>inputSum;
-					assert(inputSum == "1"); //Make sure it is an onset	
+					}
+
+					if(numLiteral == 1){
+						clauses.push_back(singleInputBit);
+						continue;
+					}
+
+
+					std::stringstream ss; 
+					ss<<"AND";   //Set the size later. Some input may be don't care
+					Vertex<std::string>* aGate = new Vertex<std::string>(lutgraph->getNumVertex(), ss.str());
+					//printf("Making %s gate\n", ss.str().c_str());
+
+					int numAndInput= 0;
+					int inputPortIndex = 0;
+
+					for(unsigned int j = 0; j < inputSum.length(); j++){
+						char bit = inputSum[inputSum.length()-1-j];
+						//printf("BIT: %c\n", bit);
+
+						//Set inputs
+						if(bit == '-') continue; //Don't care bit
+						else if (bit == '1'){
+							aGate->addInput(lutgraph->getVertex(j));
+							lutgraph->getVertex(j)->addOutput(aGate, "O");
+							numAndInput++;
+						}
+						else{
+							aGate->addInput(lutgraph->getVertex(lutin.size()+j));
+							lutgraph->getVertex(lutin.size()+j)->addOutput(aGate, "O");
+							numAndInput++;
+						}
+
+						//Add port name
+						std::stringstream portname; 
+						portname<<"I"<<inputPortIndex;
+						inputPortIndex++;
+						aGate->addInPort(portname.str());
+					}
+
+
+					//Set the size of the And label
+					clauses.push_back(lutgraph->getNumVertex());
+
+					ss<<numAndInput;
+					assert(numAndInput != 1);
+					aGate->setType(ss.str());
+
+					lutgraph->addVertex(aGate);
+
 				}
 				in.close();
 
@@ -637,80 +760,101 @@ namespace SEQUENTIAL{
 				}
 
 
+
+
+
+
 				//Count how many and gates there are 
-				int numOrGates = (lutgraph->getNumVertex() - andIndexStart) / 8;
-				int numAndGatesLeft = (lutgraph->getNumVertex() - andIndexStart) % 8;
+				int numAndGates = clauses.size();
+				int numOrGates = (numAndGates) / 8;
+				int numAndGatesLeft = (numAndGates) % 8;
 				int orIndexStart = lutgraph->getNumVertex();
-				Vertex<std::string>* oGate;
-				assert((numOrGates+1) <=8);
-			
 
-				//printf("ANDG: %d\tOR8: %d\tANDLEFT:%d\n", lutgraph->getNumVertex() - andIndexStart, numOrGates, numAndGatesLeft);
-				//Make first level orgate of size 8
-				for(int i = 0; i < numOrGates; i++){
-					oGate = lutgraph->addVertex(lutgraph->getNumVertex(), "OR8");
+				//printf("and: %d  or: %d leftAnd: %d orStart %d\n", numAndGates, numOrGates, numAndGatesLeft, orIndexStart);	
+				if(numAndGates != 1){
+					Vertex<std::string>* oGate;
+					assert((numOrGates+1) <=8);
 
-					for(int q = 0; q < 8; q++){
-						std::stringstream portname; 
-						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
 
-						oGate->addInput(lutgraph->getVertex(andIndexStart+(8*i)+q));
-						lutgraph->getVertex(andIndexStart+(8*i)+q)->addOutput(oGate, "O");
-					}
-				}
-				
+					//printf("ANDG: %d\tOR8: %d\tANDLEFT:%d\n", lutgraph->getNumVertex() - andIndexStart, numOrGates, numAndGatesLeft);
+					//Make first level orgate of size 8
+					for(int i = 0; i < numOrGates; i++){
+						oGate = lutgraph->addVertex(lutgraph->getNumVertex(), "OR8");
 
-				std::stringstream orgatename;
-				//Left over and gates that are encompassed above. (Make sure there is not 1 left)
-				if(numAndGatesLeft > 1){
-					orgatename<<"OR"<<numAndGatesLeft;
-					oGate = lutgraph->addVertex(lutgraph->getNumVertex(), orgatename.str());
+						for(int q = 0; q < 8; q++){
+							std::stringstream portname; 
+							portname<<"I"<<q;
+							oGate->addInPort(portname.str());
 
-					for(int q = 0; q < numAndGatesLeft; q++){
-						std::stringstream portname; 
-						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
-
-						oGate->addInput(lutgraph->getVertex(andIndexStart+(8*numOrGates)+q));
-						lutgraph->getVertex(andIndexStart+(8*numOrGates)+q)->addOutput(oGate, "O");
-					}
-				}
-				
-
-				//COmbine or gates
-				int numOrGatesLeft = lutgraph->getNumVertex()-orIndexStart;
-				if(numOrGates > 0 && numOrGatesLeft > 1){
-					orgatename.str("");
-					orgatename<<"OR"<< numOrGatesLeft;
-					oGate = lutgraph->addVertex(lutgraph->getNumVertex(), orgatename.str());
-
-					for(int q = 0; q < numOrGatesLeft; q++){
-						std::stringstream portname; 
-						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
-
-						oGate->addInput(lutgraph->getVertex(orIndexStart+q));
-						lutgraph->getVertex(orIndexStart+q)->addOutput(oGate, "O");
+							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*i)+q]);
+							oGate->addInput(gate);
+							gate->addOutput(oGate, "O");
+						}
 					}
 
-					//Make room for the single and gate that's left out
-					if(numAndGatesLeft == 1){
-						//Rename
+
+					//Left over and gates that are encompassed above. (Make sure there is not 1 left)
+					std::stringstream orgatename;
+					if(numAndGatesLeft > 1){
+						orgatename<<"OR"<<numAndGatesLeft;
+						oGate = lutgraph->addVertex(lutgraph->getNumVertex(), orgatename.str());
+
+						for(int q = 0; q < numAndGatesLeft; q++){
+							std::stringstream portname; 
+							portname<<"I"<<q;
+							oGate->addInPort(portname.str());
+
+							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
+							oGate->addInput(gate);
+							gate->addOutput(oGate, "O");
+						}
+					}
+
+
+					//COmbine or gates
+					int numOrGatesLeft = lutgraph->getNumVertex()-orIndexStart;
+					//printf("numorgates: %d  numogateleft: %d\n", numOrGates, numOrGatesLeft);			
+					if(numOrGatesLeft > 1 || numAndGatesLeft == 1){
 						orgatename.str("");
-						orgatename<<"OR"<< numOrGatesLeft+1;
-						oGate->setType(orgatename.str());
+						orgatename<<"OR"<< numOrGatesLeft;
+						oGate = lutgraph->addVertex(lutgraph->getNumVertex(), orgatename.str());
 
-						//Add port
-						std::stringstream portname; 
-						portname<<"I"<<numOrGatesLeft;
-						oGate->addInPort(portname.str());
+						for(int q = 0; q < numOrGatesLeft; q++){
+							std::stringstream portname; 
+							portname<<"I"<<q;
+							oGate->addInPort(portname.str());
 
-						oGate->addInput(lutgraph->getVertex(orIndexStart+numOrGatesLeft));
-						lutgraph->getVertex(orIndexStart+numOrGatesLeft)->addOutput(oGate, "O");
+							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart+q);
+							oGate->addInput(gate);
+							gate->addOutput(oGate, "O");
+						}
+
+						//Make room for the single and gate that's left out
+						if(numAndGatesLeft == 1){
+							//Rename
+							orgatename.str("");
+							orgatename<<"OR"<< numOrGatesLeft+1;
+							oGate->setType(orgatename.str());
+
+							//Add port
+							std::stringstream portname; 
+							portname<<"I"<<numOrGatesLeft;
+							oGate->addInPort(portname.str());
+
+							//Get the and gate which is one before the or gate
+							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart-1); 
+							oGate->addInput(gate);
+							gate->addOutput(oGate, "O");
+						}
+
 					}
 
 				}
+
+
+
+
+
 
 				lutgraph->addOutput("O", lutgraph->getNumVertex()-1);
 
@@ -722,16 +866,19 @@ namespace SEQUENTIAL{
 					}
 				}
 
-				//printf("PRINTING LUT GRAPH\n");
 				lutgraph->renumber(ckt->getLast() + 1);
+				verifyLUT(it->second->getLUT(), lutgraph);
 				ckt->substitute(it->second->getVertexID(), lutgraph);
-
 			}
 		}
-		
-		for(unsigned int i = 0; i < tobedeleted.size(); i++){
-			ckt->removeVertex(tobedeleted[i]);	
+
+		std::list<int>::iterator it_list;
+		for(it_list = tobedeleted.begin(); it_list != tobedeleted.end(); it_list++){
+			ckt->removeVertex(*it_list);	
 		}
+
+
+		return numLUTs;
 	}
 
 

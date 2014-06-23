@@ -139,6 +139,10 @@ class Vertex
 				}
 			}
 			printf("Remove output value %d Not found in output list\n", outputVal);
+			printf("Vertex: %d\tOutputList: ", m_ID);
+			for(it = m_Output.begin(); it != m_Output.end(); it++)
+				for(unsigned int i = 0; i < it->second.size(); i++)
+					printf("%d ", it->second[i]->getVertexID());
 			exit(1);
 			return "";
 		}

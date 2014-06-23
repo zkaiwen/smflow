@@ -70,6 +70,7 @@ sub parse{
 	$index = 0;
 	$numInputNodes = 0;
 	$newDot = "digraph graph{\n";
+	$numEdge = 0;
 	
 	#Open dot File to parse 
 	open(fileStream, $fileName);

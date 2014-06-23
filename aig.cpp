@@ -377,7 +377,7 @@ void AIG::writeAiger(std::string filename, bool isBinary){
  *      * ckt:    Graph to convert to AIG
  ********************************************************/
 void AIG::convertGraph2AIG(Graph* ckt, bool sub){
-	printf("[AIG]--Converting Graph to AIG\n");
+	//printf("[AIG]--Converting Graph to AIG\n");
 
 	//Overwrite AIG if one exists
 	if(getSize() != 0){
@@ -414,8 +414,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			break;
 
 		//Read in the necessary primitive type
-		printf("CONVERTING V%d to AIG PRIM\n", it->first);
-		printf("GATE: %s\n", it->second->getType().c_str());
+		//printf("CONVERTING V%d to AIG PRIM\n", it->first);
+		//printf("GATE: %s\n", it->second->getType().c_str());
 		std::string gateType = it->second->getType();
 		if(gateType.find("XORCY") != std::string::npos)
 			circuitType = xorAIGFile_c + "cy";
@@ -444,10 +444,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				gateType.find("LD") != std::string::npos ||
 				gateType.find("LAT") != std::string::npos){
 			if(!sub){
-
 				handleFF(it->first, ckt);	
-				//flipflops.push_back(it->first);
-				toBeDeleted.push_back(it->first);
+				//toBeDeleted.push_back(it->first);
 			}
 			continue;
 		}
@@ -462,7 +460,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else if(gateType.find("MX") != std::string::npos)
 			circuitType = mxAIGFile_c;
 		else if (gateType.find("LUT") != std::string::npos){
-			//printf("LUT\n");
 			if(!sub){
 				handleFF(it->first, ckt);	
 				toBeDeleted.push_back(it->first);
@@ -490,7 +487,9 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			std::string outputPortName = in[0]->removeOutputValue(it->first);
 
 			for(unsigned int i = 0; i < out.size(); i++){
+				printf("REMOVE INPUT...");
 				int index = out[i]->removeInputValue(it->first);
+				printf("DONE\n");
 				out[i]->addInput(in[0]);
 
 				std::vector<std::string> outPorts;
@@ -521,7 +520,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		char gateSize = '0' + gateSizeNum;
 
 		circuitType = circuitType + gateSize + ".g";
-		printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
+		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 
 		Graph* primCkt = new Graph(circuitType);
 		primCkt->importPrimitive(circuitType, ckt->getLast() +1);
@@ -544,7 +543,11 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//ckt->printg();
 	//printf("\n\n");
 
-
+	std::vector<int> gInputs;
+	ckt->getInputs(gInputs);
+		
+	std::list<unsigned int> queue;
+	std::set<unsigned int> marked;
 
 	//Delete substituted nodes from the graph
 	for(unsigned int i = 0; i < toBeDeleted.size(); i++)
@@ -560,127 +563,89 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
 
-	//Set Levels
-	//printf("aig size:%d\n", ckt->getNumVertex());
-	ckt->resetLevels();
-
 	if(sub)
 		return;
 
-	ckt->setLevels();
-
-	//printf("MAX LEVEL: %d\n", ckt->getMaxLevel());
-	//for(unsigned int i = 0; i < m_Outputs.size(); i++){
-	//				printf("%d ", m_Outputs[i]);
-	//}
-	//ckt->print();
-
-
-	//CONSTANT 0 AND 1
-	//printf(" * Creating AIG Datastructure\n");
-
-	//Given an ID from graph, find the representing AIG node ID
-
-	//Order the vertices by level
-	std::map<int, std::vector<Vertex<std::string>*> > vLevel;
-	for(it = ckt->begin(); it != ckt->end(); it++){
-		//printf("ID:\t%dGate type:\t%s\n", it->first, it->second->getType().c_str());
-		vLevel[it->second->getLevel()].push_back(it->second);
-	}
-	//exit(1);
-
-
-	//Create PI for input LEVEL 0
-	for(unsigned int i = 0; i < vLevel[0].size(); i++){
-		if(vLevel[0][i]->getType() == "VCC")
-			m_GateMap[vLevel[0][i]->getVertexID()] = 1;
-		else if(vLevel[0][i]->getType() == "GND")
-			m_GateMap[vLevel[0][i]->getVertexID()] = 0;
+	for(unsigned int i = 0; i < gInputs.size(); i++){
+		Vertex<std::string>* vertex = ckt->getVertex(gInputs[i]);
+		std::string type  = vertex->getType();
+		if(type == "VCC")
+			m_GateMap[gInputs[i]] = 1;
+		else if(type == "GND")
+			m_GateMap[gInputs[i]] = 0;
 		else{
 			unsigned int input= create_input();
-			m_GateMap[vLevel[0][i]->getVertexID()] = input; 
-			printf("INPUT:  %d\tAIG: %u\n", vLevel[0][i]->getVertexID(),input);
+			m_GateMap[gInputs[i]] = input; 
+		}
+
+		std::vector<Vertex<std::string>*> outputs;
+		vertex->getOutput(outputs);
+				
+		for(unsigned int i = 0; i < outputs.size(); i++){
+			queue.push_back(outputs[i]->getVertexID());
+			marked.insert(outputs[i]->getVertexID());
 		}
 	}
+	
 
-	//printf("vLevel size: %d\n", vLevel.size());
-	unsigned int vlevelSize = vLevel.size();
-	unsigned int maxLevel = ckt->getMaxLevel();
 
-	//Create the rest of the AIG Graph LEVEL 1 and UP
-	for(unsigned int i = 1; i <= maxLevel; i++){
-		//printf("\n\n\n\n\n\n\n\nLEVEL %d, SIZE: %d\n", i, vLevel[i].size());
-		if(vLevel.size() != vlevelSize){
-			printf("Size mismatch\n");
+	//BFS- Create And gates/ Inverters
+	while(queue.size() != 0){
+		int item = queue.front();
+		queue.pop_front();
+		Vertex<std::string>* vertex= ckt->getVertex(item);
+		std::string type  = vertex->getType();
+
+		std::vector<Vertex<std::string>*> in;
+		vertex->getInput(in);
+
+		if(type.find("AND") != std::string::npos){
+			unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
+			m_GateMap[item] = output;
+		}
+		else if(type.find("INV") != std::string::npos){
+			//Handle inverting constants
+			if(m_GateMap[in[0]->getVertexID()] == 0)
+				m_GateMap[item] = 1;
+			else if(m_GateMap[in[0]->getVertexID()] == 1)
+				m_GateMap[item] = 0;
+
+			else{
+				//Even is positive, odd, is negative
+				if(m_GateMap[in[0]->getVertexID()]%2 == 0)
+					m_GateMap[item] = m_GateMap[in[0]->getVertexID()] + 1;
+				else
+					m_GateMap[item] = m_GateMap[in[0]->getVertexID()] - 1;
+			}
+
+
+			//If node has not outputs, Node is an output nodeH
+			if(vertex->getOVSize() == 0 ){
+				m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
+				aiger_add_output(m_Aiger, m_GateMap[item], 0);
+			}
+		}
+		else
+		{
+			printf("Unknown Gate type:\t%s\n", type.c_str());
 			exit(1);
 		}
-		for(unsigned int j = 0; j < vLevel[i].size(); j++){
-			printf("VERTEX ID: %d\n", vLevel[i][j]->getVertexID());
-			if(vLevel[i][j]->getType().find("AND") != std::string::npos){
-				std::vector<Vertex<std::string>*> in;
-				vLevel[i][j]->getInput(in);
-				printf("GATE: AND\t");
-				printf("VIN: %d %d\n", in[0]->getVertexID(), in[1]->getVertexID());
-
-				unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
-				printf("AIG: %d- %d %d\n", output, m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
-				int vertexID = vLevel[i][j]->getVertexID();
-				m_GateMap[vertexID] = output;
+				
+				
+		//Add the next level of nodes	(FANOUT)
+		std::vector<Vertex<std::string>*> outputs;
+		vertex->getOutput(outputs);
+				
+		for(unsigned int i = 0; i < outputs.size(); i++){
+			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
+				marked.insert(outputs[i]->getVertexID());
+				queue.push_back(outputs[i]->getVertexID());
 			}
-			else if(vLevel[i][j]->getType().find("INV") != std::string::npos){
-				std::vector<Vertex<std::string>*> in;
-				vLevel[i][j]->getInput(in);
-
-				printf("GATE: INVERTER\n");
-				printf("VIN: %d\n", in[0]->getVertexID());
-
-				if(m_GateMap[in[0]->getVertexID()] == 0)
-					m_GateMap[vLevel[i][j]->getVertexID()] = 1;
-				else if(m_GateMap[in[0]->getVertexID()] == 1)
-					m_GateMap[vLevel[i][j]->getVertexID()] = 0;
-				else{
-					if(m_GateMap[in[0]->getVertexID()]%2 == 0)
-						m_GateMap[vLevel[i][j]->getVertexID()] = m_GateMap[in[0]->getVertexID()] + 1;
-					else
-						m_GateMap[vLevel[i][j]->getVertexID()] = m_GateMap[in[0]->getVertexID()] - 1;
-
-				}
-				if(vLevel[i][j]->getOVSize() == 0 ){
-
-					printf("INTYPE: %s\tINID:%d\tAIGID:%d\n", in[0]->getType().c_str(), in[0]->getVertexID(), m_GateMap[in[0]->getVertexID()]);
-					m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
-					aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
-				}
-
-				continue;
-			}
-			else
-			{
-				printf("Unknown Gate type:\t%s\n", vLevel[i][j]->getType().c_str());
-				exit(1);
-			}
-
-			//CHeck to see if node has an output
-			if(vLevel[i][j]->getOVSize() == 0){
-				//printf("NO OUTPUT\n");
-				m_Outputs.push_back(m_GateMap[vLevel[i][j]->getVertexID()]);
-				aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
-			}
-			printf("\n");
 		}
 	}
-	//ckt->printg();
-	//exit(1);
 
 
-	//printf("Imported AIG Graph\n");
-	//print();
 
-	//printf("OUTPUTS\n");
-	//for(unsigned int i = 0; i < m_Outputs.size(); i++){
-	//	printf("%d ", m_Outputs[i]);
-	//}
-	//printf("\n");
 
 	//printf("[AIG]--Checking AIG...");
 	const char* msg;
@@ -715,53 +680,29 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
  *      * node: FF node in Graph
  ********************************************************/
 void AIG::handleFF(int node, Graph* ckt){
-	//printf("Removing FF...\nInputs to FF will go to PO. Gates the FF goes into will be switched for PI\n");
+//	printf("Removing FF...\nInputs to FF will go to PO. Gates the FF goes into will be switched for PI\n");
 	std::vector<Vertex<std::string>*> output;
 	std::vector<Vertex<std::string>*> input;
+	Vertex<std::string>* ffNode = ckt->getVertex(node);
 
-
-	//Make the output's become PI
-	Vertex<std::string>* in;
+	//Convert the FF to a IN Type 
 	std::stringstream ss;
-	in = ckt->addVertex(ckt->getLast()+1, "IN");
-	ss<< "FF" << ckt->getNumInputs();
-	ckt->addInput(ss.str(), in->getVertexID());
-	ckt->getVertex(node)->getOutput(output);
-	ckt->getVertex(node)->getInput(input);
+	ss<< "FF" << node;
+	ckt->addInput(ss.str(), node);
+	ffNode->setType("IN");
+
+	ffNode->getInput(input);
+
 	//printf("INPUT SIZE: %d\n", (int) input.size());
-	//printf("OUTPUTSIZE: %d\n", (int) output.size());
-	//printf("\nReplacing PI for those gates connected to the FF's output\n"); 
-	for(unsigned i = 0; i < output.size(); i++){
-
-		//Add the output to primary input
-		//printf("- adding OUT%d to PI OUT\n", output[i]->getVertexID());
-
-		if(output[i]->getVertexID() != node)
-			in->addOutput(output[i], "O");
-		//else
-		//printf("Output is itself...skip\n");
-
-
-		//Remove FF from input of the output node
-		//printf("- removing FF from OUT%d IN\n", output[i]->getVertexID());
-		int index = output[i]->removeInputValue(node);
-
-		//printf("- adding PI to OUT%d IN\n", output[i]->getVertexID());
-		output[i]->addInput(in);
-
-
-		std::vector<std::string> outPorts;
-		output[i]->getInPorts(outPorts);
-		//printf("Adding port for Input %s\n", outPorts[index].c_str());
-		output[i]->addInPort(outPorts[index]);
-		//printf("Removing old input port index\n\n");
-		output[i]->removeInPortValue(index);
-	}
-
-
 
 	for(unsigned i = 0; i < input.size(); i++){
 		input[i]->removeOutputValue(node);
+		ffNode->removeInputValue(input[i]->getVertexID());
+		
+		
+		if(input[i]->getNumInputs() == 0 && input[i]->getNumOutputs() == 0){
+			ckt->removeVertex(input[i]->getVertexID());
+		}
 	}
 }
 

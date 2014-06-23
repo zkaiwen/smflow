@@ -71,7 +71,7 @@ int main( int argc, char *argv[] )
 	if(argc < 4)
 	{
 
-		printf("./xfpgeniusDB <primitive file> <database file> <location of prim> <output database>\n\n\n");
+		printf("./xfpgeniusDB <primitive file> <database file> <output database>\n\n\n");
 		return 0;
 	}
 
@@ -89,12 +89,14 @@ int main( int argc, char *argv[] )
 	timeval lib_b, lib_e;
 	timeval func_b, func_e;
 	timeval agg_b, agg_e;
+	timeval topo_b, topo_e;
 
 	double aigt = 0.0;
 	double cet = 0.0;
 	double libt = 0.0;
 	double funct = 0.0;
 	double aggt = 0.0;
+	double topot = 0.0;
 	double elapsedTime;
 	int k = 3;                              //k-Cut enumeration value 
 
@@ -106,12 +108,15 @@ int main( int argc, char *argv[] )
 	std::map<unsigned long, int>::iterator fcit;
 
 	//Circuit statistic
-	std::vector<std::map<std::string, int> > stat_compCount;   //Component, count
+	std::vector<std::map<std::string, int> > stat_compCount;  //Component, count
 	std::vector<unsigned int> stat_wienerIndex;
 	std::vector<unsigned int> stat_aigSize;
 	std::vector<unsigned int> stat_ffSize;
 	std::vector<unsigned int> stat_numInput;
 	std::vector<unsigned int> stat_numOutput;
+	std::vector<unsigned int> stat_numMux;
+	std::vector<unsigned int> stat_numLUTs;
+	std::vector<std::vector<unsigned int> >  stat_muxlist;
 
 
 
@@ -136,6 +141,7 @@ int main( int argc, char *argv[] )
 	CutFunction* functionCalc = new CutFunction();
 	gettimeofday(&lib_b, NULL);
 	functionCalc->preProcessLibrary(primBase);
+	functionCalc->printLibrary();
 	gettimeofday(&lib_e, NULL);
 
 	elapsedTime = (lib_e.tv_sec - lib_b.tv_sec) * 1000.0;
@@ -166,6 +172,7 @@ int main( int argc, char *argv[] )
 	std::vector<int> count; 
 	std::vector<std::string> name;
 	//Go through each circuit in the database and preprocess data/signature 
+	int sdfid = 100183;
 	while(getline(infile, file)){
 		//Handles empty lines in files
 		if(file == "\n")
@@ -177,11 +184,24 @@ int main( int argc, char *argv[] )
 		//Import circuit and convert to AIG
 		gettimeofday(&aig_b, NULL);
 		ckt->importGraph(file, 0);
+		
+		
+		//Calculate Wiener Index
+		gettimeofday(&topo_b, NULL);
+		//unsigned int wIndex = TOPOLOGY::weinerIndex(ckt);
+		stat_wienerIndex.push_back(0);
+		gettimeofday(&topo_b, NULL);
 
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
-		SEQUENTIAL::replaceLUTs(ckt);
+
 		
+		//Replace all the luts with combinational logic
+		unsigned int numLUTs = SEQUENTIAL::replaceLUTs(ckt);
+		stat_numLUTs.push_back(numLUTs);
+		
+
+
 		//Count the number of specific components
 		std::map<int, Vertex<std::string>*>::iterator cktit;
 		std::map<std::string, int> compCount;   //Component, count
@@ -199,11 +219,16 @@ int main( int argc, char *argv[] )
 		stat_compCount.push_back(compCount);
 		stat_ffSize.push_back(ffcount);
 
-		unsigned int wIndex = TOPOLOGY::weinerIndex(ckt);
-		stat_wienerIndex.push_back(wIndex);
 
 
 		AIG* aigraph = new AIG();
+		/*aigraph->convertGraph2AIG(ckt, true);
+		int lastSlashIndex = file.find_last_of("/") + 1;
+		std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-2);
+		ckt->exportGraphSDFV3000(cname, sdfid);
+		*/
+		sdfid++;
+
 		aigraph->convertGraph2AIG(ckt, false);
 		stat_aigSize.push_back(aigraph->getSize());
 		gettimeofday(&aig_e, NULL);
@@ -231,6 +256,11 @@ int main( int argc, char *argv[] )
 		   findMux2(functionCalc, aigraph);
 		   gettimeofday(&agg_e, NULL);
 		 */
+		 std::vector<unsigned int> muxlist;
+		unsigned int muxsize = AGGREGATION::findMux(functionCalc, aigraph, muxlist);
+		stat_numMux.push_back(muxsize);
+		stat_muxlist.push_back(muxlist);
+		
 
 		std::map<unsigned long, int> functionCount;
 		functionCalc->getFunctionCount(functionCount);
@@ -259,6 +289,10 @@ int main( int argc, char *argv[] )
 		elapsedTime = (agg_e.tv_sec - agg_b.tv_sec) * 1000.0;
 		elapsedTime += (agg_e.tv_usec - agg_b.tv_usec) / 1000.0;
 		aggt+=elapsedTime;
+		
+		elapsedTime = (topo_e.tv_sec - topo_b.tv_sec) * 1000.0;
+		elapsedTime += (topo_e.tv_usec - topo_b.tv_usec) / 1000.0;
+		topot+=elapsedTime;
 
 		delete aigraph;
 		delete cut;
@@ -273,25 +307,38 @@ int main( int argc, char *argv[] )
 
 		printf("%-15s", "Circuit");
 		printf("%5s", "In");
-		printf("%5s", "Out");
+		//printf("%5s", "Out");
 		printf("%8s", "Func");
-		printf("%8s", "Wiener");
+		//printf("%8s", "Wiener");
 		printf("%8s", "|AIG|");
 		printf("%8s", "|FF|");
+		printf("%8s", "|MUX|");
+		printf("%8s", "|LUTs|");
 		printf("\n");
 		printf("--------------------------------------------------------------------------------\n");
 	for(unsigned int i = 0; i < count.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 		printf("%5d", stat_numInput[i]);
-		printf("%5d", stat_numOutput[i]);
+		//printf("%5d", stat_numOutput[i]);
 		printf("%8d", count[i]);
-		printf("%8d", stat_wienerIndex[i]);
+		//printf("%8d", stat_wienerIndex[i]);
 		printf("%8d", stat_aigSize[i]);
 		printf("%8d", stat_ffSize[i]);
+		printf("%8d", stat_numMux[i]);
+		printf("%8d", stat_numLUTs[i]);
 		printf("\n");
 	}
 	printf("\n");
+	printf("--------------------------------------------------------------------------------\n");
+	for(unsigned int i = 0; i < count.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		for(unsigned int j = 0; j < stat_muxlist[i].size(); j++){
+			printf("%5d ", stat_muxlist[i][j]);
+		}
+		printf("\n");
+	}
 
 
 	//Calculate Elapsed time
@@ -302,6 +349,7 @@ int main( int argc, char *argv[] )
 	printf("CUT ENUMERATION:     %10.4f s\n", cet/1000.0);
 	printf("BOOLEAN MATCHING:    %10.4f s\n", funct/1000.0);
 	printf("AGGREGATION:         %10.4f s\n", aggt/1000.0);
+	//printf("Wiener Index:        %10.4f s\n", aggt/1000.0);
 	printf("\n\n[ --------***--------      END      --------***-------- ]\n\n");
 
 	return 0;

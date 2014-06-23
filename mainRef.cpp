@@ -220,7 +220,9 @@ int main( int argc, char *argv[] )
 	}
 	
 
+	//ckt2->print();	
 	SEQUENTIAL::replaceLUTs(ckt2);
+	ckt2->print();
 
 	if(topoFlag){
 		TOPOLOGY::weinerIndex(ckt2);
@@ -236,8 +238,10 @@ int main( int argc, char *argv[] )
 	*originalCkt = *ckt2;
 
 	AIG* aigraph2 = new AIG();
+	printf("CONVERTING AIG\n");
 	aigraph2->convertGraph2AIG(ckt2, false);
-	aigraph2->print();
+	printf("AIG CONVERT DONE\n");
+	//aigraph2->print();
 	gettimeofday(&aig_e, NULL);
 
 	//PERFORM K CUT ENUMERATION
@@ -251,6 +255,13 @@ int main( int argc, char *argv[] )
 	functionCalc->setParams(cut2, aigraph2);
 	functionCalc->processAIGCuts(false);
 	gettimeofday(&func_e, NULL);
+	
+	std::vector<unsigned int> muxlist;
+	AGGREGATION::findMux(functionCalc, aigraph2, muxlist);
+	for(unsigned int j = 0; j < muxlist.size(); j++){
+		printf("%5d ", muxlist[j]);
+	}
+	printf("\n");
 
 
 
@@ -330,13 +341,14 @@ int main( int argc, char *argv[] )
 
 	}	
 
+/*
 aigraph2->print();
 //aigraph2->printMap();
 //printf("\n\n");
 //originalCkt->print();
 functionCalc->printStat();
 functionCalc->printLibrary();
-	AGGREGATION::findMux(functionCalc, aigraph2);
+*/
 
 	/*
 	//Aggregating reference circuit data
@@ -384,7 +396,6 @@ functionCalc->printLibrary();
 	}
 
 	printf("\n\n[ --------***--------      END      --------***-------- ]\n\n");
-
 	delete aigraph2;
 	delete cut2;
 	delete functionCalc;

@@ -29,6 +29,7 @@
 #include "graph_b.hpp"
 #include "cutenumeration.hpp"
 #include "cutfunction.hpp"
+#include "sequential.hpp"
 #include <iostream>
 
 void printStatement(std::string statement){
@@ -45,6 +46,8 @@ void printStatement(std::string statement){
 //Unit Test Classes
 void testGraphBoost();	
 void testGraph();
+void testSequential();
+void testAIG();
 
 int main(){
 
@@ -52,14 +55,66 @@ int main(){
 
 	testGraph();
 	testGraphBoost();
+	testSequential();
+	testAIG();
 
 
 	return 0;	
 }
 
+
 /**************************************************************
  * 
- * Unit Test Function for the class: GraphBoost
+ * Unit Test Function for the namespace SEQUENTIAL
+ *
+ */
+void testAIG(){
+	printStatement("Testing Class:\tAIG...");
+	Graph* g = new Graph("Graph");
+
+	//TEST HANDLE FF
+	g->importGraph("circuits/testbench/up_counter4.g", 0);
+	SEQUENTIAL::replaceLUTs(g);
+	AIG aig;
+
+	g->print();
+	aig.handleFF(1,g);
+	aig.handleFF(2,g);
+	aig.handleFF(3,g);
+	aig.handleFF(4,g);
+	g->print();
+	
+/*	g->importGraph("circuits/testbench/mux2.g", 0);
+	g->print();
+	SEQUENTIAL::replaceLUTs(g);
+	g->print();
+	*/
+
+
+}
+
+
+/**************************************************************
+ * 
+ * Unit Test Function for the namespace SEQUENTIAL
+ *
+ */
+void testSequential(){
+	printStatement("Testing namespace:\tSEQUENTIAL...");
+	Graph* g = new Graph("Graph");
+	g->importGraph("circuits/iwls/SEQ_/testlut.g", 0);
+	SEQUENTIAL::replaceLUTs(g);
+
+}
+
+
+
+
+
+
+/**************************************************************
+ * 
+ * Unit Test Function for the class: Graph
  *
  */
 void testGraph(){

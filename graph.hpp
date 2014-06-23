@@ -35,7 +35,12 @@ class Graph
 		std::map<std::string, int> m_Inputs;         //PI of circuit
 		std::map<std::string, int> m_Outputs;        //PO of circuit
 		std::vector<int> m_Constants;                //Constants of circuit
+		
+		//function, node
 		std::map<unsigned long, int> m_Luts;         //LUTs of circuits
+
+		//node, name
+		std::map<int, std::string> m_NodeName;       //Name of node
 
 		std::string m_Name;                          //Graph Name
 
@@ -50,6 +55,9 @@ class Graph
 		//Importers
 		bool importGraph(std::string, int);
 		bool importPrimitive(std::string, int);
+		bool exportGraph(std::string);
+		bool exportGraphSDFV2000(std::string, int);
+		bool exportGraphSDFV3000(std::string, int);
 
 
 		//Iterators
@@ -72,6 +80,7 @@ class Graph
 		std::string getName();
 		void getLUTs(std::map<unsigned long, int>&);
 		bool hasLUTs();
+		int getNumNets();
 
 
 		//Setters
