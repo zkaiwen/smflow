@@ -65,6 +65,7 @@ sub parse{
 	
 	%vertex = ();
 	%inputNodes = ();
+	%inputNodeNames = ();
 	%lutmap = ();
 
 	$index = 0;
@@ -152,6 +153,7 @@ sub parse{
 			if($gateOutPort[0] =~ m/IN/ and $gateOutPort[0] !~ m/INV/ and exists($inputNodes{$i}) == false)
 			{
 				$inputNodes{$i} = $i;
+				$inputNodeNames{$i} = $cname[$i];
 			}
 	
 		}
@@ -169,7 +171,7 @@ sub parse{
 		$count = 0;
 		for my $key (keys %inputNodes)
 		{
-			$g = $g . $key . " I" . $count . " ";
+			$g = $g . $key . " " . $inputNodeNames{$key}. " ";
 			$count = $count + 1;
 		}
 
