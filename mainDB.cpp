@@ -112,10 +112,13 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned int> stat_wienerIndex;
 	std::vector<unsigned int> stat_aigSize;
 	std::vector<unsigned int> stat_ffSize;
+	std::vector<unsigned int> stat_dspSize;
 	std::vector<unsigned int> stat_numInput;
 	std::vector<unsigned int> stat_numOutput;
 	std::vector<unsigned int> stat_numMux;
 	std::vector<unsigned int> stat_numLUTs;
+	std::vector<unsigned int> stat_numMuxcy;
+	std::vector<unsigned int> stat_numXorcy;
 	std::vector<std::vector<unsigned int> >  stat_muxlist;
 
 
@@ -173,12 +176,17 @@ int main( int argc, char *argv[] )
 	std::vector<std::string> name;
 	//Go through each circuit in the database and preprocess data/signature 
 	int sdfid = 100183;
+
+
 	while(getline(infile, file)){
 		//Handles empty lines in files
 		if(file == "\n")
 			continue;
 
 		printStatement("Processing File: " +  file);
+		if(file.find("b04") == std::string::npos)
+			continue; 
+
 		Graph* ckt = new Graph(file);
 
 		//Import circuit and convert to AIG
@@ -206,18 +214,61 @@ int main( int argc, char *argv[] )
 		std::map<int, Vertex<std::string>*>::iterator cktit;
 		std::map<std::string, int> compCount;   //Component, count
 		unsigned int ffcount = 0; 
+		unsigned int dspcount = 0;
+		unsigned int muxcycount = 0;
+		unsigned int xorcycount = 0;
+		//select bit, count
+		std::map<int,int> muxSelCount;
 		for(cktit = ckt->begin(); cktit != ckt->end(); cktit++){
 			if(compCount.find(cktit->second->getType()) != compCount.end())
 				compCount[cktit->second->getType()]++;
 			else
 				compCount[cktit->second->getType()] = 1; 
 
-			if(cktit->second->getType().find("FD") != std::string::npos){
+			std::string type = cktit->second->getType();
+			if(type.find("FD") != std::string::npos){
 				ffcount++;
 			}
+			else if (type.find("DSP") != std::string::npos){
+				dspcount++;
+			}
+			else if (type.find("MUXCY") != std::string::npos){
+				muxcycount++;
+				std::vector<Vertex<std::string>*> input;
+				std::vector<std::string> inputPort;
+
+				cktit->second->getInput(input);
+				cktit->second->getInputPorts(inputPort);
+
+				assert(input.size() == 3);
+				for(unsigned int i = 0; i < input.size(); i++){
+					printf("%s:%d   ", inputPort[i].c_str(), input[i]->getVertexID());
+					if(inputPort[i] == "S"){
+						if(muxSelCount.find(input[i]->getVertexID()) == muxSelCount.end()){
+							muxSelCount[input[i]->getVertexID()] = 1;
+						}
+						else
+							muxSelCount[input[i]->getVertexID()]++;
+							
+					}
+				}
+				printf("\n");
+			}
+			else if (type.find("XORCY") != std::string::npos){
+				xorcycount++;
+			}
 		}
+		
+		std::map<int,int>::iterator mscit;
+		for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
+			printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
+		}
+
 		stat_compCount.push_back(compCount);
 		stat_ffSize.push_back(ffcount);
+		stat_dspSize.push_back(dspcount);
+		stat_numXorcy.push_back(xorcycount);
+		stat_numMuxcy.push_back(muxcycount);
 
 
 
@@ -226,8 +277,8 @@ int main( int argc, char *argv[] )
 		int lastSlashIndex = file.find_last_of("/") + 1;
 		std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-2);
 		ckt->exportGraphSDFV3000(cname, sdfid);
-		*/
 		sdfid++;
+		*/
 
 		aigraph->convertGraph2AIG(ckt, false);
 		stat_aigSize.push_back(aigraph->getSize());
@@ -258,6 +309,7 @@ int main( int argc, char *argv[] )
 		 */
 		 std::vector<unsigned int> muxlist;
 		unsigned int muxsize = AGGREGATION::findMux(functionCalc, aigraph, muxlist);
+		functionCalc->printStat();
 		stat_numMux.push_back(muxsize);
 		stat_muxlist.push_back(muxlist);
 		
@@ -312,7 +364,10 @@ int main( int argc, char *argv[] )
 		//printf("%8s", "Wiener");
 		printf("%8s", "|AIG|");
 		printf("%8s", "|FF|");
+		printf("%8s", "|DSP|");
 		printf("%8s", "|MUX|");
+		printf("%8s", "|MCY|");
+		printf("%8s", "|XCY|");
 		printf("%8s", "|LUTs|");
 		printf("\n");
 		printf("--------------------------------------------------------------------------------\n");
@@ -325,7 +380,10 @@ int main( int argc, char *argv[] )
 		//printf("%8d", stat_wienerIndex[i]);
 		printf("%8d", stat_aigSize[i]);
 		printf("%8d", stat_ffSize[i]);
+		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numMux[i]);
+		printf("%8d", stat_numMuxcy[i]);
+		printf("%8d", stat_numXorcy[i]);
 		printf("%8d", stat_numLUTs[i]);
 		printf("\n");
 	}

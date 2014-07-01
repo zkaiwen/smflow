@@ -111,6 +111,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 	while(getline(infile, file)){
 		if(file == "\n")
 			continue;
+
 		printf("FILE: %s\n", file.c_str());
 		m_AIG = new AIG();
 
@@ -184,6 +185,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 				//calculate value for output
 				for(unsigned int i = 0; i < output.size(); i++){
+					//printf("OUTPUT: %d\n", output[i]);
 					calculate(output[i]);
 
 					//Make sure function is unique
@@ -249,22 +251,6 @@ void CutFunction::processAIGCuts(bool np){
 			//Permutation of indexes
 			unsigned int* permutation = setPermutation(inputSize);
 			std::set<unsigned>::iterator cutIT;
-
-			/*
-			printf("CUTS: ");
-			for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++)
-				printf("%d ", *cutIT);
-			printf("\n");
-			*/
-
-			//P-Equivalence Check
-
-			//do{
-			//printf("Permutation:\n");
-
-			//unsigned int negationLimit = 1 << inputSize;
-			//for(unsigned int j = 0; j < negationLimit; j++){
-			//int count = j;  //Counter for negation
 			int pIndex= 0;	//Index for permutation
 
 			std::vector <unsigned>* gateInputs = new std::vector<unsigned>();
@@ -275,17 +261,11 @@ void CutFunction::processAIGCuts(bool np){
 				unsigned int permVal = permutation[pIndex];
 				unsigned long input = m_Xval[permVal];
 
-				//if((count & 0x1) != 0){
-				//printf("-%d ", permutation[i]);
-				//		input = ~input;
-				//	}
-
 				m_NodeValue[*cutIT] = input;
 				//printf("CUT: %d\tIV: %lx\n", *cutIT, input);
 				gateInputs->push_back(*cutIT);
 
 				pIndex++;		
-				//	count = count >> 1;		
 			}
 
 
@@ -324,13 +304,6 @@ void CutFunction::processAIGCuts(bool np){
 						continue;
 					}
 					
-					/*printf("Gateinputs pushed back:\t");
-					for(unsigned int k = 0; k < gateInputs->size(); k++){
-						printf("%d ", gateInputs->at(k));
-					}
-					printf("\nOutput: %d\n", node);
-					*/
-					
 					m_NodeFunction[negateVal].insert(node);
 					gateInputs->push_back(node);
 					m_PortMap[negateVal].push_back(gateInputs);
@@ -343,13 +316,6 @@ void CutFunction::processAIGCuts(bool np){
 					delete gateInputs;
 					continue;
 				}
-				/*printf("Gateinputs pushed back\n");
-					for(unsigned int k = 0; k < gateInputs->size(); k++){
-						printf("%d ", gateInputs->at(k));
-					}
-					printf("\nOutput: %d\n", i);
-					*/
-					
 
 				m_NodeFunction[functionVal].insert(node);
 				gateInputs->push_back(node);
@@ -357,27 +323,8 @@ void CutFunction::processAIGCuts(bool np){
 			}
 
 			m_NodeValue.clear();
-
-			//}while(std::next_permutation(permutation, permutation+inputSize));
-			//delete [] permutation;
 		}
-		//printf("***************************************\n\n\n\n");
 		}
-
-		//std::map<unsigned int, std::string>::iterator it;
-		//for(it = m_HashTable.begin(); it != m_HashTable.end(); it++){
-		//printf("KEY: %x\t VAL: %s\n", it->first, it->second.c_str());
-		//}
-
-		/*
-		   std::vector<int>output;
-		   m_AIG->getOutputs(output);
-		   printf("OUTPUT NODES:\t");
-		   for(unsigned int i = 0; i < output.size(); i++){
-		   printf("%d ", output[i]);
-		   }
-		   printf("\n\n");
-		 */
 	}
 
 
@@ -397,7 +344,7 @@ void CutFunction::processAIGCuts(bool np){
 	 *    aigraph: AIG to be used
 	 *  @RETURN:   Function value at current node
 	 ********************************************************/
-	unsigned long CutFunction::calculate(int node){
+	unsigned long CutFunction::calculate(unsigned node){
 		node = node & 0xFFFFFFFE;	
 		//printf("CURRENT NODE: %d\n", node);
 
@@ -435,7 +382,7 @@ void CutFunction::processAIGCuts(bool np){
 		//printf("c1: %8lx\n", result1);
 		//printf("c2: %8lx\n", result2);
 		unsigned long result = result1 & result2;
-		//printf("r : %8lx\n", result);
+		//printf("r : %8lx\n\n", result);
 		m_NodeValue[node] = result;
 
 		return result;
@@ -503,8 +450,8 @@ void CutFunction::processAIGCuts(bool np){
 
 
 	/*******************************************************
-	 *  printStat
-	 *    Print out function calculation statistics 
+	 *  printLibrary
+	 *    Print out function Hash Table 
 	 *******************************************************/
 
 	void CutFunction::printLibrary(){
@@ -532,7 +479,7 @@ void CutFunction::processAIGCuts(bool np){
 	printf("*********************************\n\n");
 	std::map<unsigned long, std::set<unsigned> >::iterator it;
 	for(it = m_NodeFunction.begin(); it != m_NodeFunction.end(); it++){
-		//printf("FUNCTION: %s\t%lx\nNUMBER OF MATCH: %d\n",m_HashTable[it->first].c_str(), it->first, (unsigned int)  it->second.size());
+		printf("FUNCTION: %s\t%lx\nNUMBER OF MATCH: %d\n",m_HashTable[it->first].c_str(), it->first, (unsigned int)  it->second.size());
 		std::set<unsigned int>::iterator sit;
 
 		//For each outputnode
@@ -549,8 +496,8 @@ void CutFunction::processAIGCuts(bool np){
 			unsigned output = inputSet->at(i)->at(inputSet->at(i)->size()-1); 
 			//output *=2; //AIG NODES ARE EVEN
 
-			//printf("Output: %d\n", output);
 			if(output== (*sit)){
+				printf("Output: %d\t\t", output);
 				for(unsigned int j = 0; j < inputSet->at(i)->size()-1; j++){
 					printf("%3d ", inputSet->at(i)->at(j));
 				}

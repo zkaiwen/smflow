@@ -81,6 +81,7 @@ class Graph
 		void getLUTs(std::map<unsigned long, int>&);
 		bool hasLUTs();
 		int getNumNets();
+		std::string getNodeName(unsigned int);
 
 
 		//Setters

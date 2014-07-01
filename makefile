@@ -27,10 +27,10 @@ graph.o: graph.cpp graph.hpp vertex.hpp
 graph_b.o: graph_b.cpp graph_b.hpp 
 	g++ $(CFLAGS) -c graph_b.cpp $(PROF)
 
-mainRef.o: mainRef.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp
+mainRef.o: mainRef.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp
+mainDB.o: mainDB.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o

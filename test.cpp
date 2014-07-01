@@ -55,8 +55,8 @@ int main(){
 
 	testGraph();
 	testGraphBoost();
+	//testAIG();
 	testSequential();
-	testAIG();
 
 
 	return 0;	
@@ -102,8 +102,50 @@ void testAIG(){
 void testSequential(){
 	printStatement("Testing namespace:\tSEQUENTIAL...");
 	Graph* g = new Graph("Graph");
-	g->importGraph("circuits/iwls/SEQ_/testlut.g", 0);
+	AIG* aig = new AIG();
+
+	//g->importGraph("circuits/iwls/SEQ_/testmuxrange.g", 0);
+	g->importGraph("circuits/iwls/SEQ_/b04.g", 0);
+	/*if(aig->handleFF(7, g)) g->removeVertex(7);
+	if(aig->handleFF(8, g)) g->removeVertex(8);
+	if(aig->handleFF(9, g)) g->removeVertex(9);
+	if(aig->handleFF(10, g)) g->removeVertex(10);
+	if(aig->handleFF(11, g)) g->removeVertex(11);
+	*/
+	printf("ORIGINAL GRAPH\n");
+	g->print();
+	printf("\n\n\n");
+
 	SEQUENTIAL::replaceLUTs(g);
+	printf("REPLACED LUTS\n");
+	g->setLevels();
+	g->print();
+	printf("\n\n\n");
+	VERIFICATION::verifyGraph(g);
+
+
+	AIG::s_SourcePrim = "circuits/g/primitive/";
+
+	g->resetLevels();
+	aig->convertGraph2AIG(g, false);
+	printf("AIG CONVERSION\n");
+	aig->print();
+	printf("\n\n\n");
+	VERIFICATION::verifyGraph(g);
+	VERIFICATION::verifyAIG(aig);
+
+	
+	CutFunction* functionCalc = new CutFunction();
+	functionCalc->preProcessLibrary("database/primitives");
+
+	CutEnumeration* cut2 = new CutEnumeration (aig);
+	cut2->findKFeasibleCuts(3);
+	//cut2->print();
+
+	functionCalc->setParams(cut2, aig);
+	functionCalc->processAIGCuts(false);
+	//functionCalc->printLibrary();
+	functionCalc->printStat();
 
 }
 

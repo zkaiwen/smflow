@@ -711,7 +711,7 @@ bool Graph::exportGraphSDFV3000(std::string cname, int ID){
 #####################################################
 ##########################################################
 ###############################################################
-####	return numNets;*
+####	
 #### *    Getters 
 ####*
 ############################################################## 
@@ -892,6 +892,20 @@ unsigned int Graph::getMaxLevel(){
 std::string Graph::getName(){
 	return m_Name;
 }
+
+
+
+
+/***************************************************************************
+ *  getNodeName
+ *    Gets the name of a node 
+ *
+ *  @RETURN: Returns the name of the node 
+ ****************************************************************************/
+std::string Graph::getNodeName(unsigned int node){
+	return m_NodeName[node];
+}
+
 
 
 

@@ -77,6 +77,7 @@ class AIG{
 		unsigned getChild1(unsigned);
 		unsigned getChild2(unsigned);
 		unsigned getGNode(unsigned); //Gets AIG node given a Graph Node
+		unsigned getAIGNode(unsigned); //Gets Graph node given a AIG Node
 		//find all the nodes with the given inputs
 		std::vector<unsigned> findNode(unsigned, unsigned );
 		//See if there is another node with * as a child
@@ -95,7 +96,7 @@ class AIG{
 
 		//Algorithm Methods given Graph
 		void convertGraph2AIG(Graph*, bool sub);
-		void handleFF(int, Graph*);
+		bool handleFF(int, Graph*);
 		unsigned create_and2(unsigned, unsigned);
 		unsigned create_input();
 		void DFS(Vertex<std::string>*, std::set<int>&);

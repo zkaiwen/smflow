@@ -222,7 +222,6 @@ int main( int argc, char *argv[] )
 
 	//ckt2->print();	
 	SEQUENTIAL::replaceLUTs(ckt2);
-	ckt2->print();
 
 	if(topoFlag){
 		TOPOLOGY::weinerIndex(ckt2);
@@ -230,7 +229,7 @@ int main( int argc, char *argv[] )
 		delete functionCalc;
 		return 0;
 	}
-	//ckt2->print();
+	ckt2->print();
 
 	//Converting circuit to AIG
 	gettimeofday(&aig_b, NULL);

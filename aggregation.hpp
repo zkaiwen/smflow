@@ -815,14 +815,14 @@ namespace AGGREGATION{
 		std::map<int, std::vector<std::vector<unsigned> > > muxCount;
 		std::map<int, std::vector<std::vector<unsigned> > >::iterator cnt;
 		for(mit = muxSet.begin(); mit != muxSet.end(); mit++){
-			   /*printf("%2d-bit mux\n", (int) mit->second.size());
+			   printf("%2d-bit mux\n", (int) mit->second.size());
 			   printf("Inputs: %d\tOutputs: ", mit->first);
 			   for(setit = mit->second.begin(); setit != mit->second.end(); setit++){
 			   printf("%d ", *setit);
 
 			   }
 			   printf("\n\n");
-			   */
+			   
 
 
 			if(muxCount.find(mit->second.size()) == muxCount.end()){
