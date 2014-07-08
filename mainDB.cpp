@@ -175,7 +175,7 @@ int main( int argc, char *argv[] )
 	std::vector<int> count; 
 	std::vector<std::string> name;
 	//Go through each circuit in the database and preprocess data/signature 
-	int sdfid = 100183;
+	//int sdfid = 100183;
 
 
 	while(getline(infile, file)){

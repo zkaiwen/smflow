@@ -1,1 +1,1 @@
-./xfpgeniusDB database/primitives database/c_testbench circuits/g/primitive/ database/db_testbench
+./xfpgeniusDB database/primitives database/c_testbench database/db_testbench

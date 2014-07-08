@@ -133,7 +133,7 @@ namespace SEQUENTIAL{
 
 		//For each flip flop in the LCG
 		for(unsigned int ff = 0; ff < lcg->getNumVertices(); ff++){
-			int gFFVertex =  gb2ffmap[ff];
+			//int gFFVertex =  gb2ffmap[ff];
 			//printf("\n\n##########################################\n");
 			//printf("Observing FF: %d\t", gFFVertex);
 			//adjChild.clear();
@@ -152,13 +152,13 @@ namespace SEQUENTIAL{
 			//For each adjacent node to the src check to see if what is already found connects to it
 			std::vector<int> currentCount;
 			std::set<int> currentCountSet; 
-			gFFVertex =  gb2ffmap[ff];
+			//gFFVertex =  gb2ffmap[ff];
 			//printf("Current Counter add %d\n", gFFVertex);
 			currentCount.push_back(ff);
 			currentCountSet.insert(ff);
 
 			for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
-				int gFFVertex =  gb2ffmap[*iti];
+				//int gFFVertex =  gb2ffmap[*iti];
 				//	printf("\nObserving ADJ: %d\n", gFFVertex);
 
 				//Skip if same
@@ -207,13 +207,13 @@ namespace SEQUENTIAL{
 					}
 
 					if(!fail){
-						gFFVertex =  gb2ffmap[*iti];
+						//gFFVertex =  gb2ffmap[*iti];
 						//printf("Current Counter add %d\n", gFFVertex);
 						currentCount.insert(currentCount.begin() + insertIndex, *iti);
 					}
 				}
 				else{
-					gFFVertex =  gb2ffmap[*iti];
+					//gFFVertex =  gb2ffmap[*iti];
 					//printf("Current Counter add %d\n", gFFVertex);
 					currentCount.push_back(*iti);
 
@@ -836,6 +836,10 @@ namespace SEQUENTIAL{
 				in >> dummyLines;
 				if(dummyLines == ".p"){
 					in >> bitlength;
+				}
+				else{
+					printf("[ERROR SEQ:replaceLUT] -- Espresso output error\n"
+					printf("\tMake sure espresso is compiled correctly\n");
 				}
 
 

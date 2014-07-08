@@ -40,10 +40,10 @@ pkgincludedir = $(includedir)/espresso-ab
 
 top_builddir = .
 
-ACLOCAL = aclocal
-AUTOCONF = autoconf
-AUTOMAKE = automake
-AUTOHEADER = autoheader
+ACLOCAL = /local/kaiwen/smflow/external_source/espresso_src/missing aclocal
+AUTOCONF = /local/kaiwen/smflow/external_source/espresso_src/missing autoconf
+AUTOMAKE = /local/kaiwen/smflow/external_source/espresso_src/missing automake
+AUTOHEADER = /local/kaiwen/smflow/external_source/espresso_src/missing autoheader
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
@@ -58,7 +58,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = gcc
-MAKEINFO = makeinfo
+MAKEINFO = /local/kaiwen/smflow/external_source/espresso_src/missing makeinfo
 PACKAGE = espresso-ab
 VERSION = 1.0
 
