@@ -29,7 +29,7 @@ class Graph
 {
 	private:
 		//Vertex ID, Vertex
-		std::map<int, Vertex<std::string>*> m_GraphV; //Main Datastructure for graph
+		std::map<int, Vertex*> m_GraphV; //Main Datastructure for graph
 
 		//Port name, Vertex ID
 		std::map<std::string, int> m_Inputs;         //PI of circuit
@@ -61,14 +61,14 @@ class Graph
 
 
 		//Iterators
-		void getIterators(std::map<int, Vertex<std::string>*>::iterator&, std::map<int,Vertex<std::string>*>::iterator&);
-		std::map<int,Vertex<std::string>*>::iterator begin();
-		std::map<int,Vertex<std::string>*>::iterator end();
+		void getIterators(std::map<int, Vertex*>::iterator&, std::map<int,Vertex*>::iterator&);
+		std::map<int,Vertex*>::iterator begin();
+		std::map<int,Vertex*>::iterator end();
 
 
 		//Getters
-		Vertex<std::string>* getVertex(int);
-		void getNumType(std::map<std::string, std::vector<Vertex<std::string>*> >&);
+		Vertex* getVertex(int);
+		void getNumType(std::map<std::string, std::vector<Vertex*> >&);
 		void getInputs(std::vector<int>&);
 		void getOutputs(std::vector<int>&);
 		unsigned int getNumVertex();
@@ -99,14 +99,14 @@ class Graph
 
 
 		//Graph Functions
-		void addVertex(Vertex<std::string>*);
-		Vertex<std::string>* addVertex(int, std::string);
-		Vertex<std::string>* addVertex(int);
-		Vertex<std::string>* addVertex(int, Vertex<std::string>*);
+		void addVertex(Vertex*);
+		Vertex* addVertex(int, std::string);
+		Vertex* addVertex(int);
+		Vertex* addVertex(int, Vertex*);
 		void addInput(std::string, int);
 		void addOutput(std::string, int);
 		void addConstant(int);
-		void removeVertex(Vertex<std::string>*);
+		void removeVertex(Vertex*);
 		void removeVertex(int);
 		void substitute(int, Graph*);
 		void subLUT(int, Graph*);
@@ -114,11 +114,11 @@ class Graph
 
 
 		//Search 
-		void BFSLevel(std::queue<Vertex<std::string>*, std::list<Vertex<std::string>*> >, std::map<int,bool>&, int, int);
-		void DFSlevel(Vertex<std::string>*, std::list<int>&, int);
-		int DFScycle(Vertex<std::string>*, std::list<int>&);
-		int DFSearchIn(std::list<int>& , std::set<int>&,  Vertex<std::string>*, std::set<int>& );
-		int DFSearchOut(std::list<int>& , Vertex<std::string>*, std::set<int>& );
+		void BFSLevel(std::queue<Vertex*, std::list<Vertex*> >, std::map<int,bool>&, int, int);
+		void DFSlevel(Vertex*, std::list<int>&, int);
+		int DFScycle(Vertex*, std::list<int>&);
+		int DFSearchIn(std::list<int>& , std::set<int>&,  Vertex*, std::set<int>& );
+		int DFSearchOut(std::list<int>& , Vertex*, std::set<int>& );
 
 
 		//Print

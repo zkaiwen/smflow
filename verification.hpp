@@ -66,9 +66,9 @@ namespace VERIFICATION{
 				printf("INPUT: %d\tVAL: %lx\n", cktInputs[i], tt[i]);
 			}
 
-			std::map<int, Vertex<std::string>*>::iterator it;
-			std::map<int, std::vector<Vertex<std::string>*> > vLevel;
-			std::map<int, std::vector<Vertex<std::string>*> >::iterator lit;
+			std::map<int, Vertex*>::iterator it;
+			std::map<int, std::vector<Vertex*> > vLevel;
+			std::map<int, std::vector<Vertex*> >::iterator lit;
 
 			//Order nodes by level
 			for(it = graph->begin(); it != graph->end(); it++){
@@ -88,7 +88,7 @@ namespace VERIFICATION{
 					exit(1);
 				}
 				for(unsigned int j = 0; j < vLevel[i].size(); j++){
-					std::vector<Vertex<std::string>*> input;
+					std::vector<Vertex*> input;
 					vLevel[i][j]->getInput(input);
 
 					if(vLevel[i][j]->getType().find("AND") != std::string::npos){
@@ -240,10 +240,10 @@ namespace VERIFICATION{
 		//LSB->MSB
 		try{
 			int inputIndex = 0;
-			std::map<int, Vertex<std::string>*>::iterator it;
+			std::map<int, Vertex*>::iterator it;
 			for(it = lutGraph->begin(); it != lutGraph->end(); it++){
 				//printf("TYPE: %s\n", it->second->getType().c_str());
-				std::vector<Vertex<std::string>*> input;
+				std::vector<Vertex*> input;
 				it->second->getInput(input);
 
 				if(it->second->getType() == "IN"){

@@ -31,7 +31,7 @@ using namespace boost;
 namespace SEQUENTIAL{
 	std::string primFunction;	
 	unsigned int replaceLUTs(Graph* ckt); //Returns number of LUTS replaced
-	int DFS(std::list<int>& mark, Vertex<std::string>* start, Graph* ckt, std::vector<std::vector<int> >& clauses);
+	int DFS(std::list<int>& mark, Vertex* start, Graph* ckt, std::vector<std::vector<int> >& clauses);
 
 
 	/*****************************************************************************
@@ -50,7 +50,7 @@ namespace SEQUENTIAL{
 		std::map<int, int> vmap;
 		std::map<int, int> gb2ffmap;
 		std::map<int, int>::iterator mapit;
-		std::map<int, Vertex<std::string>*>::iterator it;
+		std::map<int, Vertex*>::iterator it;
 		std::vector<int> lsb;
 		GraphBoost* lcg = new GraphBoost();
 		int ffcount= 0;
@@ -72,7 +72,7 @@ namespace SEQUENTIAL{
 				//check to see if the input is an inverter
 				if(ckt->getVertex(dport)->getType() == "INV"){
 					//printf("INVERTER INPUT- FF: %d\n", vID);
-					std::vector<Vertex<std::string>*> inv_in;
+					std::vector<Vertex*> inv_in;
 					ckt->getVertex(dport)->getInput(inv_in);
 					if(inv_in[0]->getVertexID() == vID){
 						//printf("LSB OF COUNTER\n");
@@ -97,7 +97,7 @@ namespace SEQUENTIAL{
 		printf("[SEQ] -- Build LCG of Reference Circuit\n");
 		//list of map<FF, set of FF that leads into FF
 		for(itff = ffset.begin(); itff != ffset.end(); itff++){
-			Vertex<std::string>* vff = ckt->getVertex(*itff);
+			Vertex* vff = ckt->getVertex(*itff);
 
 			std::set<int> ffFound; 
 			std::list<int> mark;
@@ -456,22 +456,22 @@ namespace SEQUENTIAL{
 	//Unsimplified replacement
 	unsigned int replaceLUT2(Graph* ckt){
 		printf("[SEQ] -- Replacing LUTs with combinational Logic\n");
-		std::map<int, Vertex<std::string>*>::iterator it;
+		std::map<int, Vertex*>::iterator it;
 		std::list<int> tobedeleted;
 		unsigned int numLUTs = 0;
 
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
 				numLUTs++;
-				std::vector<Vertex<std::string>*> inputs;
+				std::vector<Vertex*> inputs;
 				it->second->getInput(inputs);
 
 				if(inputs.size() == 1){
 					//printf("LUT SIZE 1\n");
 					unsigned long function = it->second->getLUT();
 					if(function == 2){
-						std::vector<Vertex<std::string>*> linput;
-						std::vector<Vertex<std::string>*> loutput;
+						std::vector<Vertex*> linput;
+						std::vector<Vertex*> loutput;
 
 						it->second->getInput(linput);
 						it->second->getOutput(loutput);
@@ -540,8 +540,8 @@ namespace SEQUENTIAL{
 				for(unsigned int i = 0; i < lutin.size(); i++){
 					std::stringstream ss; 
 					ss<<"I"<<i;
-					Vertex<std::string>* vin = lutgraph->addVertex(i, "IN");
-					Vertex<std::string>* vinv = lutgraph->addVertex(lutin.size()+i, "INV");
+					Vertex* vin = lutgraph->addVertex(i, "IN");
+					Vertex* vinv = lutgraph->addVertex(lutin.size()+i, "INV");
 
 					vinv->addInput(vin);
 					vinv->addInPort("I");
@@ -560,7 +560,7 @@ namespace SEQUENTIAL{
 						int mask = 0x1;
 						std::stringstream ss; 
 						ss<<"AND";   //Set the size later. Some input may be don't care
-						Vertex<std::string>* aGate = new Vertex<std::string>(lutgraph->getNumVertex(), ss.str());
+						Vertex* aGate = new Vertex(lutgraph->getNumVertex(), ss.str());
 
 						//LSB->MSB
 						int numAndInput = 0;
@@ -615,7 +615,7 @@ namespace SEQUENTIAL{
 
 				//printf("and: %d  or: %d leftAnd: %d orStart %d\n", numAndGates, numOrGates, numAndGatesLeft, orIndexStart);	
 				if(numAndGates != 1){
-					Vertex<std::string>* oGate;
+					Vertex* oGate;
 					assert((numOrGates+1) <=8);
 
 
@@ -629,7 +629,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*i)+q]);
+							Vertex* gate = lutgraph->getVertex(clauses[(8*i)+q]);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -647,7 +647,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
+							Vertex* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -667,7 +667,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart+q);
+							Vertex* gate = lutgraph->getVertex(orIndexStart+q);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -685,7 +685,7 @@ namespace SEQUENTIAL{
 							oGate->addInPort(portname.str());
 
 							//Get the and gate which is one before the or gate
-							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart-1); 
+							Vertex* gate = lutgraph->getVertex(orIndexStart-1); 
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -722,7 +722,7 @@ namespace SEQUENTIAL{
 
 	unsigned int replaceLUTs(Graph* ckt){
 		printf("[SEQ] -- Replacing LUTs with combinational Logic\n");
-		std::map<int, Vertex<std::string>*>::iterator it;
+		std::map<int, Vertex*>::iterator it;
 		std::list<int> tobedeleted;
 		unsigned int numLUTs = 0;
 		double endIndex = ckt->end()->first;
@@ -731,14 +731,14 @@ namespace SEQUENTIAL{
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
 				numLUTs++;
-				std::vector<Vertex<std::string>*> inputs;
+				std::vector<Vertex*> inputs;
 				it->second->getInput(inputs);
 				unsigned long function = it->second->getLUT();
 
 				if(inputs.size() == 1){
 					if(function == 2){
-						std::vector<Vertex<std::string>*> linput;
-						std::vector<Vertex<std::string>*> loutput;
+						std::vector<Vertex*> linput;
+						std::vector<Vertex*> loutput;
 
 						it->second->getInput(linput);
 						it->second->getOutput(loutput);
@@ -838,7 +838,7 @@ namespace SEQUENTIAL{
 					in >> bitlength;
 				}
 				else{
-					printf("[ERROR SEQ:replaceLUT] -- Espresso output error\n"
+					printf("[ERROR SEQ:replaceLUT] -- Espresso output error\n");
 					printf("\tMake sure espresso is compiled correctly\n");
 				}
 
@@ -855,8 +855,8 @@ namespace SEQUENTIAL{
 				for(unsigned int i = 0; i < lutin.size(); i++){
 					std::stringstream ss; 
 					ss<<"I"<<i;
-					Vertex<std::string>* vin = lutgraph->addVertex(i, "IN");
-					Vertex<std::string>* vinv = lutgraph->addVertex(lutin.size()+i, "INV");
+					Vertex* vin = lutgraph->addVertex(i, "IN");
+					Vertex* vinv = lutgraph->addVertex(lutin.size()+i, "INV");
 
 					vinv->addInput(vin);
 					vinv->addInPort("I");
@@ -903,7 +903,7 @@ namespace SEQUENTIAL{
 
 					std::stringstream ss; 
 					ss<<"AND";   //Set the size later. Some input may be don't care
-					Vertex<std::string>* aGate = new Vertex<std::string>(lutgraph->getNumVertex(), ss.str());
+					Vertex* aGate = new Vertex(lutgraph->getNumVertex(), ss.str());
 					//printf("Making %s gate\n", ss.str().c_str());
 
 					int numAndInput= 0;
@@ -964,7 +964,7 @@ namespace SEQUENTIAL{
 
 				//printf("and: %d  or: %d leftAnd: %d orStart %d\n", numAndGates, numOrGates, numAndGatesLeft, orIndexStart);	
 				if(numAndGates != 1){
-					Vertex<std::string>* oGate;
+					Vertex* oGate;
 					assert((numOrGates+1) <=8);
 
 
@@ -978,7 +978,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*i)+q]);
+							Vertex* gate = lutgraph->getVertex(clauses[(8*i)+q]);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -996,7 +996,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
+							Vertex* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -1016,7 +1016,7 @@ namespace SEQUENTIAL{
 							portname<<"I"<<q;
 							oGate->addInPort(portname.str());
 
-							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart+q);
+							Vertex* gate = lutgraph->getVertex(orIndexStart+q);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -1034,7 +1034,7 @@ namespace SEQUENTIAL{
 							oGate->addInPort(portname.str());
 
 							//Get the and gate which is one before the or gate
-							Vertex<std::string>* gate = lutgraph->getVertex(orIndexStart-1); 
+							Vertex* gate = lutgraph->getVertex(orIndexStart-1); 
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -1073,12 +1073,12 @@ namespace SEQUENTIAL{
 
 
 
-	int DFS(std::list<int>& mark, Vertex<std::string>* start, Graph* ckt, std::vector<std::vector<int> >& clauses){
+	int DFS(std::list<int>& mark, Vertex* start, Graph* ckt, std::vector<std::vector<int> >& clauses){
 		mark.push_back(start->getVertexID());
 
 		std::string type = start->getType();
 
-		std::vector<Vertex<std::string>*> inputs;
+		std::vector<Vertex*> inputs;
 		start->getInput(inputs);
 
 		//EXTRACT CLAUSES 	

@@ -38,7 +38,7 @@ namespace TOPOLOGY{
 		std::vector<int> pathLengthCount((ckt->getNumVertex()/2)+2, 0);
 		std::set<int> startingMarked;
 
-		std::map<int, Vertex<std::string>*>::iterator it;
+		std::map<int, Vertex*>::iterator it;
 		unsigned int maxPath = 0;
 
 		for(it = ckt->begin(); it != ckt->end(); it++){
@@ -64,7 +64,7 @@ namespace TOPOLOGY{
 					continue;
 				}
 
-				std::vector<Vertex<std::string>*> outputs;
+				std::vector<Vertex*> outputs;
 				ckt->getVertex(item)->getOutput(outputs);
 				
 				for(unsigned int i = 0; i < outputs.size(); i++){

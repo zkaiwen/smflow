@@ -211,7 +211,7 @@ int main( int argc, char *argv[] )
 
 
 		//Count the number of specific components
-		std::map<int, Vertex<std::string>*>::iterator cktit;
+		std::map<int, Vertex*>::iterator cktit;
 		std::map<std::string, int> compCount;   //Component, count
 		unsigned int ffcount = 0; 
 		unsigned int dspcount = 0;
@@ -234,7 +234,7 @@ int main( int argc, char *argv[] )
 			}
 			else if (type.find("MUXCY") != std::string::npos){
 				muxcycount++;
-				std::vector<Vertex<std::string>*> input;
+				std::vector<Vertex*> input;
 				std::vector<std::string> inputPort;
 
 				cktit->second->getInput(input);

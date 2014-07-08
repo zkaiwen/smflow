@@ -41,11 +41,11 @@ Graph::Graph(std::string name){
  ****************************************************************************/
 Graph::Graph(const Graph& copy){
 	printf("[GRAPH] -- Copy Constructor");
-	std::map<int, Vertex<std::string>*>::const_iterator it;
+	std::map<int, Vertex*>::const_iterator it;
 
 	//Make new vertices
 	for(it = copy.m_GraphV.begin(); it != copy.m_GraphV.end(); it++){
-		Vertex<std::string>* v = new Vertex<std::string> (it->first, it->second->getType());
+		Vertex* v = new Vertex (it->first, it->second->getType());
 		v->setLUT(it->second->getLUT());
 		v->setLevel(it->second->getLevel());
 		m_GraphV[it->first] = v;
@@ -54,7 +54,7 @@ Graph::Graph(const Graph& copy){
 	//Copy interconnections
 	for(it = copy.m_GraphV.begin(); it != copy.m_GraphV.end(); it++){
 		//Copy inputs
-		std::vector<Vertex<std::string>*> input;
+		std::vector<Vertex*> input;
 		std::vector<std::string> inputPort;
 
 		it->second->getInPorts(inputPort);
@@ -70,7 +70,7 @@ Graph::Graph(const Graph& copy){
 
 
 		//Copy Outputs
-		std::vector<Vertex<std::string>*> output;
+		std::vector<Vertex*> output;
 		it->second->getOutput(output);
 
 		for(unsigned int i = 0; i < output.size(); i++){
@@ -106,7 +106,7 @@ Graph::Graph(const Graph& copy){
  *    Deletes allocated space. Does not delete AIG Graph
  ****************************************************************************/
 Graph::~Graph(){
-	std::map<int, Vertex<std::string>*>::iterator it; 
+	std::map<int, Vertex*>::iterator it; 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		if(it->second != NULL)
 			delete it->second;
@@ -123,11 +123,11 @@ Graph::~Graph(){
  *   Assignment operator overloaded  
  ****************************************************************************/
 Graph& Graph::operator=(const Graph& copy){
-	std::map<int, Vertex<std::string>*>::const_iterator it;
+	std::map<int, Vertex*>::const_iterator it;
 
 	//Make new vertices
 	for(it = copy.m_GraphV.begin(); it != copy.m_GraphV.end(); it++){
-		Vertex<std::string>* v = new Vertex<std::string> (it->first, it->second->getType());
+		Vertex* v = new Vertex (it->first, it->second->getType());
 		v->setLUT(it->second->getLUT());
 		v->setLevel(it->second->getLevel());
 		m_GraphV[it->first] = v;
@@ -136,7 +136,7 @@ Graph& Graph::operator=(const Graph& copy){
 	//Copy interconnections
 	for(it = copy.m_GraphV.begin(); it != copy.m_GraphV.end(); it++){
 		//Copy inputs
-		std::vector<Vertex<std::string>*> input;
+		std::vector<Vertex*> input;
 		std::vector<std::string> inputPort;
 
 		it->second->getInPorts(inputPort);
@@ -153,7 +153,7 @@ Graph& Graph::operator=(const Graph& copy){
 
 
 		//Copy Outputs
-		std::vector<Vertex<std::string>*> output;
+		std::vector<Vertex*> output;
 		it->second->getOutput(output);
 
 		for(unsigned int i = 0; i < output.size(); i++){
@@ -271,7 +271,7 @@ bool Graph::importPrimitive(std::string fileName, int offset){
 
 		inFile >> type;
 		//printf("ID: %d\tTYPE: %s\n", vID, type.c_str());
-		Vertex<std::string>* vertex;
+		Vertex* vertex;
 
 		/*		if((std::string) type == "IN"){
 				numInputs++;
@@ -296,7 +296,7 @@ bool Graph::importPrimitive(std::string fileName, int offset){
 
 			input += offset;
 
-			Vertex<std::string>* in;
+			Vertex* in;
 			if(m_GraphV.find(input) == m_GraphV.end())
 				in = addVertex(input);
 			else
@@ -314,7 +314,7 @@ bool Graph::importPrimitive(std::string fileName, int offset){
 			std::string port;
 			inFile >> port;
 
-			Vertex<std::string>* out;
+			Vertex* out;
 			if(m_GraphV.find(output) == m_GraphV.end())
 				out = addVertex(output);
 			else
@@ -405,7 +405,7 @@ bool Graph::importGraph(std::string fileName, int offset){
 
 		
 		//printf("ID: %d\tTYPE: %s\n", vID, type.c_str());
-		Vertex<std::string>* vertex;
+		Vertex* vertex;
 
 		/*		if((std::string) type == "IN"){
 				numInputs++;
@@ -430,7 +430,7 @@ bool Graph::importGraph(std::string fileName, int offset){
 
 			input += offset;
 
-			Vertex<std::string>* in;
+			Vertex* in;
 			if(m_GraphV.find(input) == m_GraphV.end())
 				in = addVertex(input);
 			else
@@ -448,7 +448,7 @@ bool Graph::importGraph(std::string fileName, int offset){
 			std::string port;
 			inFile >> port;
 
-			Vertex<std::string>* out;
+			Vertex* out;
 			if(m_GraphV.find(output) == m_GraphV.end())
 				out = addVertex(output);
 			else
@@ -489,7 +489,7 @@ bool Graph::exportGraph(std::string filename){
 	std::ofstream ofs(filename.c_str(), std::ofstream::out);
 	
 	//Size
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*>::iterator it;
 	ofs<<m_GraphV.size()<<"\n";
 	std::cout<<m_GraphV.size()<<"\n";
 	
@@ -518,7 +518,7 @@ bool Graph::exportGraph(std::string filename){
 		//printf("%s ", m_NodeName[it->first].c_str());
 
 		//Inputs
-		std::vector<Vertex<std::string>*> in;
+		std::vector<Vertex*> in;
 		std::vector<std::string> port;
 		it->second->getInput(in);
 		it->second->getInPorts(port);
@@ -529,7 +529,7 @@ bool Graph::exportGraph(std::string filename){
 			ofs<<in[i]->getVertexID()<<" "<<port[i]<<" ";
 		}
 
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		ofs<<out.size()<<" ";
 		std::cout<<out.size()<<" ";
@@ -566,7 +566,7 @@ bool Graph::exportGraphSDFV2000(std::string cname, int ID){
 	std::ofstream ofs(filename.c_str(), std::ofstream::out);
 	
 	//Header
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*>::iterator it;
 	std::cout<<"11280714432D 1   1.00000     0.00000     0\n\n\n";
 	ofs<<"\n          11280714432D 1   1.00000     0.00000     0\n\n";
 	
@@ -604,7 +604,7 @@ bool Graph::exportGraphSDFV2000(std::string cname, int ID){
 
 	//Nets
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++){
 			printf("%d %d 1 0\t0 0\n", mapping[it->first], mapping[out[i]->getVertexID()]);
@@ -637,7 +637,7 @@ bool Graph::exportGraphSDFV3000(std::string cname, int ID){
 	std::ofstream ofs(filename.c_str(), std::ofstream::out);
 	
 	//Header
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*>::iterator it;
     ofs<<cname<<"\n\n\n  0  0  0     0  0            999 V3000\n"; 
     //std::cout<<cname<<"\n\n\n  0  0  0     0  0            999 V3000\n"; 
 	
@@ -682,7 +682,7 @@ bool Graph::exportGraphSDFV3000(std::string cname, int ID){
 	//std::cout<<"M  V30 BEGIN BOND\n";
 	val = 1;
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++){
 			ofs<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getVertexID()]<<"\n";
@@ -741,7 +741,7 @@ int Graph::getNumNets(){
 		int item = queue.front();
 		queue.pop_front();
 
-		std::vector<Vertex<std::string>*> outputs;
+		std::vector<Vertex*> outputs;
 		m_GraphV[item]->getOutput(outputs);
 			
 		for(unsigned int i = 0; i < outputs.size(); i++){
@@ -769,7 +769,7 @@ int Graph::getNumNets(){
  *    vertex:   Vertex ID of the Vertex
  *  @Return: Vertex object
  ****************************************************************************/
-	Vertex<std::string>* Graph::getVertex(int vertex){
+	Vertex* Graph::getVertex(int vertex){
 		if(m_GraphV.find(vertex) == m_GraphV.end())
 			return NULL;
 		else
@@ -852,7 +852,7 @@ void Graph::getOutputs(std::vector<int>& output){
  *  @RETURN: The last VID of the graph
  ****************************************************************************/
 int Graph::getLast(){
-	std::map<int, Vertex<std::string>*>::iterator it; 
+	std::map<int, Vertex*>::iterator it; 
 	it = m_GraphV.end();
 	it--;
 	return it->first;
@@ -869,7 +869,7 @@ int Graph::getLast(){
 unsigned int Graph::getMaxLevel(){
 	//printf("\nGetting Max Level\n");
 	unsigned int max = 0;
-	std::map<int, Vertex<std::string>*>::iterator it; 
+	std::map<int, Vertex*>::iterator it; 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		if(it->second->getLevel() == -1){
 			printf("Level not set:\t%d\n", it->first);
@@ -978,7 +978,7 @@ void Graph::setLevels(){
  *    Resets the order of the gates (Depth) 
  ****************************************************************************/
 void Graph::resetLevels(){
-	std::map<int, Vertex<std::string>* >::iterator it; 
+	std::map<int, Vertex* >::iterator it; 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++)
 		it->second->setLevel(-1);
 
@@ -1018,7 +1018,7 @@ void Graph::removeCycles(){
  *
  *  @RETURN: Begin iterator to the graph
  ****************************************************************************/
-std::map<int, Vertex<std::string>*>::iterator Graph::begin(){
+std::map<int, Vertex*>::iterator Graph::begin(){
 	return m_GraphV.begin();
 }
 
@@ -1030,7 +1030,7 @@ std::map<int, Vertex<std::string>*>::iterator Graph::begin(){
  *
  *  @RETURN: End iterator to the graph
  ****************************************************************************/
-std::map<int, Vertex<std::string>*>::iterator Graph::end(){
+std::map<int, Vertex*>::iterator Graph::end(){
 	return m_GraphV.end();
 }
 
@@ -1044,7 +1044,7 @@ std::map<int, Vertex<std::string>*>::iterator Graph::end(){
  *    begin:  Reference to begin iterator
  *    end:    Reference to end iterator
  ****************************************************************************/
-void Graph::getIterators(std::map<int, Vertex<std::string>*>::iterator& begin, std::map<int,Vertex<std::string>*>::iterator& end ){
+void Graph::getIterators(std::map<int, Vertex*>::iterator& begin, std::map<int,Vertex*>::iterator& end ){
 	begin = m_GraphV.begin();
 	end = m_GraphV.end();
 }
@@ -1069,7 +1069,7 @@ void Graph::getIterators(std::map<int, Vertex<std::string>*>::iterator& begin, s
  *    Prints contents of the Graph
  ****************************************************************************/
 void Graph::print(){
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*>::iterator it;
 	/*for(it = m_Inputs.begin(); it != m_Inputs.end(); it++){
 	  printf("V%d\tL:%d\tT: %s ", it->first, it->second->getLevel(), it->second->getType().c_str());
 
@@ -1097,7 +1097,7 @@ void Graph::print(){
 		if(it->first > 9000)
 			break;
 		printf("V%d\tL:%d\tT: %s\tIN: ", it->first, it->second->getLevel(),it->second->getType().c_str());
-		std::vector<Vertex<std::string>*> in;
+		std::vector<Vertex*> in;
 		std::vector<std::string> port;
 		it->second->getInput(in);
 		it->second->getInPorts(port);
@@ -1105,7 +1105,7 @@ void Graph::print(){
 			printf("%d %s ", in[i]->getVertexID(), port[i].c_str() );
 
 		printf("\tOUT: ");
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++)
 			printf("%d ", out[i]->getVertexID());
@@ -1127,10 +1127,10 @@ void Graph::print(){
  *    Prints contents of the Graph in G format
  ****************************************************************************/
 void Graph::printg(){
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*>::iterator it;
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		printf("%d %s ", it->first, it->second->getType().c_str());
-		std::vector<Vertex<std::string>*> in;
+		std::vector<Vertex*> in;
 		std::vector<std::string> port;
 		it->second->getInput(in);
 		it->second->getInPorts(port);
@@ -1138,7 +1138,7 @@ void Graph::printg(){
 		for(unsigned int i = 0; i < in.size(); i++)
 			printf("%d %s ", in[i]->getVertexID(), port[i].c_str());
 
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		printf(" %d ", (unsigned int)out.size());
 		for(unsigned int i = 0; i < out.size(); i++)
@@ -1156,10 +1156,10 @@ void Graph::printg(){
  *    Prints contents of the Graph in G format
  ****************************************************************************/
 void Graph::printVertex(int v){
-	Vertex<std::string>* vertex = m_GraphV[v];
+	Vertex* vertex = m_GraphV[v];
 
 	printf("%d %s ", v, vertex->getType().c_str());
-	std::vector<Vertex<std::string>*> in;
+	std::vector<Vertex*> in;
 	std::vector<std::string> port;
 	vertex->getInput(in);
 	vertex->getInPorts(port);
@@ -1167,7 +1167,7 @@ void Graph::printVertex(int v){
 	for(unsigned int i = 0; i < in.size(); i++)
 		printf("%d %s ", in[i]->getVertexID(), port[i].c_str());
 
-	std::vector<Vertex<std::string>*> out;
+	std::vector<Vertex*> out;
 	vertex->getOutput(out);
 	printf(" %d ", (unsigned int)out.size());
 	for(unsigned int i = 0; i < out.size(); i++)
@@ -1321,7 +1321,7 @@ std::string Graph::findOutPortName(int port){
  *    vertex:  Vertex Object to be added
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
-void Graph::addVertex(Vertex<std::string>* vertex){
+void Graph::addVertex(Vertex* vertex){
 	m_GraphV[vertex->getVertexID()] = vertex;
 }
 
@@ -1336,13 +1336,13 @@ void Graph::addVertex(Vertex<std::string>* vertex){
  *    type: Type of the Vertex
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
-Vertex<std::string>* Graph::addVertex(int vID, std::string type){
+Vertex* Graph::addVertex(int vID, std::string type){
 	if(m_GraphV.find(vID) != m_GraphV.end()){
 		printf("[ERROR] -- (graph.addVertex))\n");
 		printf("-- VID %d already exists in graph\n", vID);
 		exit(1);
 	}
-	Vertex<std::string> *v = new Vertex<std::string>(vID, type);
+	Vertex *v = new Vertex(vID, type);
 	m_GraphV[vID] = v;
 	return v;
 }
@@ -1357,13 +1357,13 @@ Vertex<std::string>* Graph::addVertex(int vID, std::string type){
  *    VID:  ID of the new Vertex
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
-Vertex<std::string>* Graph::addVertex(int vID){
+Vertex* Graph::addVertex(int vID){
 	if(m_GraphV.find(vID) != m_GraphV.end()){
 		printf("[ERROR] -- (graph.addVertex))\n");
 		printf("-- VID %d already exists in graph\n", vID);
 		exit(1);
 	}
-	Vertex<std::string> *v = new Vertex<std::string>(vID);
+	Vertex *v = new Vertex(vID);
 	m_GraphV[vID] = v;
 
 	return v;
@@ -1379,7 +1379,7 @@ Vertex<std::string>* Graph::addVertex(int vID){
  *    v:    Vertex to replace
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
-	Vertex<std::string>* Graph::addVertex(int vID, Vertex<std::string>* v){
+	Vertex* Graph::addVertex(int vID, Vertex* v){
 		if(m_GraphV.find(vID) != m_GraphV.end())
 			delete m_GraphV[vID];
 
@@ -1398,7 +1398,7 @@ Vertex<std::string>* Graph::addVertex(int vID){
  *    v:    Vertex to replace
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
-void Graph::removeVertex(Vertex<std::string>* vertex){
+void Graph::removeVertex(Vertex* vertex){
 	int id = vertex->getVertexID();
 	delete m_GraphV[id];
 	m_GraphV.erase(id);
@@ -1492,7 +1492,7 @@ void Graph::addConstant( int node){
  ****************************************************************************/
 void Graph::substitute(int node, Graph* sub){
 	//printf("SUBSTITUTION! NODE: %d\n", node);
-	std::map<int, Vertex<std::string>*>::iterator it; 
+	std::map<int, Vertex*>::iterator it; 
 
 
 	//Get IO from the Subgraph
@@ -1503,8 +1503,8 @@ void Graph::substitute(int node, Graph* sub){
 
 
 	//Get IO of the substituting node
-	std::vector<Vertex<std::string>*> nodeInputs;
-	std::vector<Vertex<std::string>*> nodeOutputs;
+	std::vector<Vertex*> nodeInputs;
+	std::vector<Vertex*> nodeOutputs;
 	std::vector<std::string> nodeInputPorts;
 
 	m_GraphV[node]->getInput(nodeInputs);
@@ -1531,7 +1531,7 @@ void Graph::substitute(int node, Graph* sub){
 		int subInputIndex = sub->findInPort(inPortName);
 
 		//Get the outputs of IN to sub
-		std::vector<Vertex<std::string>*> sub_Out_of_In;
+		std::vector<Vertex*> sub_Out_of_In;
 		sub->getVertex(subInputIndex)->getOutput(sub_Out_of_In);
 
 		//Connect the inputNode to the input of sub
@@ -1576,7 +1576,7 @@ void Graph::substitute(int node, Graph* sub){
 
 	for(unsigned int i = 0; i < outPortNames.size(); i++){
 		//printf("Outport of node: %s\n", outPortNames[i].c_str());
-		std::vector<Vertex<std::string>*> outputs;
+		std::vector<Vertex*> outputs;
 		m_GraphV[node]->getPortOutput(outPortNames[i], outputs);
 
 		int subOutputIndex = sub->findOutPort(outPortNames[i]);
@@ -1617,8 +1617,8 @@ void Graph::substitute(int node, Graph* sub){
 
 
 void Graph::renumber(int lb){
-	std::map<int, Vertex<std::string>*> newGraph;
-	std::map<int, Vertex<std::string>*>::iterator it;
+	std::map<int, Vertex*> newGraph;
+	std::map<int, Vertex*>::iterator it;
 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		int newID = it->second->getVertexID()+lb;
@@ -1653,12 +1653,12 @@ void Graph::renumber(int lb){
 ############################################################## 
 ##############################################################*/
 
-int Graph::DFSearchOut(std::list<int>& mark, Vertex<std::string>* start, std::set<int>& candidate){
+int Graph::DFSearchOut(std::list<int>& mark, Vertex* start, std::set<int>& candidate){
 	//printf("DFS CHECKING V: %d \n", start->getVertexID());
 
 	mark.push_back(start->getVertexID());
 
-	std::vector<Vertex<std::string>*> out;
+	std::vector<Vertex*> out;
 	if(start->getType().find("FD") != std::string::npos)
 		start->getOutputPortID("Q", out);
 	else
@@ -1695,10 +1695,10 @@ int Graph::DFSearchOut(std::list<int>& mark, Vertex<std::string>* start, std::se
 
 
 
-int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex<std::string>* start, std::set<int>& candidate){
+int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start, std::set<int>& candidate){
 	//printf("DFS CHECKING V: %d \n", start->getVertexID());
 	mark.push_back(start->getVertexID());
-	std::vector<Vertex<std::string>*> in;
+	std::vector<Vertex*> in;
 	int dport= start->getInputPortID("D"); 
 	if(dport != -1)
 		in.push_back(getVertex(dport));
@@ -1748,7 +1748,7 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex<std::st
  *    mark:    Marks visited to search for feedback
  *    level:   Level of traversal
  ****************************************************************************/
-	void Graph::DFSlevel(Vertex<std::string>* vertex, std::list<int>& mark, int level){
+	void Graph::DFSlevel(Vertex* vertex, std::list<int>& mark, int level){
 		if(vertex->getLevel() < level)
 			vertex->setLevel(level);
 		else{
@@ -1758,7 +1758,7 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex<std::st
 		mark.push_back(vertex->getVertexID());
 		//printf("VID PUSHED %d\n", vertex->getVertexID());
 
-		std::vector<Vertex<std::string>*> out;
+		std::vector<Vertex*> out;
 		vertex->getOutput(out);
 		std::list<int>::iterator it; 
 		bool found;
@@ -1782,12 +1782,12 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex<std::st
 
 
 
-int Graph::DFScycle(Vertex<std::string>* vertex, std::list<int>& mark){
+int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 	//printf("SEARCHING FOR AND REMOVING CYCLES\n");
 	int previous = mark.back(); 
 	mark.push_back(vertex->getVertexID());
 
-	std::vector<Vertex<std::string>*> out;
+	std::vector<Vertex*> out;
 	vertex->getOutput(out);
 	std::list<int>::iterator it; 
 	bool found;
@@ -1814,8 +1814,8 @@ int Graph::DFScycle(Vertex<std::string>* vertex, std::list<int>& mark){
 			printf("CHECKING FOR FF IN LOOP...");
 
 
-			Vertex<std::string>* nextV = out[i];
-			Vertex<std::string>* currentV = vertex;
+			Vertex* nextV = out[i];
+			Vertex* currentV = vertex;
 
 			for(it = mark.begin(); it!= mark.end(); it++){
 				if(m_GraphV[*it]->getType().find("FD") != std::string::npos){
@@ -1844,7 +1844,7 @@ int Graph::DFScycle(Vertex<std::string>* vertex, std::list<int>& mark){
 			nextV->addInPort(outPorts[index]);
 			std::stringstream ss;
 			ss<<"P" << getNumInputs();
-			Vertex<std::string>* inputV = addVertex(getLast(), "IN");
+			Vertex* inputV = addVertex(getLast(), "IN");
 			addInput(ss.str(), inputV->getVertexID());
 
 			inputV->addOutput(nextV, outPortName);
@@ -1863,12 +1863,12 @@ int Graph::DFScycle(Vertex<std::string>* vertex, std::list<int>& mark){
  *  
  *    Sets the order of the gates (Depth) 
  ****************************************************************************/
-/*void Graph::BFSLevel(std::queue<Vertex<std::string>*, std::list<Vertex<std::string>*> > queue, std::map<int,bool>& mark, int level, int endLevel){
+/*void Graph::BFSLevel(std::queue<Vertex*, std::list<Vertex*> > queue, std::map<int,bool>& mark, int level, int endLevel){
 
   if(queue.empty())
   return;
 
-  Vertex<std::string>* front;
+  Vertex* front;
   front = queue.front();
   queue.pop();
 
@@ -1881,7 +1881,7 @@ if(front->getLevel() < level)
 front->setLevel(level);
 }
 
-std::vector<Vertex<std::string>*> output;
+std::vector<Vertex*> output;
 front->getOutput(output);
 
 for(unsigned int i = 0; i < output.size(); i++){

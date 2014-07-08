@@ -99,7 +99,7 @@ class AIG{
 		bool handleFF(int, Graph*);
 		unsigned create_and2(unsigned, unsigned);
 		unsigned create_input();
-		void DFS(Vertex<std::string>*, std::set<int>&);
+		void DFS(Vertex*, std::set<int>&);
 
 
 		//Print	

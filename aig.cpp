@@ -416,8 +416,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::string mxAIGFile_c = s_SourcePrim + "mux";
 	std::string addAIGFile_c = s_SourcePrim + "add";
 
-	std::map<int, Vertex<std::string>*>::iterator it;
-	std::vector<Vertex<std::string>*> gNodeOutput;
+	std::map<int, Vertex*>::iterator it;
+	std::vector<Vertex*> gNodeOutput;
 	std::vector<int> toBeDeleted;
 	std::vector<int> flipflops;
 
@@ -487,8 +487,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			exit(1);
 		else if(gateType.find("BUF") != std::string::npos){
 			toBeDeleted.push_back(it->first);
-			std::vector<Vertex<std::string>*> in;
-			std::vector<Vertex<std::string>*> out;
+			std::vector<Vertex*> in;
+			std::vector<Vertex*> out;
 			it->second->getOutput(out);
 			it->second->getInput(in);
 
@@ -578,7 +578,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 ckt->setLevels();
 
 	//Order the vertices by level
-	std::map<int, std::vector<Vertex<std::string>*> > vLevel;
+	std::map<int, std::vector<Vertex*> > vLevel;
 	for(it = ckt->begin(); it != ckt->end(); it++){
 		//printf("ID:\t%dGate type:\t%s\n", it->first, it->second->getType().c_str());
 		vLevel[it->second->getLevel()].push_back(it->second);
@@ -610,7 +610,7 @@ ckt->setLevels();
 		}
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
 			if(vLevel[i][j]->getType().find("AND") != std::string::npos){
-				std::vector<Vertex<std::string>*> in;
+				std::vector<Vertex*> in;
 				vLevel[i][j]->getInput(in);
 
 				unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
@@ -618,7 +618,7 @@ ckt->setLevels();
 				m_GateMap[vertexID] = output;
 			}
 			else if(vLevel[i][j]->getType().find("INV") != std::string::npos){
-				std::vector<Vertex<std::string>*> in;
+				std::vector<Vertex*> in;
 				vLevel[i][j]->getInput(in);
 
 
@@ -666,7 +666,7 @@ ckt->setLevels();
 	std::set<unsigned int> marked;
 
 	for(unsigned int i = 0; i < gInputs.size(); i++){
-		Vertex<std::string>* vertex = ckt->getVertex(gInputs[i]);
+		Vertex* vertex = ckt->getVertex(gInputs[i]);
 		std::string type  = vertex->getType();
 		if(type == "VCC")
 			m_GateMap[gInputs[i]] = 1;
@@ -677,7 +677,7 @@ ckt->setLevels();
 			m_GateMap[gInputs[i]] = input; 
 		}
 
-		std::vector<Vertex<std::string>*> outputs;
+		std::vector<Vertex*> outputs;
 		vertex->getOutput(outputs);
 		for(unsigned int i = 0; i < outputs.size(); i++){
 			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
@@ -693,10 +693,10 @@ ckt->setLevels();
 	while(queue.size() != 0){
 		int item = queue.front();
 		qit = queue.begin();
-		Vertex<std::string>* vertex= ckt->getVertex(item);
+		Vertex* vertex= ckt->getVertex(item);
 		std::string type  = vertex->getType();
 
-		std::vector<Vertex<std::string>*> in;
+		std::vector<Vertex*> in;
 		vertex->getInput(in);
 
 		//Check to see if inputs have been mapped. If not skipp for now
@@ -770,7 +770,7 @@ ckt->setLevels();
 				
 				
 		//Add the next level of nodes	(FANOUT)
-		std::vector<Vertex<std::string>*> outputs;
+		std::vector<Vertex*> outputs;
 		vertex->getOutput(outputs);
 				
 		for(unsigned int i = 0; i < outputs.size(); i++){
@@ -821,8 +821,8 @@ ckt->setLevels();
  ********************************************************/
 bool AIG::handleFF(int node, Graph* ckt){
 //	printf("Removing FF...\nInputs to FF will go to PO. Gates the FF goes into will be switched for PI\n");
-	std::vector<Vertex<std::string>*> input;
-	Vertex<std::string>* ffNode = ckt->getVertex(node);
+	std::vector<Vertex*> input;
+	Vertex* ffNode = ckt->getVertex(node);
 	ffNode->getInput(input);
 
 	//Remove ff from the input nodes' output

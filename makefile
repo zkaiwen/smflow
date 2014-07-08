@@ -9,6 +9,7 @@ OBJ= \
 		aig.o \
 		cutenumeration.o \
 		cutfunction.o \
+		vertex.o \
 		aiger.o
 
 PROF=
@@ -21,20 +22,23 @@ mainRef: $(OBJ) mainRef.o
 mainDB: $(OBJ) mainDB.o 
 	g++ $(CFLAGS) -o xfpgeniusDB $(OBJ) mainDB.o $(PROF) -lboost_graph
 
-graph.o: graph.cpp graph.hpp vertex.hpp
+graph.o: graph.cpp graph.hpp vertex.o
 	g++ $(CFLAGS) -c graph.cpp $(PROF)
 
 graph_b.o: graph_b.cpp graph_b.hpp 
 	g++ $(CFLAGS) -c graph_b.cpp $(PROF)
 
-mainRef.o: mainRef.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp
+mainRef.o: mainRef.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp graph.o aig.o cutenumeration.o cutfunction.o sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp
+mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o
 	g++ $(CFLAGS) -c aig.cpp $(PROF)
+
+vertex.o: vertex.cpp vertex.hpp 
+	g++ $(CFLAGS) -c vertex.cpp $(PROF)
 
 aiger.o: aiger.c aiger.h 
 	gcc $(CFLAGS) -c aiger.c 
