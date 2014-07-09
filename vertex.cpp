@@ -14,6 +14,7 @@
 Vertex::Vertex(){
 	m_Input.clear();
 	m_Output.clear();
+	m_Name = "";
 	m_Level = -1;
 }
 
@@ -23,6 +24,7 @@ Vertex::Vertex(int vID, std::string type){
 	m_Input.clear();
 	m_Output.clear();
 	m_Level = -1;
+	m_Name = "";
 }
 
 Vertex::Vertex(int vID){
@@ -31,6 +33,7 @@ Vertex::Vertex(int vID){
 	m_Input.clear();
 	m_Output.clear();
 	m_Level = -1;
+	m_Name = "";
 }
 
 
@@ -40,6 +43,7 @@ Vertex::Vertex(const Vertex& rhs){
 	exit(1);
 	m_Type = rhs.m_Type;
 	m_ID = rhs.m_ID;
+	m_Name= rhs.m_Name;
 /*
 	for(unsigned int i = 0; i < rhs.m_Input.size(); i++)
 		m_Input.push_back(rhs.m_Input[i]);
@@ -247,6 +251,14 @@ std::string Vertex::getType(){
 
 void Vertex::setType(std::string type){
 	m_Type = type;
+}
+
+std::string Vertex::getName(){
+	return m_Name;
+}
+
+void Vertex::setName(std::string name){
+	m_Name= name;
 }
 
 

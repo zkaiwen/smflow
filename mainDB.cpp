@@ -184,9 +184,6 @@ int main( int argc, char *argv[] )
 			continue;
 
 		printStatement("Processing File: " +  file);
-		if(file.find("b04") == std::string::npos)
-			continue; 
-
 		Graph* ckt = new Graph(file);
 
 		//Import circuit and convert to AIG
@@ -323,6 +320,8 @@ int main( int argc, char *argv[] )
 		for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
 			outdb<< fcit->first << " " << fcit->second << "\n";
 		}
+
+		aigraph->print();
 
 
 		//Calculate elapsed time

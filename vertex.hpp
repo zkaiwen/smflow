@@ -22,6 +22,7 @@ class Vertex
 {
 	private:
 		std::string m_Type;
+		std::string m_Name;
 		int m_ID;    //Unique ID assigned
 		int m_Level;
 		unsigned long m_LUT;
@@ -42,6 +43,7 @@ class Vertex
 		void setLUT(std::string);
 		void setLUT(unsigned long);
 		void setType(std::string);
+		void setName(std::string);
 		void setVertexID(int);
 
 		unsigned long getLUT();
@@ -62,6 +64,7 @@ class Vertex
 		std::string getInputPortName(int);
 		std::string getOutputPortName(int);
 		std::string getType();
+		std::string getName();
 
 		void addInput(Vertex*);
 		void addInPort(std::string);

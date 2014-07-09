@@ -1096,7 +1096,11 @@ void Graph::print(){
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		if(it->first > 9000)
 			break;
-		printf("V%d\tL:%d\tT: %s\tIN: ", it->first, it->second->getLevel(),it->second->getType().c_str());
+		printf("V%d\t", it->first);
+		printf("L:%d\t", it->second->getLevel());
+		printf("T: %s\t", it->second->getType().c_str());
+		printf("N:%s\tIN: ", it->second->getName().c_str());
+
 		std::vector<Vertex*> in;
 		std::vector<std::string> port;
 		it->second->getInput(in);
