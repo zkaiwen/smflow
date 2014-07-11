@@ -98,7 +98,7 @@ int main( int argc, char *argv[] )
 	double aggt = 0.0;
 	double topot = 0.0;
 	double elapsedTime;
-	int k = 3;                              //k-Cut enumeration value 
+	int k = 4;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long> > pDatabase;
@@ -304,10 +304,18 @@ int main( int argc, char *argv[] )
 		   findMux2(functionCalc, aigraph);
 		   gettimeofday(&agg_e, NULL);
 		 */
-		 std::vector<unsigned int> muxlist;
-		unsigned int muxsize = AGGREGATION::findMux(functionCalc, aigraph, muxlist);
-		functionCalc->printStat();
-		stat_numMux.push_back(muxsize);
+		
+		aigraph->print();
+		std::vector<unsigned int> muxlist;
+
+		//4-1         8 bit       2 of them
+		//mux size, array size, count 
+		std::map<int,std::map<int, int> > sizeCount;
+		AGGREGATION::findMux2(functionCalc, aigraph, sizeCount);
+		/*unsigned int muxsize = AGGREGATION::findMux(functionCalc, aigraph, muxlist);
+		*/
+	//	functionCalc->printStat();
+		stat_numMux.push_back(0);
 		stat_muxlist.push_back(muxlist);
 		
 
@@ -321,7 +329,6 @@ int main( int argc, char *argv[] )
 			outdb<< fcit->first << " " << fcit->second << "\n";
 		}
 
-		aigraph->print();
 
 
 		//Calculate elapsed time

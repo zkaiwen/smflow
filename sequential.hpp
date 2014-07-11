@@ -731,6 +731,7 @@ namespace SEQUENTIAL{
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
 				numLUTs++;
+				printf("LUT INDEX: %d\n", it->first);
 				std::vector<Vertex*> inputs;
 				it->second->getInput(inputs);
 				unsigned long function = it->second->getLUT();
@@ -968,7 +969,7 @@ namespace SEQUENTIAL{
 					assert((numOrGates+1) <=8);
 
 
-					//printf("ANDG: %d\tOR8: %d\tANDLEFT:%d\n", lutgraph->getNumVertex() - andIndexStart, numOrGates, numAndGatesLeft);
+					//printf("FIRST OR\n");
 					//Make first level orgate of size 8
 					for(int i = 0; i < numOrGates; i++){
 						oGate = lutgraph->addVertex(lutgraph->getNumVertex(), "OR8");
@@ -979,6 +980,7 @@ namespace SEQUENTIAL{
 							oGate->addInPort(portname.str());
 
 							Vertex* gate = lutgraph->getVertex(clauses[(8*i)+q]);
+							//printf("CLAUSE: %d   INDEX: %d\n", clauses[(8*i)+q], 8*i+q);
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
@@ -988,6 +990,7 @@ namespace SEQUENTIAL{
 					//Left over and gates that are encompassed above. (Make sure there is not 1 left)
 					std::stringstream orgatename;
 					if(numAndGatesLeft > 1){
+						//printf("NOT IN HERE\n");
 						orgatename<<"OR"<<numAndGatesLeft;
 						oGate = lutgraph->addVertex(lutgraph->getNumVertex(), orgatename.str());
 
@@ -1034,7 +1037,7 @@ namespace SEQUENTIAL{
 							oGate->addInPort(portname.str());
 
 							//Get the and gate which is one before the or gate
-							Vertex* gate = lutgraph->getVertex(orIndexStart-1); 
+							Vertex* gate = lutgraph->getVertex(clauses[clauses.size()-1]); 
 							oGate->addInput(gate);
 							gate->addOutput(oGate, "O");
 						}
