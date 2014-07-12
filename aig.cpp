@@ -953,6 +953,85 @@ void AIG::print(){
 	for(unsigned int i = 0; i < m_Aiger->num_ands; i++)
 		printf("%u - %u %u\n", m_Aiger->ands[i].lhs, m_Aiger->ands[i].rhs0, m_Aiger->ands[i].rhs1);	
 }
+		
+		
+
+/*******************************************************
+ *  print
+ *    Prints contents of the AIG from output to
+ *    the list of inputs
+ *  
+ *    @PARAMS: 
+ *      * output: AIG output node to start printing
+ *      * input: AIG input nodes to stop at
+ ********************************************************/
+void AIG::printSubgraph(unsigned output, std::set<unsigned>& input){
+	std::list<unsigned> queue;
+	std::set<unsigned> marked;
+	std::map<unsigned int, unsigned int> levelMap;
+	queue.push_back(output);
+	marked.insert(output);
+	levelMap[output] = 0;
+
+	bool done = false;
+	unsigned doneLevel = 0;
+
+	std::cout<<"digraph{\n";
+	
+
+	while(!queue.empty()){
+		unsigned int item = queue.front();
+		unsigned int itemNode = item & 0xFFFFFFFE;
+		queue.pop_front();
+
+		if(done){
+			if(levelMap[itemNode] > doneLevel)
+				break;
+		}
+
+		if(input.find(itemNode) != input.end()){
+			input.erase(itemNode);
+			if(input.size() == 0){
+				done = true;
+				doneLevel = levelMap[itemNode];
+			}
+		}
+	
+	
+		//Check to see if it is input
+		if(item <= (getInputSize()*2 + 1))
+			continue;
+
+		unsigned int c1 = getChild1(item);	
+		unsigned int c2 = getChild2(item);	
+
+		unsigned int node1 = c1 &0xFFFFFFFE;	
+		unsigned int node2 = c2 &0xFFFFFFFE;	
+
+		std::string dot1 = "";	
+		std::string dot2 = "";	
+
+		if((c1&0x1) == 0x1)
+			dot1 = " [style=dotted]";
+		if((c2&0x1) == 0x1)
+			dot2 = " [style=dotted]";
+		std::cout<<"\t"<<node1<<"->"<<itemNode<<dot1<<std::endl;
+		std::cout<<"\t"<<node2<<"->"<<itemNode<<dot2<<std::endl;
+
+		if(marked.find(c1) == marked.end()){
+			marked.insert(c1);
+			queue.push_back(c1);
+			levelMap[node1] = levelMap[itemNode] + 1;
+		}
+		if(marked.find(c2) == marked.end()){
+			marked.insert(c2);
+			queue.push_back(c2);
+			levelMap[node2] = levelMap[itemNode] + 1;
+		}
+	}
+
+	std::cout<<("}\n");
+}
 
 
 

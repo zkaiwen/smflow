@@ -1162,7 +1162,7 @@ namespace AGGREGATION{
 			for(unsigned int i = 0; i < orinit->size(); i++){
 				printf("%d ", orinit->at(i));
 			}
-			printf("\nOutput: %d\n", *oroutit);
+			printf("\t\tOutput: %d\n", *oroutit);
 
 			orinit++;
 			oroutit++;
@@ -1237,6 +1237,9 @@ namespace AGGREGATION{
 			std::vector<std::set<unsigned int> > marked;
 			marked.reserve(orinit->size());
 			queue.reserve(orinit->size());
+			
+			//Node ID, Level of node
+			std::map<unsigned int, unsigned int> levelMap;
 
 			//Prepare a queue for each input
 			for(unsigned int i = 0; i < orinit->size(); i++){
@@ -1248,15 +1251,17 @@ namespace AGGREGATION{
 				std::set<unsigned int> startmark;
 				startmark.insert(orinit->at(i));
 				marked.push_back(startmark);
+
+				levelMap[orinit->at(i)] = 0;
 			}
 
 
 
 			//Node id, count
-			std::map<unsigned int, int> sameSignalCount;
+			std::map<unsigned int, unsigned int> sameSignalCount;
 			bool isQueueEmpty= false;
 			unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
-			int numSameSignal = 0;
+			unsigned int numSameSignal = 0;
 			unsigned int mask = 1;
 			while(mask < orinit->size()){
 				numSameSignal++;
@@ -1265,9 +1270,17 @@ namespace AGGREGATION{
 
 			//printf("\nAIG SAME SIGNAL: %d\n", numSameSignal);
 			//printf("Number of Inputs: %d\n", orinit->size());
-			int numSameSignalCount= 0;
 			std::vector<int> selectBit;
-			while(!isQueueEmpty){
+
+			//Go at most 3 or 2 levels deep depending on size of or gate;
+			bool isLevelLimit = false;
+			while(!isQueueEmpty && !isLevelLimit){
+			if(orinit->size() != 4) break;
+			printf("\n\nINPUT: ");
+			for(unsigned int i = 0; i < orinit->size(); i++){
+				printf("%d ", orinit->at(i));
+			}
+			printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
 				isQueueEmpty = true;
 
 				//Loop through each BFS
@@ -1280,8 +1293,15 @@ namespace AGGREGATION{
 
 					//Pop the queue	
 					unsigned int signal = queue[i].front() & 0xFFFFFFFE;
-					//printf("SIGNAL POPPED: %d INDEX %d\n", signal, i);
 					queue[i].pop_front();
+
+					//Check to see if the levelLimit is reached
+					if(levelMap[signal] > numSameSignal+1){
+						isLevelLimit = true;
+						break;
+					}
+					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+
 
 					//Increase signal count
 					if(sameSignalCount.find(signal) == sameSignalCount.end())
@@ -1291,9 +1311,15 @@ namespace AGGREGATION{
 
 
 					//Check to see if the number of same signals are as expected
-					if(sameSignalCount[signal] == numSameSignal+1){
-						numSameSignalCount++;
+					if(sameSignalCount[signal] == orinit->size()){
+						printf("Select Bit: Push: %d\n", signal);
 						selectBit.push_back(signal);
+
+						//Check to see if the number of select bit matches the orgatesize
+						if(selectBit.size() == numSameSignal)
+							isQueueEmpty = true;
+
+						continue;
 					}
 
 					//Check to see if it is an input node
@@ -1303,18 +1329,24 @@ namespace AGGREGATION{
 					unsigned int c1 = aigraph->getChild1(signal);
 					unsigned int c2 = aigraph->getChild2(signal);
 
+					//printf("    * Signal Pushed: ");
 					if(marked[i].find(c1) == marked[i].end()){
 						marked[i].insert(c1);
 						queue[i].push_back(c1);
+						levelMap[c1 & 0xFFFFFFFE] = levelMap[signal]+1;
+						//printf("%d ", c1);
 					}
 					if(marked[i].find(c2) == marked[i].end()){
 						marked[i].insert(c2);
 						queue[i].push_back(c2);
+						levelMap[c2 & 0xFFFFFFFE] = levelMap[signal]+1;
+						//printf("%d ", c2);
 					}
+					//printf("\n");
 				}
 			}
 
-			if(numSameSignalCount == 0){
+			if(selectBit.size() != numSameSignal || selectBit.size() == 0){
 				//printf("Not possible...Deleting from list...\n");
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1336,9 +1368,6 @@ namespace AGGREGATION{
 						stats[orinit->size()][selectBit] ++;
 				}
 
-				
-
-
 				orinit++;
 				oroutit++;
 			}
@@ -1347,29 +1376,27 @@ namespace AGGREGATION{
 		}
 
 
-		printf("Select Bits\n");
-		for(unsigned int i = 0; i < selectBits.size(); i++){
-			for(unsigned int k = 0; k < selectBits[i].size(); k++){
-				printf("%d ", selectBits[i][k]);
-			}
-			printf(" |  ");
-		}
-		printf("\n");
 
 
 		printf("\n\nPossible Mux or gates\n");	
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
-
+		
+		unsigned int index = 0;
 		while(orinit != orIn.end()){
 			printf("INPUT: ");
 			for(unsigned int i = 0; i < orinit->size(); i++){
 				printf("%d ", orinit->at(i));
 			}
-			printf("\nOutput: %d\n", *oroutit);
+			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
+			for(unsigned int k = 0; k < selectBits[index].size(); k++){
+				printf("%d ", selectBits[index][k]);
+			}
+			printf("\n");
 
 			orinit++;
 			oroutit++;
+			index++;
 		}
 		printf("\n\n");
 
@@ -1380,6 +1407,12 @@ namespace AGGREGATION{
 				printf("\t* %d-Bit Mux\n", iCount->second);
 			}
 		}
+
+
+		std::set<unsigned> inputset;
+		inputset.insert(24);
+		inputset.insert(46);
+		aigraph->printSubgraph(1708, inputset);
 		
 
 
