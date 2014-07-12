@@ -1018,13 +1018,13 @@ void AIG::printSubgraph(unsigned output, std::set<unsigned>& input){
 		std::cout<<"\t"<<node1<<"->"<<itemNode<<dot1<<std::endl;
 		std::cout<<"\t"<<node2<<"->"<<itemNode<<dot2<<std::endl;
 
-		if(marked.find(c1) == marked.end()){
-			marked.insert(c1);
-			queue.push_back(c1);
+		if(marked.find(node1) == marked.end()){
+			marked.insert(node1);
+			queue.push_back(c1); //Want to keep the sign
 			levelMap[node1] = levelMap[itemNode] + 1;
 		}
-		if(marked.find(c2) == marked.end()){
-			marked.insert(c2);
+		if(marked.find(node2) == marked.end()){
+			marked.insert(node2);
 			queue.push_back(c2);
 			levelMap[node2] = levelMap[itemNode] + 1;
 		}
