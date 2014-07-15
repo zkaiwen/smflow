@@ -1,13 +1,13 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@ 
-	@
-	@  AGGREGATION.cpp
-	@		--Aggregates Common components into higher structures
-	@  
-	@  @AUTHOR:Kevin Zeng
-	@  Copyright 2012 – 2013 
-	@  Virginia Polytechnic Institute and State University
-	@
-	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+  @
+  @  AGGREGATION.cpp
+  @		--Aggregates Common components into higher structures
+  @  
+  @  @AUTHOR:Kevin Zeng
+  @  Copyright 2012 – 2013 
+  @  Virginia Polytechnic Institute and State University
+  @
+  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef AGG_GUARD
 #define AGG_GUARD
@@ -18,6 +18,7 @@
 #include <string>
 #include <math.h>
 #include <fstream>
+#include <map>
 #include "graph.hpp"
 #include "vertex.hpp"
 #include "aig.hpp"
@@ -117,13 +118,13 @@ namespace AGGREGATION{
 
 		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator outit;
 		/*
-			 printf("\n\nHALF ADDERS\n");
-			 for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-			 printf("INPUTS: ");
-			 for(unsigned int i = 0; i < outit->first.size(); i++)
-			 printf("%d ", outit->first[i]);
-			 printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
-			 }
+		   printf("\n\nHALF ADDERS\n");
+		   for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+		   printf("INPUTS: ");
+		   for(unsigned int i = 0; i < outit->first.size(); i++)
+		   printf("%d ", outit->first[i]);
+		   printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
+		   }
 		 */
 
 		printf("\n----------------------------------------------------------------\n");
@@ -150,7 +151,7 @@ namespace AGGREGATION{
 
 
 
-			 SEARCHING GREY BLOCKS
+		   SEARCHING GREY BLOCKS
 
 
 
@@ -217,16 +218,16 @@ namespace AGGREGATION{
 		printf("done\n");
 
 		/*			
-						printf("PRINTING GBLOCKS\n");
-						for(unsigned int j = 0; j < gPorts.size(); j++){
-						printf("INPUT: ");
-						unsigned int k = 0;
-						for(k = 0; k < gPorts[j].size()-1; k++){
-						printf("%d ", gPorts[j][k]);
+					printf("PRINTING GBLOCKS\n");
+					for(unsigned int j = 0; j < gPorts.size(); j++){
+					printf("INPUT: ");
+					unsigned int k = 0;
+					for(k = 0; k < gPorts[j].size()-1; k++){
+					printf("%d ", gPorts[j][k]);
 
-						}
-						printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
-						}
+					}
+					printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
+					}
 		 */
 		printf(" * Aggregating Results...");	
 		//Vector of vector of iterators. (Aggregated adders)
@@ -412,20 +413,20 @@ namespace AGGREGATION{
 		printf("done\n");
 
 		/*
-			 printf("Printing ha and hagp set\n");
-			 for(unsigned int i = 0; i < addbitIn.size(); i++){
-			 printf("Input:\t");
-			 for(unsigned int j = 0; j < addbitIn[i].size(); j++){
-			 printf("%d ", addbitIn[i][j]);
-			 }
+		   printf("Printing ha and hagp set\n");
+		   for(unsigned int i = 0; i < addbitIn.size(); i++){
+		   printf("Input:\t");
+		   for(unsigned int j = 0; j < addbitIn[i].size(); j++){
+		   printf("%d ", addbitIn[i][j]);
+		   }
 
-			 printf("\nOutput:\t");
-			 for(unsigned int j = 0; j < addbitOut[i].size(); j++){
-			 printf("%d ", addbitOut[i][j]);
-			 }
-			 printf("\n\n");
+		   printf("\nOutput:\t");
+		   for(unsigned int j = 0; j < addbitOut[i].size(); j++){
+		   printf("%d ", addbitOut[i][j]);
+		   }
+		   printf("\n\n");
 
-			 }
+		   }
 		 */
 		//output index 0
 		std::vector<std::set<unsigned> > marked2; 
@@ -573,14 +574,14 @@ namespace AGGREGATION{
 						unsigned in = pmap[and3[i]][j]->at(k);
 						//printf("%d ", in);
 						/*
-							 if(in < 0) in*=-1;
+						   if(in < 0) in*=-1;
 
-							 unsigned int s;
-							 for(s = 0; i < ports.size(); s++){
-							 if(in < ports[s])
-							 break;
-							 }
-							 ports.insert(ports.begin() + s, in);
+						   unsigned int s;
+						   for(s = 0; i < ports.size(); s++){
+						   if(in < ports[s])
+						   break;
+						   }
+						   ports.insert(ports.begin() + s, in);
 						 */
 						ports.push_back(in);
 
@@ -634,15 +635,15 @@ namespace AGGREGATION{
 
 		std::map<std::vector<unsigned>, int >::iterator ait;
 		/*
-			 printf("aggregation:\n");
-			 for(ait = agg2.begin(); ait != agg2.end(); ait++){
-			 printf("PAIR: %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->second);	
+		   printf("aggregation:\n");
+		   for(ait = agg2.begin(); ait != agg2.end(); ait++){
+		   printf("PAIR: %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->second);	
 
-			 }
-			 for(ait = agg3.begin(); ait != agg3.end(); ait++){
-			 printf("PAIR: %d %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->first[2], ait->second);	
+		   }
+		   for(ait = agg3.begin(); ait != agg3.end(); ait++){
+		   printf("PAIR: %d %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->first[2], ait->second);	
 
-			 }
+		   }
 		 */
 
 		printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -844,30 +845,30 @@ namespace AGGREGATION{
 			printf("   %2d-bit mux.....%d\n", cnt->first, (int) cnt->second.size());
 			returnlist.push_back(cnt->first);
 			/*
-				 for(unsigned int i = 0; i < cnt->second.size(); i++){
-				 printf("    *   ");
-				 for(unsigned int j = 0; j < cnt->second[i].size(); j++){
-				 printf("%d ", cnt->second[i][j]);
-				 }
-				 printf("\n");
-				 }
-				 printf("\n\n");
+			   for(unsigned int i = 0; i < cnt->second.size(); i++){
+			   printf("    *   ");
+			   for(unsigned int j = 0; j < cnt->second[i].size(); j++){
+			   printf("%d ", cnt->second[i][j]);
+			   }
+			   printf("\n");
+			   }
+			   printf("\n\n");
 			 */
 		}
 
 
 
 		/*
-			 printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
-			 for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
-			 printf("    %2d-bit mux\n", (int) muxset4it->second.size());
-			 printf("      OR4: ");
-			 for(unsigned int i = 0; i < muxset4it->second.size(); i++){
-			 printf("%d ", muxset4it->second[i]);
-			 }
-			 printf("\n");
+		   printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
+		   for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
+		   printf("    %2d-bit mux\n", (int) muxset4it->second.size());
+		   printf("      OR4: ");
+		   for(unsigned int i = 0; i < muxset4it->second.size(); i++){
+		   printf("%d ", muxset4it->second[i]);
+		   }
+		   printf("\n");
 
-			 }
+		   }
 		 */
 
 
@@ -1028,30 +1029,30 @@ namespace AGGREGATION{
 			printf("   %2d-bit mux.....%d\n", cnt->first, (int) cnt->second.size());
 			returnlist.push_back(cnt->first);
 			/*
-				 for(unsigned int i = 0; i < cnt->second.size(); i++){
-				 printf("    *   ");
-				 for(unsigned int j = 0; j < cnt->second[i].size(); j++){
-				 printf("%d ", cnt->second[i][j]);
-				 }
-				 printf("\n");
-				 }
-				 printf("\n\n");
+			   for(unsigned int i = 0; i < cnt->second.size(); i++){
+			   printf("    *   ");
+			   for(unsigned int j = 0; j < cnt->second[i].size(); j++){
+			   printf("%d ", cnt->second[i][j]);
+			   }
+			   printf("\n");
+			   }
+			   printf("\n\n");
 			 */
 		}
 
 
 
 		/*
-			 printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
-			 for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
-			 printf("    %2d-bit mux\n", (int) muxset4it->second.size());
-			 printf("      OR4: ");
-			 for(unsigned int i = 0; i < muxset4it->second.size(); i++){
-			 printf("%d ", muxset4it->second[i]);
-			 }
-			 printf("\n");
+		   printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
+		   for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
+		   printf("    %2d-bit mux\n", (int) muxset4it->second.size());
+		   printf("      OR4: ");
+		   for(unsigned int i = 0; i < muxset4it->second.size(); i++){
+		   printf("%d ", muxset4it->second[i]);
+		   }
+		   printf("\n");
 
-			 }
+		   }
 		 */
 
 
@@ -1137,10 +1138,10 @@ namespace AGGREGATION{
 			//printf("IN %d OUT %d\n", orIn.size(), orOut.size());
 			if((*orinit).size() != numNeg){
 				/*printf("Size Mismatch\nDeleting....:  ");
-					for(unsigned int i = 0; i < (*orinit).size(); i++)
-					printf("%d ", orinit->at(i));
+				  for(unsigned int i = 0; i < (*orinit).size(); i++)
+				  printf("%d ", orinit->at(i));
 
-					printf("  OUT: %d\n", *oroutit);
+				  printf("  OUT: %d\n", *oroutit);
 				 */
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1171,51 +1172,6 @@ namespace AGGREGATION{
 
 		//Remove or gates contained within another. 
 		/*
-			 orinit = orIn.begin();
-			 oroutit = orOut.begin();
-			 printf(" * Removing Redundancies that are contained...");
-			 while(orinit != orIn.end()){
-			 orinit2 = orinit;
-			 orinit2++;
-			 oroutit2 = oroutit;
-			 oroutit2++;
-
-			 bool next = true;
-			 while(orinit2 != orIn.end()){
-
-			 unsigned int numMatch = 0;
-
-			 for(unsigned int i = 0; i < orinit->size(); i++){
-			 for(unsigned int j = 0; j < orinit2->size(); j++){
-			 if(orinit->at(i) == orinit2->at(j)){
-			 numMatch++;
-			 break;
-			 }
-			 }
-			 }
-
-			 if(numMatch == orinit->size()){
-			 orinit = orIn.erase(orinit);
-			 oroutit = orOut.erase(oroutit);
-			 next = false;
-			 break;
-			 }
-			 else if(numMatch == orinit2->size()){
-			 orinit2 = orIn.erase(orinit2);
-			 oroutit2 = orOut.erase(oroutit2);
-			 }
-			 else{
-			 oroutit2++;
-			 orinit2++;
-			 }
-			 }
-
-			 if(next){
-			 orinit++;
-			 oroutit++;
-			 }
-			 }
-			 printf("done\n");
 		 */
 
 
@@ -1225,9 +1181,12 @@ namespace AGGREGATION{
 		std::map<std::vector<int>, std::vector<std::list<std::vector<unsigned> >::iterator > > selectMap;
 		std::map<std::vector<int>, std::vector<std::list<std::vector<unsigned> >::iterator > > ::iterator iSelectMap;
 
+		//Mux size, selectbits, count
 		std::map<int, std::map<std::vector<int>, int> >stats;
 		std::map<int, std::map<std::vector<int>, int> >::iterator iStats;
-		std::vector<std::vector<int> > selectBits;
+
+		//Orinit iterator, vector of select bits
+		std::map<std::list<std::vector<unsigned> >::iterator, std::vector<int> > selectBits;
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
 
@@ -1270,13 +1229,13 @@ namespace AGGREGATION{
 			bool isLevelLimit = false;
 			while(!isQueueEmpty && !isLevelLimit){
 				/*
-				if(orinit->size() != 4) break;
+				   if(orinit->size() != 4) break;
+				 */
 				printf("\n\nINPUT: ");
 				for(unsigned int i = 0; i < orinit->size(); i++){
 					printf("%d ", orinit->at(i));
 				}
 				printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
-				*/
 
 				isQueueEmpty = true;
 
@@ -1293,11 +1252,13 @@ namespace AGGREGATION{
 					queue[i].pop_front();
 
 					//Check to see if the levelLimit is reached
-					if(levelMap[signal] > numSameSignal+1){
+					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+					if(levelMap[signal] > numSameSignal){
+						printf("LevelLimit reached\n");
 						isLevelLimit = true;
 						break;
 					}
-					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+					std::list<unsigned int>::iterator iQueue;
 
 
 					//Increase signal count
@@ -1306,9 +1267,9 @@ namespace AGGREGATION{
 
 						//Check to see if the number of same signals are as expected
 						if(sameSignalCount[signal].size() == orinit->size()){
-							printf("Select Bit: Push: %d\n", signal);
+							//printf("Select Bit: Push: %d\n", signal);
 							selectBit.push_back(signal);
-	
+
 							//Check to see if the number of select bit matches the orgatesize
 							if(selectBit.size() == numSameSignal)
 								isQueueEmpty = true;
@@ -1317,7 +1278,7 @@ namespace AGGREGATION{
 						continue;
 
 					}
-						
+
 					sameSignalCount[signal].insert(i);
 
 
@@ -1331,38 +1292,26 @@ namespace AGGREGATION{
 					unsigned int node1 = c1 & 0xFFFFFFFE;
 					unsigned int node2 = c2 & 0xFFFFFFFE;
 
-					//printf("    * Signal Pushed: ");
+					printf("    * Signal Pushed: ");
 					queue[i].push_back(c1);
 					levelMap[node1] = levelMap[signal]+1;
-					//printf("%d ", c1);
+					printf("%d ", c1);
 					queue[i].push_back(c2);
 					levelMap[node2] = levelMap[signal]+1;
-					//printf("%d ", c2);
-					//printf("\n");
+					printf("%d ", c2);
+					printf("\n");
 				}
 			}
 
 			if(selectBit.size() != numSameSignal || selectBit.size() == 0){
-				//printf("Not possible...Deleting from list...\n");
+				printf("Not possible...Deleting from list...\n");
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
 			}
 			else{
 				selectMap[selectBit].push_back(orinit);
-				selectBits.push_back(selectBit);
+				selectBits[orinit] = selectBit;
 
-				if(stats.find(orinit->size()) == stats.end()){
-					std::map<std::vector<int>, int> count;
-					count[selectBit] = 1;
-					stats[orinit->size()] = count;
-				}
-				else{
-					if(stats[orinit->size()].find(selectBit) == stats[orinit->size()].end()){
-						stats[orinit->size()][selectBit] = 1;
-					}
-					else
-						stats[orinit->size()][selectBit] ++;
-				}
 
 				orinit++;
 				oroutit++;
@@ -1371,6 +1320,87 @@ namespace AGGREGATION{
 
 		}
 
+
+
+
+		//removing gates contained within one another
+		orinit = orIn.begin();
+		oroutit = orOut.begin();
+		printf(" * Removing Redundancies that are contained...");
+		while(orinit != orIn.end()){
+			orinit2 = orinit;
+			orinit2++;
+			oroutit2 = oroutit;
+			oroutit2++;
+
+			bool next = true;
+			while(orinit2 != orIn.end()){
+
+				unsigned int numMatch = 0;
+
+				for(unsigned int i = 0; i < orinit->size(); i++){
+					for(unsigned int j = 0; j < orinit2->size(); j++){
+						if(orinit->at(i) == orinit2->at(j)){
+							numMatch++;
+							break;
+						}
+					}
+				}
+
+				if(numMatch == orinit->size()){
+					orinit = orIn.erase(orinit);
+					oroutit = orOut.erase(oroutit);
+					selectBits.erase(orinit);
+					next = false;
+					break;
+				}
+				else if(numMatch == orinit2->size()){
+					orinit2 = orIn.erase(orinit2);
+					oroutit2 = orOut.erase(oroutit2);
+
+					selectBits.erase(orinit2);
+				}
+				else{
+
+					oroutit2++;
+					orinit2++;
+				}
+			}
+
+			if(next){
+				orinit++;
+				oroutit++;
+			}
+		}
+		printf("done\n");
+
+
+
+
+
+
+
+		//Prepare output
+		orinit = orIn.begin();
+		oroutit = orOut.begin();
+
+		while(orinit != orIn.end()){
+				if(stats.find(orinit->size()) == stats.end()){
+					std::map<std::vector<int>, int> count;
+					count[selectBits[orinit]] = 1;
+					stats[orinit->size()] = count;
+				}
+				else{
+					if(stats[orinit->size()].find(selectBits[orinit]) == stats[orinit->size()].end()){
+						stats[orinit->size()][selectBits[orinit]] = 1;
+					}
+					else
+						stats[orinit->size()][selectBits[orinit]] ++;
+				}
+
+			orinit++;
+			oroutit++;
+		}
 
 
 
@@ -1385,8 +1415,8 @@ namespace AGGREGATION{
 				printf("%d ", orinit->at(i));
 			}
 			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
-			for(unsigned int k = 0; k < selectBits[index].size(); k++){
-				printf("%d ", selectBits[index][k]);
+			for(unsigned int k = 0; k < selectBits[orinit].size(); k++){
+				printf("%d ", selectBits[orinit][k]);
 			}
 			printf("\n");
 
@@ -1409,9 +1439,8 @@ namespace AGGREGATION{
 
 
 		std::set<unsigned> inputset;
-		inputset.insert(290);
-		inputset.insert(292);
-		aigraph->printSubgraph(1024, inputset);
+		inputset.insert(240);
+		aigraph->printSubgraph(1240, inputset);
 
 
 
@@ -1503,19 +1532,19 @@ namespace AGGREGATION{
 			andoutit++;
 		}
 		/*	
-				std::set<int>::iterator andsetit;
-				for(unsigned int i = 0; i < andSimIn.size(); i++){
-				printf("\nSimilar Input: ");
-				for(andsetit = andSimIn[i].begin(); andsetit != andSimIn[i].end(); andsetit++){
-				printf("%d ", *andsetit);
-				}
-				printf("\nOutputs: ");
-				for(andsetit = andSimOut[i].begin(); andsetit != andSimOut[i].end(); andsetit++){
-				printf("%d ", *andsetit);
-				}
-				printf("\n");
-				}
-				printf("\n\n");
+			std::set<int>::iterator andsetit;
+			for(unsigned int i = 0; i < andSimIn.size(); i++){
+			printf("\nSimilar Input: ");
+			for(andsetit = andSimIn[i].begin(); andsetit != andSimIn[i].end(); andsetit++){
+			printf("%d ", *andsetit);
+			}
+			printf("\nOutputs: ");
+			for(andsetit = andSimOut[i].begin(); andsetit != andSimOut[i].end(); andsetit++){
+			printf("%d ", *andsetit);
+			}
+			printf("\n");
+			}
+			printf("\n\n");
 		 */
 
 		//Remove redundancies

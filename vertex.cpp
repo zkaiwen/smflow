@@ -113,7 +113,7 @@ void Vertex::addOutput(Vertex* output, std::string port){
 }
 
 std::string Vertex::removeOutputValue(int outputVal){
-	typename std::map<std::string, std::vector<Vertex*> >::iterator it;
+	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++){
 			if(it->second[i]->getVertexID() == outputVal){
@@ -153,7 +153,7 @@ void Vertex::removeInPortValue(int index){
 }
 
 void Vertex::getOutput(std::vector<Vertex*> &v){
-	typename std::map<std::string, std::vector<Vertex*> >::iterator it;
+	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++)
 			v.push_back(it->second[i]);
@@ -174,14 +174,14 @@ void Vertex::getInputPorts(std::vector<std::string>&v){
 
 
 	void Vertex::getOutputPorts(std::vector<std::string> &v){
-		typename std::map<std::string, std::vector<Vertex*> >::iterator it;
+		std::map<std::string, std::vector<Vertex*> >::iterator it;
 		for(it = m_Output.begin(); it != m_Output.end(); it++){
 			v.push_back(it->first);
 		}
 	}
 
 std::string  Vertex::getOutputPortName(int id){
-	typename std::map<std::string, std::vector<Vertex*> >::iterator it;
+	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++){
 			if(it->second[i]->getVertexID() == id)
@@ -226,7 +226,7 @@ int Vertex::getInputPortID(std::string port){
 
 unsigned int Vertex::getOVSize(){
 	unsigned int size = 0;
-	typename std::map<std::string, std::vector<Vertex*> >::iterator it;
+	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		size += it->second.size();
 	}
