@@ -703,7 +703,7 @@ namespace SEQUENTIAL{
 				}
 
 				lutgraph->renumber(ckt->getLast() + 1);
-				lutgraph->print();
+				//lutgraph->print();
 				VERIFICATION::verifyLUT(it->second->getLUT(), lutgraph);
 				ckt->substitute(it->second->getVertexID(), lutgraph);
 			}
@@ -731,7 +731,7 @@ namespace SEQUENTIAL{
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
 				numLUTs++;
-				printf("LUT INDEX: %d\n", it->first);
+				//printf("LUT INDEX: %d\n", it->first);
 				std::vector<Vertex*> inputs;
 				it->second->getInput(inputs);
 				unsigned long function = it->second->getLUT();

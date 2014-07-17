@@ -420,18 +420,23 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::vector<Vertex*> gNodeOutput;
 	std::vector<int> toBeDeleted;
 	std::vector<int> flipflops;
+	int ptBuffer = 0; 
 
 
 
 
 	//Go through each node in the circuit and covert it to its
 	//  AND/INV representative
-	for(it = ckt->begin(); it != ckt->end(); it++){
+	std::map<int, Vertex*>::iterator end = ckt->end();
+	end--;
+
+	for(it = ckt->begin(); it->first <= end->first; it++){
 		std::string circuitType;
 
 		//Read in the necessary primitive type
 		//printf("CONVERTING V%d to AIG PRIM\n", it->first);
 		//printf("GATE: %s\n", it->second->getType().c_str());
+
 		std::string gateType = it->second->getType();
 
 		if(gateType.find("XORCY") != std::string::npos)
@@ -494,6 +499,14 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 			std::string outputPortName = in[0]->removeOutputValue(it->first);
 
+			//Check to see if INPUT is connected to buffer and out is OUTPUT
+			//If it is...delete input
+			if(in[0]->getType() == "IN" && out.size() == 0){
+				printf("BUFFER IS A PASSTHROUGH\n");
+				ptBuffer++;
+			}
+
+			
 			for(unsigned int i = 0; i < out.size(); i++){
 				int index = out[i]->removeInputValue(it->first);
 				out[i]->addInput(in[0]);
@@ -535,7 +548,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		ckt->substitute(it->first, primCkt);
 		toBeDeleted.push_back(it->first);
 
-		//printf("LAST INDEX: %d\n\n", aindex);
 		//printf("VERTEXID: %d\n", it->first);
 		//if(ckt->getLast() > 40805){
 		//	ckt->printg();
@@ -545,14 +557,17 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//printf("\n\n");
 	}
 
-	//printf("CONVERTED CIRCUIT\n");
-	//ckt->printg();
-	//printf("\n\n");
 
 
 	//Delete substituted nodes from the graph
 	for(unsigned int i = 0; i < toBeDeleted.size(); i++)
 		ckt->removeVertex(toBeDeleted[i]);
+	printf("NUMBER OF PASSTHROUGH BUFFER: %d\n", ptBuffer);
+
+
+	//printf("CONVERTED CIRCUIT\n");
+	//ckt->print();
+	//printf("\n\n");
 
 	if(sub)
 		return;
@@ -608,181 +623,58 @@ ckt->setLevels();
 			printf("Size mismatch\n");
 			exit(1);
 		}
+
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
-			if(vLevel[i][j]->getType().find("AND") != std::string::npos){
+			Vertex* vertex = vLevel[i][j];
+			int vertexID = vertex->getVertexID();
+
+			if(vertex->getType().find("AND") != std::string::npos){
 				std::vector<Vertex*> in;
-				vLevel[i][j]->getInput(in);
+				vertex->getInput(in);
 
 				unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
-				int vertexID = vLevel[i][j]->getVertexID();
 				m_GateMap[vertexID] = output;
+
+				//printf("AND NODE: %d IN: %d %d\nAIG NODE: %d IN: %d %d\n", vertexID, in[0]->getVertexID(), in[1]->getVertexID(), output, m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
 			}
-			else if(vLevel[i][j]->getType().find("INV") != std::string::npos){
+			else if(vertex->getType().find("INV") != std::string::npos){
 				std::vector<Vertex*> in;
-				vLevel[i][j]->getInput(in);
+				vertex->getInput(in);
 
 
 				if(m_GateMap[in[0]->getVertexID()] == 0)
-					m_GateMap[vLevel[i][j]->getVertexID()] = 1;
+					m_GateMap[vertexID] = 1;
 				else if(m_GateMap[in[0]->getVertexID()] == 1)
-					m_GateMap[vLevel[i][j]->getVertexID()] = 0;
+					m_GateMap[vertexID] = 0;
 				else{
 					if(m_GateMap[in[0]->getVertexID()]%2 == 0)
-						m_GateMap[vLevel[i][j]->getVertexID()] = m_GateMap[in[0]->getVertexID()] + 1;
+						m_GateMap[vertexID] = m_GateMap[in[0]->getVertexID()] + 1;
 					else
-						m_GateMap[vLevel[i][j]->getVertexID()] = m_GateMap[in[0]->getVertexID()] - 1;
-
+						m_GateMap[vertexID] = m_GateMap[in[0]->getVertexID()] - 1;
 				}
-				if(vLevel[i][j]->getOVSize() == 0 ){
+				
+
+				if(vertex->getOVSize() == 0 ){
 					m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
-					aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
+					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
 				}
 				continue;
 			}
 			else
 			{
-				printf("Unknown Gate type:\t%s\n", vLevel[i][j]->getType().c_str());
+				printf("Unknown Gate type:\t%s\n", vertex->getType().c_str());
 				exit(1);
 			}
 
 			//CHeck to see if node has an output
-			if(vLevel[i][j]->getOVSize() == 0){
+			if(vertex->getOVSize() == 0){
 				//printf("NO OUTPUT\n");
-				m_Outputs.push_back(m_GateMap[vLevel[i][j]->getVertexID()]);
-				aiger_add_output(m_Aiger, m_GateMap[vLevel[i][j]->getVertexID()], 0);
+				m_Outputs.push_back(m_GateMap[vertex->getVertexID()]);
+				aiger_add_output(m_Aiger, m_GateMap[vertex->getVertexID()], 0);
 			}
 			//printf("\n");
 		}
 	}
-
-
-
-	 /*
-	std::vector<int> gInputs;
-	ckt->getInputs(gInputs);
-		
-	std::list<unsigned int> queue;
-	std::list<unsigned int>::iterator qit;
-	std::set<unsigned int> marked;
-
-	for(unsigned int i = 0; i < gInputs.size(); i++){
-		Vertex* vertex = ckt->getVertex(gInputs[i]);
-		std::string type  = vertex->getType();
-		if(type == "VCC")
-			m_GateMap[gInputs[i]] = 1;
-		else if(type == "GND")
-			m_GateMap[gInputs[i]] = 0;
-		else{
-			unsigned int input= create_input();
-			m_GateMap[gInputs[i]] = input; 
-		}
-
-		std::vector<Vertex*> outputs;
-		vertex->getOutput(outputs);
-		for(unsigned int i = 0; i < outputs.size(); i++){
-			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
-				marked.insert(outputs[i]->getVertexID());
-				queue.push_back(outputs[i]->getVertexID());
-			}
-		}
-	}
-	
-
-
-	//BFS- Create And gates/ Inverters
-	while(queue.size() != 0){
-		int item = queue.front();
-		qit = queue.begin();
-		Vertex* vertex= ckt->getVertex(item);
-		std::string type  = vertex->getType();
-
-		std::vector<Vertex*> in;
-		vertex->getInput(in);
-
-		//Check to see if inputs have been mapped. If not skipp for now
-		bool valid = false;
-		while(!valid){
-			if(m_GateMap.find(in[0]->getVertexID()) == m_GateMap.end()){
-				qit++;
-				assert(qit != queue.end());
-				
-				item = *(qit);
-
-				vertex = ckt->getVertex(item);
-				type  = vertex->getType();
-	
-				in.clear();
-				vertex->getInput(in);
-			}
-			else if(in.size() == 2){
-				if(m_GateMap.find(in[1]->getVertexID()) == m_GateMap.end()){
-					qit++;
-					assert(qit != queue.end());
-				
-					item = *(qit);
-
-					vertex = ckt->getVertex(item);
-					type  = vertex->getType();
-	
-					in.clear();
-					vertex->getInput(in);
-				}
-				else 
-					valid = true;
-			}
-			else
-				valid = true;
-		}
-
-		if(type.find("AND") != std::string::npos){
-			unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
-			m_GateMap[item] = output;
-		}
-		else if(type.find("INV") != std::string::npos){
-			//Handle inverting constants
-			if(m_GateMap[in[0]->getVertexID()] == 0)
-				m_GateMap[item] = 1;
-			else if(m_GateMap[in[0]->getVertexID()] == 1)
-				m_GateMap[item] = 0;
-
-			else{
-				//Even is positive, odd, is negative
-				if(m_GateMap[in[0]->getVertexID()]%2 == 0)
-					m_GateMap[item] = m_GateMap[in[0]->getVertexID()] + 1;
-				else
-					m_GateMap[item] = m_GateMap[in[0]->getVertexID()] - 1;
-			}
-
-
-			//If node has not outputs, Node is an output nodeH
-			if(vertex->getOVSize() == 0 ){
-				m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
-				aiger_add_output(m_Aiger, m_GateMap[item], 0);
-			}
-		}
-		else
-		{
-			printf("Unknown Gate type:\t%s\n", type.c_str());
-			exit(1);
-		}
-		
-		queue.erase(qit);
-				
-				
-		//Add the next level of nodes	(FANOUT)
-		std::vector<Vertex*> outputs;
-		vertex->getOutput(outputs);
-				
-		for(unsigned int i = 0; i < outputs.size(); i++){
-			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
-				marked.insert(outputs[i]->getVertexID());
-				queue.push_back(outputs[i]->getVertexID());
-			}
-		}
-	}
-	*/
-
-
 
 
 	//printf("[AIG]--Checking AIG...");
@@ -864,6 +756,32 @@ bool AIG::handleFF(int node, Graph* ckt){
  *    @RETURN: AND node of AIG that was created
  ********************************************************/
 unsigned AIG::create_and2(unsigned e1, unsigned e2){
+	//Structural Hashing/FOLDING
+	if(e1 == 0){
+		printf("FOLD e1 = 0\n"); 
+		return 0;
+	}
+	if(e2 == 0){
+		printf("FOLD e2 = 0\n");
+		return 0; 
+	}
+	if(e1 == 1){
+		printf("FOLD e1 = 1\n");
+		return e2;
+	}
+	if(e2 == 1){
+		printf("FOLD e2 = 1\n");
+		return e1;
+	}
+	if((e1& 0xFFFFFFFE) == (e2 & 0xFFFFFFFE)){
+		printf("FOLD e1 = -e2: %d %d \n", e1, e2);
+		return 0;
+	}
+	if(e1 == e2){
+		printf("FOLD e1 = e2 \n");
+		return e1;
+	}
+
 	std::vector<unsigned> key;
 	if(e1 < e2){
 		key.push_back(e1);	

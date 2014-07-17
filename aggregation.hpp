@@ -1153,7 +1153,7 @@ namespace AGGREGATION{
 
 		}
 		printf("done\n");
-
+		
 		printf("\n\nPossible Mux or gates\n");	
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
@@ -1168,25 +1168,18 @@ namespace AGGREGATION{
 			orinit++;
 			oroutit++;
 		}
-		printf("\n\n");
+
 
 		//Remove or gates contained within another. 
-		/*
-		 */
-
-
-
 		printf(" * Searching for common signals\n");
-		//Vector of select bits, list of orgates with those bits
-		std::map<std::vector<int>, std::vector<std::list<std::vector<unsigned> >::iterator > > selectMap;
-		std::map<std::vector<int>, std::vector<std::list<std::vector<unsigned> >::iterator > > ::iterator iSelectMap;
 
 		//Mux size, selectbits, count
-		std::map<int, std::map<std::vector<int>, int> >stats;
-		std::map<int, std::map<std::vector<int>, int> >::iterator iStats;
+		std::map<int, std::map<std::set<int>, int> >stats;
+		std::map<int, std::map<std::set<int>, int> >::iterator iStats;
 
 		//Orinit iterator, vector of select bits
-		std::map<std::list<std::vector<unsigned> >::iterator, std::vector<int> > selectBits;
+		std::map<std::vector<unsigned> , std::set<int> > selectBits;
+		unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
 
@@ -1199,13 +1192,51 @@ namespace AGGREGATION{
 			std::map<unsigned int, unsigned int> levelMap;
 
 			//Prepare a queue for each input
+			bool conflict = false;
 			for(unsigned int i = 0; i < orinit->size(); i++){
-				std::list<unsigned int> startqueue;
-				startqueue.push_back(orinit->at(i));
-				//printf("START: %d INDEX: %d\n", orinit->at(i), i);
-				queue.push_back(startqueue);
+				unsigned int signal = orinit->at(i);
 
+				/*
+					Makes sure input to or gate does not go into 
+					other inputs of the or gate
+				*/
+				if(signal > aigInputLimit){
+
+					//Check if other inputs are connected to it
+					unsigned int c1 = aigraph->getChild1(signal);
+					unsigned int c2 = aigraph->getChild2(signal);
+					unsigned int node1 = c1 & 0xFFFFFFFE;
+					unsigned int node2 = c2 & 0xFFFFFFFE;
+
+				
+					for(unsigned int k = 0; k < orinit->size(); k++){
+						if(orinit->at(k) == node1 || orinit->at(k) == node2){
+							printf("CONFLICT\n");
+							conflict = true;
+							break;
+						}
+					}
+					if(conflict) break;
+				}
+
+
+				std::list<unsigned int> startqueue;
+				startqueue.push_back(signal);
+				//printf("START: %d INDEX: %d\n", orinit->at(i), i);
+
+				queue.push_back(startqueue);
 				levelMap[orinit->at(i)] = 0;
+			}
+
+			if(conflict){
+				printf("CONFLICT REMOVAL\n");
+			for(unsigned int i = 0; i < orinit->size(); i++){
+				printf("%d ", orinit->at(i));
+			}
+			printf("\t\tOutput: %d\n", *oroutit);
+				orinit = orIn.erase(orinit);
+				oroutit = orOut.erase(oroutit);
+				continue;
 			}
 
 
@@ -1213,7 +1244,6 @@ namespace AGGREGATION{
 			//Node id, count
 			std::map<unsigned int, std::set<unsigned int> >sameSignalCount;
 			bool isQueueEmpty= false;
-			unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
 			unsigned int numSameSignal = 0;
 			unsigned int mask = 1;
 			while(mask < orinit->size()){
@@ -1223,19 +1253,19 @@ namespace AGGREGATION{
 
 			//printf("\nAIG SAME SIGNAL: %d\n", numSameSignal);
 			//printf("Number of Inputs: %d\n", orinit->size());
-			std::vector<int> selectBit;
+			std::set<int> selectBit;
 
 			//Go at most 3 or 2 levels deep depending on size of or gate;
 			bool isLevelLimit = false;
 			while(!isQueueEmpty && !isLevelLimit){
 				/*
 				   if(orinit->size() != 4) break;
-				 */
 				printf("\n\nINPUT: ");
 				for(unsigned int i = 0; i < orinit->size(); i++){
 					printf("%d ", orinit->at(i));
 				}
 				printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
+				 */
 
 				isQueueEmpty = true;
 
@@ -1252,9 +1282,8 @@ namespace AGGREGATION{
 					queue[i].pop_front();
 
 					//Check to see if the levelLimit is reached
-					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+				//	printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
 					if(levelMap[signal] > numSameSignal){
-						printf("LevelLimit reached\n");
 						isLevelLimit = true;
 						break;
 					}
@@ -1268,7 +1297,7 @@ namespace AGGREGATION{
 						//Check to see if the number of same signals are as expected
 						if(sameSignalCount[signal].size() == orinit->size()){
 							//printf("Select Bit: Push: %d\n", signal);
-							selectBit.push_back(signal);
+							selectBit.insert(signal);
 
 							//Check to see if the number of select bit matches the orgatesize
 							if(selectBit.size() == numSameSignal)
@@ -1292,26 +1321,30 @@ namespace AGGREGATION{
 					unsigned int node1 = c1 & 0xFFFFFFFE;
 					unsigned int node2 = c2 & 0xFFFFFFFE;
 
-					printf("    * Signal Pushed: ");
 					queue[i].push_back(c1);
 					levelMap[node1] = levelMap[signal]+1;
-					printf("%d ", c1);
 					queue[i].push_back(c2);
 					levelMap[node2] = levelMap[signal]+1;
+
+					/*printf("    * Signal Pushed: ");
+					printf("%d ", c1);
 					printf("%d ", c2);
 					printf("\n");
+					*/
 				}
 			}
 
 			if(selectBit.size() != numSameSignal || selectBit.size() == 0){
 				printf("Not possible...Deleting from list...\n");
+			for(unsigned int i = 0; i < orinit->size(); i++){
+				printf("%d ", orinit->at(i));
+			}
+			printf("\t\tOutput: %d\n", *oroutit);
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
 			}
 			else{
-				selectMap[selectBit].push_back(orinit);
-				selectBits[orinit] = selectBit;
-
+				selectBits[*orinit] = selectBit;
 
 				orinit++;
 				oroutit++;
@@ -1348,17 +1381,17 @@ namespace AGGREGATION{
 				}
 
 				if(numMatch == orinit->size()){
+					selectBits.erase(*orinit);
 					orinit = orIn.erase(orinit);
 					oroutit = orOut.erase(oroutit);
-					selectBits.erase(orinit);
 					next = false;
 					break;
 				}
 				else if(numMatch == orinit2->size()){
+					selectBits.erase(*orinit2);
 					orinit2 = orIn.erase(orinit2);
 					oroutit2 = orOut.erase(oroutit2);
 
-					selectBits.erase(orinit2);
 				}
 				else{
 
@@ -1386,16 +1419,16 @@ namespace AGGREGATION{
 
 		while(orinit != orIn.end()){
 				if(stats.find(orinit->size()) == stats.end()){
-					std::map<std::vector<int>, int> count;
-					count[selectBits[orinit]] = 1;
+					std::map<std::set<int>, int> count;
+					count[selectBits[*orinit]] = 1;
 					stats[orinit->size()] = count;
 				}
 				else{
-					if(stats[orinit->size()].find(selectBits[orinit]) == stats[orinit->size()].end()){
-						stats[orinit->size()][selectBits[orinit]] = 1;
+					if(stats[orinit->size()].find(selectBits[*orinit]) == stats[orinit->size()].end()){
+						stats[orinit->size()][selectBits[*orinit]] = 1;
 					}
 					else
-						stats[orinit->size()][selectBits[orinit]] ++;
+						stats[orinit->size()][selectBits[*orinit]] ++;
 				}
 
 			orinit++;
@@ -1415,8 +1448,9 @@ namespace AGGREGATION{
 				printf("%d ", orinit->at(i));
 			}
 			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
-			for(unsigned int k = 0; k < selectBits[orinit].size(); k++){
-				printf("%d ", selectBits[orinit][k]);
+			std::set<int>::iterator iSB;
+			for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
+				printf("%d ", *iSB);
 			}
 			printf("\n");
 
@@ -1427,20 +1461,22 @@ namespace AGGREGATION{
 		printf("\n\n");
 
 		for(iStats = stats.begin(); iStats!=stats.end(); iStats++){
-			std::map<std::vector<int>, int>::iterator iCount;
+			std::map<std::set<int>, int>::iterator iCount;
 			printf("%d-1 Mux:\n", iStats->first);
 			for(iCount = iStats->second.begin(); iCount!=iStats->second.end(); iCount++){
 				printf("\t* %d-Bit Mux\t\tSEL: ", iCount->second);
-				for(unsigned int i = 0; i < iCount->first.size(); i++)
-					printf("%d ", iCount->first[i]);
+				std::set<int>::iterator iSB;
+				for(iSB = iCount->first.begin(); iSB != iCount->first.end(); iSB++)
+					printf("%d ", *iSB);
 				printf("\n");
 			}
 		}
 
-
+/*
 		std::set<unsigned> inputset;
-		inputset.insert(240);
-		aigraph->printSubgraph(1240, inputset);
+		inputset.insert(1074);
+		aigraph->printSubgraph(1310, inputset);
+		*/
 
 
 

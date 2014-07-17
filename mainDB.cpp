@@ -189,6 +189,7 @@ int main( int argc, char *argv[] )
 		//Import circuit and convert to AIG
 		gettimeofday(&aig_b, NULL);
 		ckt->importGraph(file, 0);
+		printf("CKT INPUT: %d\n", ckt->getNumInputs());
 		
 		
 		//Calculate Wiener Index
@@ -197,12 +198,11 @@ int main( int argc, char *argv[] )
 		stat_wienerIndex.push_back(0);
 		gettimeofday(&topo_b, NULL);
 
-		stat_numInput.push_back(ckt->getNumInputs());
-		stat_numOutput.push_back(ckt->getNumOutputs());
 
 		
 		//Replace all the luts with combinational logic
 		unsigned int numLUTs = SEQUENTIAL::replaceLUTs(ckt);
+		printf(" * Replaced %d LUTs\n", numLUTs);
 		stat_numLUTs.push_back(numLUTs);
 		
 
@@ -280,10 +280,16 @@ int main( int argc, char *argv[] )
 		aigraph->convertGraph2AIG(ckt, false);
 		stat_aigSize.push_back(aigraph->getSize());
 		gettimeofday(&aig_e, NULL);
+		
+		
+		printf("AIG INPUT: %d\n", aigraph->getInputSize());
+		stat_numInput.push_back(ckt->getNumInputs());
+		stat_numOutput.push_back(ckt->getNumOutputs());
 
 		//PERFORM K CUT ENUMERATION
 		gettimeofday(&ce_b, NULL);
 		CutEnumeration* cut = new CutEnumeration (aigraph);
+
 		cut->findKFeasibleCuts(k);
 		gettimeofday(&ce_e, NULL);
 
@@ -292,6 +298,7 @@ int main( int argc, char *argv[] )
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
 		gettimeofday(&func_e, NULL);
+		
 
 		//Aggregation
 		/*
@@ -305,13 +312,13 @@ int main( int argc, char *argv[] )
 		   gettimeofday(&agg_e, NULL);
 		 */
 		
-		aigraph->print();
 		std::vector<unsigned int> muxlist;
 
 		//4-1         8 bit       2 of them
 		//mux size, array size, count 
 		std::map<int,std::map<int, int> > sizeCount;
 		AGGREGATION::findMux2(functionCalc, aigraph, sizeCount);
+		
 		/*unsigned int muxsize = AGGREGATION::findMux(functionCalc, aigraph, muxlist);
 		*/
 	//	functionCalc->printStat();

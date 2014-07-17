@@ -412,11 +412,14 @@ bool Graph::importGraph(std::string fileName, int offset){
 				vertex = addInput(vID + last, type);
 				}
 				else*/
-		if(m_GraphV.find(vID) == m_GraphV.end())
+		if(m_GraphV.find(vID) == m_GraphV.end()){
 			vertex = addVertex(vID, type);
+			vertex->setName(name);
+		}
 		else{
 			vertex = m_GraphV[vID];
 			vertex->setType(type);
+			vertex->setName(name);
 		}
 
 
