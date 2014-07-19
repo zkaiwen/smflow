@@ -1081,15 +1081,17 @@ namespace AGGREGATION{
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING MUXES METHOD 2-------------------------------\n");
 
+		//Get the hashmap of circuit names to function tt
 		std::map<unsigned long, std::string>::iterator it;
 		std::map<unsigned long, std::string> hmap;
 		cf->getHashMap(hmap);
 
+		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
 		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
-		//Find all or gates up to or4
+		//Find all or gate function tt
 		std::vector<unsigned long> orFunction;
 		printf(" * Parsing function database for mux components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
@@ -1098,7 +1100,7 @@ namespace AGGREGATION{
 			}
 		}
 
-		//Store input and output of orgate
+		//Store input and output of orgate functions found
 		std::list<std::vector<unsigned> > orIn;
 		std::list<std::vector<unsigned> >::iterator orinit;
 		std::list<std::vector<unsigned> >::iterator orinit2;
@@ -1127,6 +1129,11 @@ namespace AGGREGATION{
 		printf("done\n");
 
 
+
+
+
+
+
 		//Verify inputs are negated
 		printf("\n\n * Verifying negated inputs of OR...");
 		orinit = orIn.begin();
@@ -1137,12 +1144,6 @@ namespace AGGREGATION{
 			//printf("NUM NEGATIVE INPUT: %d\t insize: %d\n", numNeg, (*orinit).size());
 			//printf("IN %d OUT %d\n", orIn.size(), orOut.size());
 			if((*orinit).size() != numNeg){
-				/*printf("Size Mismatch\nDeleting....:  ");
-				  for(unsigned int i = 0; i < (*orinit).size(); i++)
-				  printf("%d ", orinit->at(i));
-
-				  printf("  OUT: %d\n", *oroutit);
-				 */
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
 			}
@@ -1150,11 +1151,10 @@ namespace AGGREGATION{
 				orinit++;
 				oroutit++;
 			}
-
 		}
 		printf("done\n");
 		
-		printf("\n\nPossible Mux or gates\n");	
+		/*printf("\n\nPossible Mux or gates\n");	
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
 
@@ -1168,6 +1168,7 @@ namespace AGGREGATION{
 			orinit++;
 			oroutit++;
 		}
+		*/
 
 
 		//Remove or gates contained within another. 
@@ -1182,6 +1183,7 @@ namespace AGGREGATION{
 		unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
+			
 
 		//BFS
 		while(orinit != orIn.end()){
@@ -1219,7 +1221,6 @@ namespace AGGREGATION{
 					if(conflict) break;
 				}
 
-
 				std::list<unsigned int> startqueue;
 				startqueue.push_back(signal);
 				//printf("START: %d INDEX: %d\n", orinit->at(i), i);
@@ -1230,16 +1231,21 @@ namespace AGGREGATION{
 
 			if(conflict){
 				printf("CONFLICT REMOVAL\n");
-			for(unsigned int i = 0; i < orinit->size(); i++){
-				printf("%d ", orinit->at(i));
-			}
-			printf("\t\tOutput: %d\n", *oroutit);
+				for(unsigned int i = 0; i < orinit->size(); i++)
+					printf("%d ", orinit->at(i));
+				printf("\t\tOutput: %d\n", *oroutit);
+
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
 				continue;
 			}
 
 
+			//Check to see if there are neg and pos select bit signals
+			//Make sure the selectbits have pos and neg signals
+			//BB - LSB is 1 if there is a pos sig, MSB is 1 if ther eis a neg sig
+			//signal, BB
+			std::map<unsigned int, std::set<int> > selectNegMap;
 
 			//Node id, count
 			std::map<unsigned int, std::set<unsigned int> >sameSignalCount;
@@ -1257,15 +1263,17 @@ namespace AGGREGATION{
 
 			//Go at most 3 or 2 levels deep depending on size of or gate;
 			bool isLevelLimit = false;
+
+
 			while(!isQueueEmpty && !isLevelLimit){
 				/*
 				   if(orinit->size() != 4) break;
+				 */
 				printf("\n\nINPUT: ");
 				for(unsigned int i = 0; i < orinit->size(); i++){
 					printf("%d ", orinit->at(i));
 				}
 				printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
-				 */
 
 				isQueueEmpty = true;
 
@@ -1278,16 +1286,22 @@ namespace AGGREGATION{
 
 
 					//Pop the queue	
-					unsigned int signal = queue[i].front() & 0xFFFFFFFE;
+					unsigned int origSignal = queue[i].front();
+					unsigned int signal = origSignal & 0xFFFFFFFE;
 					queue[i].pop_front();
 
+
 					//Check to see if the levelLimit is reached
-				//	printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
 					if(levelMap[signal] > numSameSignal){
 						isLevelLimit = true;
 						break;
 					}
-					std::list<unsigned int>::iterator iQueue;
+
+
+					//Check selectNegList
+					if(origSignal & 0x1)  selectNegMap[signal].insert(1);
+					else	                selectNegMap[signal].insert(0);
 
 
 					//Increase signal count
@@ -1296,7 +1310,7 @@ namespace AGGREGATION{
 
 						//Check to see if the number of same signals are as expected
 						if(sameSignalCount[signal].size() == orinit->size()){
-							//printf("Select Bit: Push: %d\n", signal);
+							printf("Select Bit: Push: %d\n", signal);
 							selectBit.insert(signal);
 
 							//Check to see if the number of select bit matches the orgatesize
@@ -1305,7 +1319,6 @@ namespace AGGREGATION{
 						}
 
 						continue;
-
 					}
 
 					sameSignalCount[signal].insert(i);
@@ -1334,12 +1347,26 @@ namespace AGGREGATION{
 				}
 			}
 
-			if(selectBit.size() != numSameSignal || selectBit.size() == 0){
-				printf("Not possible...Deleting from list...\n");
-			for(unsigned int i = 0; i < orinit->size(); i++){
-				printf("%d ", orinit->at(i));
+
+			//Check the selectNegMap
+			std::set<int>::iterator iSet;
+			bool isSelectNeg = false;
+			for(iSet = selectBit.begin(); iSet != selectBit.end(); iSet++){
+				if(selectNegMap[*iSet].size() != 2){
+						isSelectNeg = true;
+						break;
+				}
 			}
-			printf("\t\tOutput: %d\n", *oroutit);
+
+			if(selectBit.size() != numSameSignal || 
+		  selectBit.size() == 0 ||
+			isSelectNeg ){
+
+				printf("Not possible...Deleting from list...\n");
+				for(unsigned int i = 0; i < orinit->size(); i++)
+					printf("%d ", orinit->at(i));
+				printf("\t\tOutput: %d\n", *oroutit);
+
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
 			}
@@ -1350,7 +1377,7 @@ namespace AGGREGATION{
 				oroutit++;
 			}
 
-
+			printf("\n\n");
 		}
 
 
@@ -1472,11 +1499,10 @@ namespace AGGREGATION{
 			}
 		}
 
-/*
+
 		std::set<unsigned> inputset;
-		inputset.insert(1074);
-		aigraph->printSubgraph(1310, inputset);
-		*/
+		inputset.insert(940);
+		aigraph->printSubgraph(1276, inputset);
 
 
 
