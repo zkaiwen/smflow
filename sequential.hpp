@@ -1,12 +1,12 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@ 
-  @
-  @  SEQUENTIAL.cpp
-  @  
-  @  @AUTHOR:Kevin Zeng
-  @  Copyright 2012 – 2013 
-  @  Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@  SEQUENTIAL.cpp
+	@  
+	@  @AUTHOR:Kevin Zeng
+	@  Copyright 2012 – 2013 
+	@  Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef SEQ_GUARD
 #define SEQ_GUARD
@@ -32,6 +32,312 @@ namespace SEQUENTIAL{
 	std::string primFunction;	
 	unsigned int replaceLUTs(Graph* ckt); //Returns number of LUTS replaced
 	int DFS(std::list<int>& mark, Vertex* start, Graph* ckt, std::vector<std::vector<int> >& clauses);
+
+	/*****************************************************************************
+	 * getFFList 
+	 *   Finds all the FF components in a circuit; 
+	 *
+	 * @PARAMS: ckt - circuit 
+	 *****************************************************************************/
+	void getFFList(Graph* ckt, std::list<Vertex*>& ffList){
+		//Find all the flip flops in a circuit
+		std::map<int, Vertex*>::iterator it;
+		for(it = ckt->begin(); it != ckt->end(); it++){
+			if(it->second->getType().find("FD") != std::string::npos){
+				ffList.push_back(it->second);
+			}
+		}
+	}
+
+
+	/*****************************************************************************
+	 * getNumFFFeedback 
+	 *   FInd the number of FF with feed back loops from Q to D.  
+	 *
+	 * @PARAMS: ffList- List of flip flops 
+	 *****************************************************************************/
+	int getNumFFFeedback(Graph* ckt, std::list<Vertex*>& ffList){
+		printf("[SEQ] -- Finding Number of Latches with Feedback from Q to D\n");
+		std::list<Vertex*>::iterator iList;
+		int possibleFF = 0;
+
+		//Finding input output loop for each FF
+		for(iList = ffList.begin(); iList != ffList.end(); iList++){
+			Vertex* ff = *iList;
+
+			//Check to see if Q loops back to D (Possible counter)
+			if(ff->getOVSize() == 0)
+				continue;
+
+			std::set<int> mark;
+			int vID = ff->getID();
+			int dport = ff->getInputPortID("D");
+
+			//Make sure FF's have a D port
+			assert(dport != -1);
+			Vertex* dInput = ckt->getVertex(dport);
+			
+			int found = ckt->DFS_FSM_S(mark, vID, dInput);
+			if(found == 1){
+				//printf("Loop back FF: %d\n", vID);
+				possibleFF++;
+			}
+		}
+
+		return possibleFF;
+	}
+
+
+	/*****************************************************************************
+	 * findRegisterGroup
+	 *   Finds Register Group based on enable ports; 
+	 *
+	 * @PARAMS: ffList- List of flip flops 
+	 *****************************************************************************/
+	void findRegisterGroup(std::list<Vertex*>& ffList, std::map<int, int>& sizeCount){
+		printf("[SEQ] -- Searching for Register groups via enable signal\n");
+		//ckt->print();
+		std::list<Vertex*>::iterator iList;
+
+		//Group them by ENABLE signals
+		printf(" * Grouping Enable Signals\n");
+		std::map<int, std::set<Vertex*> > reg;
+		for(iList = ffList.begin(); iList != ffList.end(); iList++){
+			Vertex* ff = *iList;
+			int enablePort= ff->getInputPortID("CE");
+
+			if(enablePort != -1){
+				reg[enablePort].insert(ff); 
+			}
+		}
+	
+		std::map<int, std::set<Vertex*> >::iterator iMap;
+		for(iMap = reg.begin(); iMap != reg.end(); iMap++){
+			if(sizeCount.find(iMap->second.size()) == sizeCount.end())
+				sizeCount[iMap->second.size()] = 1;
+			else
+				sizeCount[iMap->second.size()]++;
+		}
+	}
+
+
+	/*****************************************************************************
+	 * findFSM 
+	 *   Finds possible FSM in a circuit; 
+	 *
+	 * @PARAMS: ckt- circuit to look for counters
+	 *****************************************************************************/
+	void findFSM(Graph* ckt){
+		printf("[SEQ] -- Finding FSM\n");
+		//ckt->print();
+		std::map<int, Vertex*>::iterator it;
+		std::list<Vertex*> ffList;
+		std::list<Vertex*>::iterator iList;
+		std::set<Vertex*> possibleFF;
+		std::set<Vertex*>::iterator iPos;
+
+		//Find all the flip flops in a circuit
+		for(it = ckt->begin(); it != ckt->end(); it++){
+			if(it->second->getType().find("FD") != std::string::npos){
+				ffList.push_back(it->second);
+			}
+		}
+
+
+		//Finding input output loop for each FF
+		//Dependence FF, FF that is connected to Dependence output
+		std::map<Vertex*, Vertex*> dependence;
+		std::map<Vertex*, Vertex*>::iterator iDep;
+		for(iList = ffList.begin(); iList != ffList.end(); iList++){
+			Vertex* ff = *iList;
+
+			//Check to see if Q loops back to D (Possible counter)
+			if(ff->getOVSize() == 0){
+			printf("FFID: %d\t", ff->getID());
+				printf("OUTPUT SIZE IS 0\n");
+				continue;
+			}
+
+			std::set<int> mark;
+			int vID = ff->getID();
+			int dport = ff->getInputPortID("D");
+
+			//Make sure FF's have a D port
+			assert(dport != -1);
+			Vertex* dInput = ckt->getVertex(dport);
+			
+			//Check if immediate input is a FF
+			if(dInput->getType().find("FD") != std::string::npos){
+				dependence[dInput] = ff;
+				continue;
+			}
+
+			int found = ckt->DFS_FSM_S(mark, vID, dInput);
+
+			if(found == 1){
+				possibleFF.insert(ff);
+				printf("POSSIBLE C FF: %d\n", vID);
+			}
+		}
+		printf("\n");
+
+
+		//Checking dependence on unknown FF
+		for(iDep = dependence.begin(); iDep != dependence.end(); iDep++){
+			//printf("DEP: %d FF %d\n", iDep->first->getID(), iDep->second->getID());
+			if(possibleFF.find(iDep->first) != possibleFF.end()){
+				//printf("DEPENDENCE VALIDATED\n");
+				possibleFF.insert(iDep->second);
+			}
+		}
+		
+		
+		
+		printf("\n\nPOSSIBLE FFS in FSMs: ");
+		for(iPos = possibleFF.begin(); iPos != possibleFF.end(); iPos++){
+			printf("%d ", (*iPos)->getID());
+		}
+		printf("\n\n");
+
+
+		//Skip ALGO 2 for now
+
+		//Group them by ENABLE signals
+		printf(" * Grouping Enable Signals\n");
+		std::map<Vertex*, std::set<Vertex*> > reg;
+		std::map<Vertex*, std::set<Vertex*> >::iterator iFSM;
+		std::set<Vertex*> noEnableFF;
+		std::set<Vertex*>::iterator iSet;
+
+		for(iList = ffList.begin(); iList != ffList.end(); iList++){
+			Vertex* ff = *iList;
+			int enablePort= ff->getInputPortID("CE");
+			Vertex* enable = ckt->getVertex(enablePort);
+
+			if(enablePort == -1){
+				/*
+				printf("FFID: %d does not have enable\tIN: ", ff->getID());
+				for(unsigned int i = 0; i < inports.size(); i++)
+					printf("%s ", inports[i].c_str());
+				printf("\n");
+				*/
+
+				std::vector<std::string> inports;
+				ff->getInPorts(inports);
+				noEnableFF.insert(ff);
+				continue;
+			}
+			else{
+				reg[enable].insert(ff); 
+			}
+		}
+
+		printf("\n\nFF's grouped by enable signals:\n");
+		for(iFSM = reg.begin(); iFSM != reg.end(); iFSM++){
+			if(iFSM->second.size() > 1)	{
+				printf("E: %d\tFF: ", iFSM->first->getID());
+				for(iSet = iFSM->second.begin(); iSet != iFSM->second.end(); iSet++)
+					printf("%d ", (*iSet)->getID());
+				printf("\n");
+			}
+			else{
+				printf("Single FF: %d\n", iFSM->first->getID());
+			}
+		}
+
+		printf("No Enable FF: ");
+		for(iSet = noEnableFF.begin(); iSet != noEnableFF.end(); iSet++){
+			printf("%d ", (*iSet)->getID());
+		}
+		printf("\n\n");
+
+
+		//Traverse backwards from the enable bit and
+		//Check to see if any of the possible ff is hit
+		//Those that are hit in a single traversal are grouped
+		printf("REDUCED FF in FSMs based on enable signal\n");
+		for(iFSM = reg.begin(); iFSM != reg.end(); iFSM++){
+			if(possibleFF.find(iFSM->first) != possibleFF.end()){
+				printf("%d ", iFSM->first->getID());
+				
+			}
+		}
+		printf("\n\n");
+
+		std::list<std::set<Vertex*> > possibleFSMGroup;
+		std::list<std::set<Vertex*> >::iterator  iPFG;
+		for(iFSM = reg.begin(); iFSM != reg.end(); iFSM++){
+			std::set<int> mark;
+			std::set<Vertex*> candidate;
+
+			ckt->DFS_FSM_M(mark, possibleFF, iFSM->first, candidate);
+			possibleFSMGroup.push_back(candidate);
+		}
+
+		printf("Possible FSM Grouping with enable signal\n");
+		std::set<Vertex*> possibleFF_Enable;
+		for(iPFG = possibleFSMGroup.begin(); iPFG != possibleFSMGroup.end(); iPFG++){
+			for(iSet = iPFG->begin(); iSet != iPFG->end(); iSet++){
+				Vertex* ff = *iSet;
+				possibleFF_Enable.insert(ff);
+				printf("%d ", ff->getID());
+			}
+			printf("\n"); 
+		}
+
+		printf("\n\nPOSSIBLE FFS in FSMs: ");
+		for(iPos = possibleFF_Enable.begin(); iPos != possibleFF_Enable.end(); iPos++){
+			printf("%d ", (*iPos)->getID());
+		}
+		printf("\n\n");
+		
+
+
+
+		//Set of FF fanned out from source, list of FF with same fanout cone 
+		std::map<std::set<Vertex*>, std::list<Vertex*> > fanoutMap;
+		std::map<std::set<Vertex*>, std::list<Vertex*> >::iterator iFOM;
+		for(iPos = possibleFF.begin(); iPos != possibleFF.end(); iPos++){
+			std::set<int> mark;
+			std::set<Vertex*> candidate;
+			std::vector<Vertex*> out;
+
+			Vertex* ff = *iPos;
+			ff->getOutput(out);
+
+			for(unsigned int i = 0; i < out.size(); i++)
+				ckt->DFS_FSM_T(mark, out[i], candidate);
+
+			fanoutMap[candidate].push_back(ff);
+
+			printf("FFID: %3d\tFO-FF: ", ff->getID());
+			for(iSet = candidate.begin(); iSet != candidate.end(); iSet++){
+				printf("%d ", (*iSet)->getID());
+			}
+			printf("\n");
+		}
+
+		for(iFOM = fanoutMap.begin(); iFOM != fanoutMap.end(); iFOM++){
+			printf("FANOUTKEY: ");
+			for(iSet = iFOM->first.begin(); iSet != iFOM->first.end(); iSet++){
+				printf("%d ", (*iSet)->getID());
+			}
+			printf("\nFF: ");
+			for(iList = iFOM->second.begin(); iList != iFOM->second.end(); iList++){
+				printf("%d ", (*iList)->getID());
+			}
+			printf("\n\n");
+
+		}
+		
+
+
+
+
+		
+
+
+	}
 
 
 	/*****************************************************************************
@@ -65,7 +371,7 @@ namespace SEQUENTIAL{
 				std::list<int> mark;
 				std::set<int> ffsetsingle;
 				std::set<int> ffFound;
-				int vID = it->second->getVertexID();
+				int vID = it->second->getID();
 				ffsetsingle.insert(vID);
 				int dport = it->second->getInputPortID("D");
 
@@ -74,7 +380,7 @@ namespace SEQUENTIAL{
 					//printf("INVERTER INPUT- FF: %d\n", vID);
 					std::vector<Vertex*> inv_in;
 					ckt->getVertex(dport)->getInput(inv_in);
-					if(inv_in[0]->getVertexID() == vID){
+					if(inv_in[0]->getID() == vID){
 						//printf("LSB OF COUNTER\n");
 						lsb.push_back(vID);
 					}
@@ -104,7 +410,7 @@ namespace SEQUENTIAL{
 			ckt->DFSearchOut(mark, vff, ffFound);
 			std::set<int>::iterator itffp;
 
-			int src= vmap[vff->getVertexID()];
+			int src= vmap[vff->getID()];
 			for(itffp = ffFound.begin(); itffp != ffFound.end(); itffp++){
 				std::map<int,int>::iterator vmapit;
 				vmapit = vmap.find(*itffp);
@@ -142,11 +448,11 @@ namespace SEQUENTIAL{
 			lcg->getAdjacentOut(ff, adjChild);
 
 			/*printf("ADJ: ");
-			  for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
-			  gFFVertex = gb2ffmap[*iti];
-			  printf("%d ", gFFVertex);
-			  }
-			  printf("\n");
+				for(iti = adjChild.begin(); iti != adjChild.end(); iti++){
+				gFFVertex = gb2ffmap[*iti];
+				printf("%d ", gFFVertex);
+				}
+				printf("\n");
 			 */
 
 			//For each adjacent node to the src check to see if what is already found connects to it
@@ -172,11 +478,11 @@ namespace SEQUENTIAL{
 				lcg->getAdjacentIn(*iti, adjChild2);
 
 				/*	printf("NODES INTO DEST: %d\tSRC: ", gFFVertex);
-					for(ititem = adjChild2.begin(); ititem != adjChild2.end(); ititem++){
-					gFFVertex = gb2ffmap[*ititem];
-					printf("%d ", gFFVertex);
-					}
-					printf("\n");
+						for(ititem = adjChild2.begin(); ititem != adjChild2.end(); ititem++){
+						gFFVertex = gb2ffmap[*ititem];
+						printf("%d ", gFFVertex);
+						}
+						printf("\n");
 				 */
 
 				bool fail = false;
@@ -240,16 +546,16 @@ namespace SEQUENTIAL{
 		}
 
 		/*printf("CANDIDATE COUNTERS ******************************\n");
-		  for(it_cand = candidateFF.begin(); it_cand != candidateFF.end(); it_cand++){
-		  for(unsigned int i = 0; i < it_cand->size() ; i++){
-		  int gFFVertex =  gb2ffmap[(*it_cand)[i]];
-		  printf("%d ", gFFVertex);
-		  }
-		  printf("\n");
+			for(it_cand = candidateFF.begin(); it_cand != candidateFF.end(); it_cand++){
+			for(unsigned int i = 0; i < it_cand->size() ; i++){
+			int gFFVertex =  gb2ffmap[(*it_cand)[i]];
+			printf("%d ", gFFVertex);
+			}
+			printf("\n");
 
-		  }
-		  lcg->print();
-		  printf("Early Termination\n");
+			}
+			lcg->print();
+			printf("Early Termination\n");
 		//exit(1);
 		 */
 		//Get Combinational fanin for each
@@ -289,12 +595,12 @@ namespace SEQUENTIAL{
 
 			for(unsigned int i = 0; i < it_cand->size(); i++){
 				/*
-				   printf(" * Latches in Counter...\n");
+					 printf(" * Latches in Counter...\n");
 
-				   for(unsigned int j = 0; j < i+1; j++){
-				   gFF.insert(gb2ffmap[candidateFF[q][j]]);
-				   printf("%d ", gb2ffmap[candidateFF[q][j]]);
-				   }
+					 for(unsigned int j = 0; j < i+1; j++){
+					 gFF.insert(gb2ffmap[candidateFF[q][j]]);
+					 printf("%d ", gb2ffmap[candidateFF[q][j]]);
+					 }
 				 */
 
 				int gFFVertex =  gb2ffmap[(*it_cand)[i]];
@@ -339,8 +645,8 @@ namespace SEQUENTIAL{
 			//Check when bit goes low to high
 			printf("Performing Low to High Bit transition test\n");
 			/*
-			   for(unsigned int i = 0; i < it_cand->size();  i++){
-			   int gFFVertex =  gb2ffmap[(*it_cand)[i]];
+				 for(unsigned int i = 0; i < it_cand->size();  i++){
+				 int gFFVertex =  gb2ffmap[(*it_cand)[i]];
 			//printf("%d ", gFFVertex);
 
 			}
@@ -477,11 +783,11 @@ namespace SEQUENTIAL{
 						it->second->getOutput(loutput);
 
 						assert(linput.size() == 1);
-						std::string outportname = linput[0]->removeOutputValue(it->second->getVertexID());
+						std::string outportname = linput[0]->removeOutputValue(it->second->getID());
 
 						for(unsigned int i = 0; i < loutput.size(); i++){
-							std::string portname = loutput[i]->getInputPortName(it->second->getVertexID());
-							int index = loutput[i]->removeInputValue(it->second->getVertexID());
+							std::string portname = loutput[i]->getInputPortName(it->second->getID());
+							int index = loutput[i]->removeInputValue(it->second->getID());
 							loutput[i]->removeInPortValue(index);
 							loutput[i]->addInput(linput[0]);
 							loutput[i]->addInPort(portname);
@@ -492,7 +798,7 @@ namespace SEQUENTIAL{
 						tobedeleted.push_back(it->first);
 					}
 					else{
-						printf("FUNCTION IS INVERTER\n");
+						printf(" * FUNCTION IS INVERTER\n");
 						it->second->setType("INV");	
 					}
 
@@ -516,8 +822,8 @@ namespace SEQUENTIAL{
 					//printf("%s:", pname.c_str());
 					for(unsigned int j = 0; j < inports.size(); j++){
 						if(inports[j] == pname){
-							lutin.push_back(inputs[j]->getVertexID());
-							//printf("%d ", inputs[j]->getVertexID());
+							lutin.push_back(inputs[j]->getID());
+							//printf("%d ", inputs[j]->getID());
 						}
 					}
 				}
@@ -587,7 +893,7 @@ namespace SEQUENTIAL{
 						assert(numAndInput != 1);
 						aGate->setType(ss.str());
 						lutgraph->addVertex(aGate);
-						clauses.push_back(aGate->getVertexID());
+						clauses.push_back(aGate->getID());
 					}
 
 					function= function>> 1;
@@ -705,7 +1011,7 @@ namespace SEQUENTIAL{
 				lutgraph->renumber(ckt->getLast() + 1);
 				//lutgraph->print();
 				VERIFICATION::verifyLUT(it->second->getLUT(), lutgraph);
-				ckt->substitute(it->second->getVertexID(), lutgraph);
+				ckt->substitute(it->second->getID(), lutgraph);
 			}
 		}
 
@@ -745,11 +1051,11 @@ namespace SEQUENTIAL{
 						it->second->getOutput(loutput);
 
 						assert(linput.size() == 1);
-						std::string outportname = linput[0]->removeOutputValue(it->second->getVertexID());
+						std::string outportname = linput[0]->removeOutputValue(it->second->getID());
 
 						for(unsigned int i = 0; i < loutput.size(); i++){
-							std::string portname = loutput[i]->getInputPortName(it->second->getVertexID());
-							int index = loutput[i]->removeInputValue(it->second->getVertexID());
+							std::string portname = loutput[i]->getInputPortName(it->second->getID());
+							int index = loutput[i]->removeInputValue(it->second->getID());
 							loutput[i]->removeInPortValue(index);
 							loutput[i]->addInput(linput[0]);
 							loutput[i]->addInPort(portname);
@@ -760,7 +1066,7 @@ namespace SEQUENTIAL{
 						tobedeleted.push_back(it->first);
 					}
 					else{
-						printf("FUNCTION IS INVERTER\n");
+						printf(" -- FUNCTION IS INVERTER\n");
 						it->second->setType("INV");	
 					}
 
@@ -783,8 +1089,8 @@ namespace SEQUENTIAL{
 					//printf("%s:", pname.c_str());
 					for(unsigned int j = 0; j < inports.size(); j++){
 						if(inports[j] == pname){
-							lutin.push_back(inputs[j]->getVertexID());
-							//printf("%d ", inputs[j]->getVertexID());
+							lutin.push_back(inputs[j]->getID());
+							//printf("%d ", inputs[j]->getID());
 						}
 					}
 				}
@@ -815,9 +1121,9 @@ namespace SEQUENTIAL{
 				out<<".e\n";
 				out.close();
 
-				
+
 				if(((double)it->first)/endIndex >= percentComplete){
-					printf("[SEQ] -- Running Espresso...\t%0.2f Complete\n", it->first/endIndex);
+					printf(" -- Running Espresso...\t%0.2f Complete\n", it->first/endIndex);
 					percentComplete+= 0.1;
 
 				}
@@ -1056,7 +1362,12 @@ namespace SEQUENTIAL{
 
 				lutgraph->renumber(ckt->getLast() + 1);
 				VERIFICATION::verifyLUT(it->second->getLUT(), lutgraph);
-				ckt->substitute(it->second->getVertexID(), lutgraph);
+				std::vector<Vertex*> in2;
+				std::vector<Vertex*> out2;
+				it->second->getInput(in2);
+				it->second->getOutput(out2);
+
+				ckt->substitute(it->second->getID(), lutgraph);
 			}
 		}
 
@@ -1077,7 +1388,7 @@ namespace SEQUENTIAL{
 
 
 	int DFS(std::list<int>& mark, Vertex* start, Graph* ckt, std::vector<std::vector<int> >& clauses){
-		mark.push_back(start->getVertexID());
+		mark.push_back(start->getID());
 
 		std::string type = start->getType();
 
@@ -1089,12 +1400,12 @@ namespace SEQUENTIAL{
 			//printf("INV\n");
 			std::vector<int> clause1;
 			std::vector<int> clause2;
-			clause1.push_back(-1*inputs[0]->getVertexID());
-			clause1.push_back(-1 * start->getVertexID());
+			clause1.push_back(-1*inputs[0]->getID());
+			clause1.push_back(-1 * start->getID());
 			//printf("CLAUSE: INV: %d %d\n", clause1[0], clause1[1]);
 
-			clause2.push_back(inputs[0]->getVertexID());
-			clause2.push_back(start->getVertexID());
+			clause2.push_back(inputs[0]->getID());
+			clause2.push_back(start->getID());
 			//printf("CLAUSE: INV: %d %d\n", clause2[0], clause2[1]);
 
 			clauses.push_back(clause1);
@@ -1105,17 +1416,17 @@ namespace SEQUENTIAL{
 			std::vector<int> clause1;
 			std::vector<int> clause2;
 			std::vector<int> clause3;
-			clause1.push_back(-1*inputs[0]->getVertexID());
-			clause1.push_back(-1*inputs[1]->getVertexID());
-			clause1.push_back(start->getVertexID());
+			clause1.push_back(-1*inputs[0]->getID());
+			clause1.push_back(-1*inputs[1]->getID());
+			clause1.push_back(start->getID());
 			//printf("CLAUSE: AND: %d %d\n", clause1[0], clause1[1]);
 
-			clause2.push_back(inputs[0]->getVertexID());
-			clause2.push_back(-1 * start->getVertexID());
+			clause2.push_back(inputs[0]->getID());
+			clause2.push_back(-1 * start->getID());
 			//printf("CLAUSE: AND: %d %d\n", clause2[0], clause2[1]);
 
-			clause3.push_back(inputs[1]->getVertexID());
-			clause3.push_back(-1 * start->getVertexID());
+			clause3.push_back(inputs[1]->getID());
+			clause3.push_back(-1 * start->getID());
 			//	printf("CLAUSE: AND: %d %d\n", clause3[0], clause3[1]);
 
 			clauses.push_back(clause1);
@@ -1129,21 +1440,21 @@ namespace SEQUENTIAL{
 			std::vector<int> clause2;
 			std::vector<int> clause3;
 			std::vector<int> clause4;
-			clause1.push_back(inputs[0]->getVertexID());
-			clause1.push_back(inputs[1]->getVertexID());
-			clause1.push_back(-1 * start->getVertexID());
+			clause1.push_back(inputs[0]->getID());
+			clause1.push_back(inputs[1]->getID());
+			clause1.push_back(-1 * start->getID());
 
-			clause2.push_back(-1 * inputs[0]->getVertexID());
-			clause2.push_back(-1 * inputs[1]->getVertexID());
-			clause2.push_back(-1 * start->getVertexID());
+			clause2.push_back(-1 * inputs[0]->getID());
+			clause2.push_back(-1 * inputs[1]->getID());
+			clause2.push_back(-1 * start->getID());
 
-			clause3.push_back(-1 * inputs[0]->getVertexID());
-			clause3.push_back(inputs[1]->getVertexID());
-			clause3.push_back(start->getVertexID());
+			clause3.push_back(-1 * inputs[0]->getID());
+			clause3.push_back(inputs[1]->getID());
+			clause3.push_back(start->getID());
 
-			clause4.push_back(inputs[0]->getVertexID());
-			clause4.push_back(-1 * inputs[1]->getVertexID());
-			clause4.push_back(start->getVertexID());
+			clause4.push_back(inputs[0]->getID());
+			clause4.push_back(-1 * inputs[1]->getID());
+			clause4.push_back(start->getID());
 
 			clauses.push_back(clause1);
 			clauses.push_back(clause2);
@@ -1159,11 +1470,11 @@ namespace SEQUENTIAL{
 
 			for(unsigned int i = 0; i < inports.size(); i++){
 				if(inports[i] == "DI")
-					in0 = inputs[i]->getVertexID();
+					in0 = inputs[i]->getID();
 				else if(inports[i] == "CI")
-					in1 = inputs[i]->getVertexID();
+					in1 = inputs[i]->getID();
 				else
-					s = inputs[i]->getVertexID();
+					s = inputs[i]->getID();
 			}
 
 			std::vector<int> clause1;
@@ -1174,22 +1485,22 @@ namespace SEQUENTIAL{
 			clause1.push_back(in0);
 			clause1.push_back(in1);
 			clause1.push_back(s);
-			clause1.push_back(-1 * start->getVertexID());
+			clause1.push_back(-1 * start->getID());
 
 			clause2.push_back(in0);
 			clause2.push_back(-1 * in1);
 			clause2.push_back(s);
-			clause2.push_back(-1 * start->getVertexID());
+			clause2.push_back(-1 * start->getID());
 
 			clause3.push_back(in0);
 			clause3.push_back(in1);
 			clause3.push_back(-1* s);
-			clause3.push_back(-1 * start->getVertexID());
+			clause3.push_back(-1 * start->getID());
 
 			clause4.push_back(-1 * in0);
 			clause4.push_back(in1);
 			clause4.push_back(-1 * s);
-			clause4.push_back(-1 * start->getVertexID());
+			clause4.push_back(-1 * start->getID());
 
 			clauses.push_back(clause1);
 			clauses.push_back(clause2);
@@ -1198,12 +1509,12 @@ namespace SEQUENTIAL{
 		}
 		else if(type.find("VCC")!= std::string::npos){
 			std::vector<int> clause;
-			clause.push_back(start->getVertexID());
+			clause.push_back(start->getID());
 			clauses.push_back(clause);
 		}
 		else if(type.find("GND")!= std::string::npos){
 			std::vector<int> clause;
-			clause.push_back(-1 * start->getVertexID());
+			clause.push_back(-1 * start->getID());
 			clauses.push_back(clause);
 		}
 		else if (type.find("IN")!= std::string::npos){

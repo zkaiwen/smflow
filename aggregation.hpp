@@ -559,7 +559,7 @@ namespace AGGREGATION{
 		//find and3 gates
 		printf(" * Parsing function database for decoder blocks...");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
-			if(it->second.find("and3") != std::string::npos)
+			if(it->second.find("or3") != std::string::npos)
 				and3.push_back(it->first);
 		}
 
@@ -602,7 +602,8 @@ namespace AGGREGATION{
 
 		//Searching for 2-4 decoders
 		printf(" * Looking for 2-4 decoder function...");
-		for(unsigned int i = 2; i < aigraph->getSize(); i++){
+		int limit = (aigraph->getInputSize()+1) *2;
+		for(unsigned int i = limit; i < aigraph->getSize(); i++){
 			unsigned c1 = aigraph->getChild1(i);
 			unsigned c2 = aigraph->getChild2(i);
 			if(c1 == 0 || c2 == 0)
@@ -650,20 +651,23 @@ namespace AGGREGATION{
 		printf("\n----------------------------------------------------------------\n");
 		printf("Result Search:\n");
 		printf("----------------------------------------------------------------\n");
-		int numdec = 0; 
+		int numdec24 = 0; 
+		int numdec38 = 0; 
 		for(ait = agg2.begin(); ait != agg2.end(); ait++){
 			if(ait->second == 4){
 				printf("   2x4 Decoder: PAIR: %d %d\n", ait->first[0], ait->first[1]);	
-				numdec++;
+				numdec24++;
 			}
 		}
 		for(ait = agg3.begin(); ait != agg3.end(); ait++){
 			if(ait->second == 8){
 				printf("   3x8 Decoder: PAIR: %d %d %d\n", ait->first[0], ait->first[1], ait->first[2]);	
-				numdec++;
+				numdec38++;
 			}
 		}
-		printf("\nNum decoders:\t%d\n", numdec);
+		printf("\nNum 2x4 decoders:\t%d\n", numdec24);
+		printf("\nNum 3x8 decoders:\t%d\n", numdec38); 
+		printf("\nNum decoders:\t%d\n", numdec24+numdec38);
 		printf("----------------------------------------------------------------\n");
 
 
@@ -1075,7 +1079,10 @@ namespace AGGREGATION{
 
 
 
-
+/*
+	Works for traditional 4-1 amd 2-1 muxes
+	Needs more work for 3-1 and those abve 4-1
+	*/
 
 	void findMux2(CutFunction* cf, AIG* aigraph, std::map<int,std::map<int, int> >& sizeCountMap){
 		printf("\n\n\n");
@@ -1213,7 +1220,7 @@ namespace AGGREGATION{
 				
 					for(unsigned int k = 0; k < orinit->size(); k++){
 						if(orinit->at(k) == node1 || orinit->at(k) == node2){
-							printf("CONFLICT\n");
+							//printf("CONFLICT\n");
 							conflict = true;
 							break;
 						}
@@ -1230,10 +1237,11 @@ namespace AGGREGATION{
 			}
 
 			if(conflict){
-				printf("CONFLICT REMOVAL\n");
+				/*printf("CONFLICT REMOVAL\n");
 				for(unsigned int i = 0; i < orinit->size(); i++)
 					printf("%d ", orinit->at(i));
 				printf("\t\tOutput: %d\n", *oroutit);
+				*/
 
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1268,12 +1276,12 @@ namespace AGGREGATION{
 			while(!isQueueEmpty && !isLevelLimit){
 				/*
 				   if(orinit->size() != 4) break;
-				 */
 				printf("\n\nINPUT: ");
 				for(unsigned int i = 0; i < orinit->size(); i++){
 					printf("%d ", orinit->at(i));
 				}
 				printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
+				 */
 
 				isQueueEmpty = true;
 
@@ -1292,7 +1300,7 @@ namespace AGGREGATION{
 
 
 					//Check to see if the levelLimit is reached
-					printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
+					//printf("SIGNAL POPPED: %d INDEX %d LEVEL: %d\n", signal, i, levelMap[signal]);
 					if(levelMap[signal] > numSameSignal){
 						isLevelLimit = true;
 						break;
@@ -1310,7 +1318,7 @@ namespace AGGREGATION{
 
 						//Check to see if the number of same signals are as expected
 						if(sameSignalCount[signal].size() == orinit->size()){
-							printf("Select Bit: Push: %d\n", signal);
+							//printf("Select Bit: Push: %d\n", signal);
 							selectBit.insert(signal);
 
 							//Check to see if the number of select bit matches the orgatesize
@@ -1362,10 +1370,12 @@ namespace AGGREGATION{
 		  selectBit.size() == 0 ||
 			isSelectNeg ){
 
+				/*
 				printf("Not possible...Deleting from list...\n");
 				for(unsigned int i = 0; i < orinit->size(); i++)
 					printf("%d ", orinit->at(i));
 				printf("\t\tOutput: %d\n", *oroutit);
+				*/
 
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1377,9 +1387,33 @@ namespace AGGREGATION{
 				oroutit++;
 			}
 
-			printf("\n\n");
+			//printf("\n\n");
 		}
+		
+		/*
+		printf("\n\nPossible Mux or gates\n");	
+		orinit = orIn.begin();
+		oroutit = orOut.begin();
 
+		unsigned int index = 0;
+		while(orinit != orIn.end()){
+			printf("INPUT: ");
+			for(unsigned int i = 0; i < orinit->size(); i++){
+				printf("%d ", orinit->at(i));
+			}
+			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
+			std::set<int>::iterator iSB;
+			for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
+				printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
+			}
+			printf("\n");
+
+			orinit++;
+			oroutit++;
+			index++;
+		}
+		printf("\n\n");
+*/
 
 
 
@@ -1421,7 +1455,6 @@ namespace AGGREGATION{
 
 				}
 				else{
-
 					oroutit2++;
 					orinit2++;
 				}
@@ -1464,6 +1497,7 @@ namespace AGGREGATION{
 
 
 
+/*
 		printf("\n\nPossible Mux or gates\n");	
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
@@ -1486,25 +1520,31 @@ namespace AGGREGATION{
 			index++;
 		}
 		printf("\n\n");
+		*/
+
 
 		for(iStats = stats.begin(); iStats!=stats.end(); iStats++){
 			std::map<std::set<int>, int>::iterator iCount;
-			printf("%d-1 Mux:\n", iStats->first);
+//			printf("%d-1 Mux:\n", iStats->first);
+				
+			std::map<int, int> sizeCount;
+			sizeCountMap[iStats->first] = sizeCount;
+
 			for(iCount = iStats->second.begin(); iCount!=iStats->second.end(); iCount++){
+				/*
 				printf("\t* %d-Bit Mux\t\tSEL: ", iCount->second);
 				std::set<int>::iterator iSB;
 				for(iSB = iCount->first.begin(); iSB != iCount->first.end(); iSB++)
-					printf("%d ", *iSB);
+					printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
 				printf("\n");
+				*/
+			
+				if(sizeCountMap[iStats->first].find(iCount->second) == sizeCountMap[iStats->first].end())
+					sizeCountMap[iStats->first][iCount->second] = 1;
+				else
+					sizeCountMap[iStats->first][iCount->second]++;
 			}
 		}
-
-
-		std::set<unsigned> inputset;
-		inputset.insert(940);
-		aigraph->printSubgraph(1276, inputset);
-
-
 
 
 

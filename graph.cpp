@@ -64,7 +64,7 @@ Graph::Graph(const Graph& copy){
 		assert(input.size() == inputPort.size());
 
 		for(unsigned int i = 0; i < input.size(); i++){
-			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getVertexID()]);
+			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()]);
 			m_GraphV[it->first]->addInPort(inputPort[i]);
 		}
 
@@ -74,7 +74,7 @@ Graph::Graph(const Graph& copy){
 		it->second->getOutput(output);
 
 		for(unsigned int i = 0; i < output.size(); i++){
-			m_GraphV[it->first]->addOutput( m_GraphV[output[i]->getVertexID()], output[i]->getOutputPortName(output[i]->getVertexID()));
+			m_GraphV[it->first]->addOutput( m_GraphV[output[i]->getID()], output[i]->getOutputPortName(output[i]->getID()));
 		}
 	}
 		
@@ -147,7 +147,7 @@ Graph& Graph::operator=(const Graph& copy){
 		assert(input.size() == inputPort.size());
 
 		for(unsigned int i = 0; i < input.size(); i++){
-			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getVertexID()]);
+			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()]);
 			m_GraphV[it->first]->addInPort(inputPort[i]);
 		}
 
@@ -157,7 +157,7 @@ Graph& Graph::operator=(const Graph& copy){
 		it->second->getOutput(output);
 
 		for(unsigned int i = 0; i < output.size(); i++){
-			m_GraphV[it->first]->addOutput( m_GraphV[output[i]->getVertexID()], it->second->getOutputPortName(output[i]->getVertexID()));
+			m_GraphV[it->first]->addOutput( m_GraphV[output[i]->getID()], it->second->getOutputPortName(output[i]->getID()));
 		}
 	}
 		
@@ -528,8 +528,8 @@ bool Graph::exportGraph(std::string filename){
 		ofs<<in.size()<<" ";
 		std::cout<<in.size()<<" ";
 		for(unsigned int i = 0; i < in.size(); i++){
-			printf("%d %s ", in[i]->getVertexID(), port[i].c_str() );
-			ofs<<in[i]->getVertexID()<<" "<<port[i]<<" ";
+			printf("%d %s ", in[i]->getID(), port[i].c_str() );
+			ofs<<in[i]->getID()<<" "<<port[i]<<" ";
 		}
 
 		std::vector<Vertex*> out;
@@ -537,8 +537,8 @@ bool Graph::exportGraph(std::string filename){
 		ofs<<out.size()<<" ";
 		std::cout<<out.size()<<" ";
 		for(unsigned int i = 0; i < out.size(); i++){
-			printf("%d %s ", out[i]->getVertexID(), it->second->getOutputPortName(out[i]->getVertexID()).c_str());
-			ofs<<out[i]->getVertexID()<<" "<< it->second->getOutputPortName(out[i]->getVertexID())<<" ";
+			printf("%d %s ", out[i]->getID(), it->second->getOutputPortName(out[i]->getID()).c_str());
+			ofs<<out[i]->getID()<<" "<< it->second->getOutputPortName(out[i]->getID())<<" ";
 		}
 
 		if(it->second->getType().find("LUT") != std::string::npos){
@@ -610,8 +610,8 @@ bool Graph::exportGraphSDFV2000(std::string cname, int ID){
 		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++){
-			printf("%d %d 1 0\t0 0\n", mapping[it->first], mapping[out[i]->getVertexID()]);
-			ofs<<mapping[it->first]<<"  "<<mapping[out[i]->getVertexID()]<<"  1  0     0  0\n";
+			printf("%d %d 1 0\t0 0\n", mapping[it->first], mapping[out[i]->getID()]);
+			ofs<<mapping[it->first]<<"  "<<mapping[out[i]->getID()]<<"  1  0     0  0\n";
 		}
 	}
 
@@ -688,8 +688,8 @@ bool Graph::exportGraphSDFV3000(std::string cname, int ID){
 		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++){
-			ofs<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getVertexID()]<<"\n";
-			//std::cout<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getVertexID()]<<"\n";
+			ofs<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getID()]<<"\n";
+			//std::cout<<"M  V30 "<<val<<" 1 "<<mapping[it->first]<<" "<<mapping[out[i]->getID()]<<"\n";
 			val++;
 		}
 	}
@@ -748,9 +748,9 @@ int Graph::getNumNets(){
 		m_GraphV[item]->getOutput(outputs);
 			
 		for(unsigned int i = 0; i < outputs.size(); i++){
-			if(marked.find(outputs[i]->getVertexID()) == marked.end()){
-				marked.insert(outputs[i]->getVertexID());
-				queue.push_back(outputs[i]->getVertexID());
+			if(marked.find(outputs[i]->getID()) == marked.end()){
+				marked.insert(outputs[i]->getID());
+				queue.push_back(outputs[i]->getID());
 			}
 			numNets++;
 		}
@@ -1109,13 +1109,13 @@ void Graph::print(){
 		it->second->getInput(in);
 		it->second->getInPorts(port);
 		for(unsigned int i = 0; i < in.size(); i++)
-			printf("%d %s ", in[i]->getVertexID(), port[i].c_str() );
+			printf("%d %s ", in[i]->getID(), port[i].c_str() );
 
 		printf("\tOUT: ");
 		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		for(unsigned int i = 0; i < out.size(); i++)
-			printf("%d ", out[i]->getVertexID());
+			printf("%d ", out[i]->getID());
 
 		if(it->second->getType().find("LUT") != std::string::npos){
 			printf("FUNC: %lx", it->second->getLUT());	
@@ -1143,13 +1143,13 @@ void Graph::printg(){
 		it->second->getInPorts(port);
 		printf(" %d ", (unsigned int) in.size());
 		for(unsigned int i = 0; i < in.size(); i++)
-			printf("%d %s ", in[i]->getVertexID(), port[i].c_str());
+			printf("%d %s ", in[i]->getID(), port[i].c_str());
 
 		std::vector<Vertex*> out;
 		it->second->getOutput(out);
 		printf(" %d ", (unsigned int)out.size());
 		for(unsigned int i = 0; i < out.size(); i++)
-			printf("%d %s ", out[i]->getVertexID(), it->second->getOutputPortName(out[i]->getVertexID()).c_str());
+			printf("%d %s ", out[i]->getID(), it->second->getOutputPortName(out[i]->getID()).c_str());
 		printf("\n");
 
 	}
@@ -1172,13 +1172,13 @@ void Graph::printVertex(int v){
 	vertex->getInPorts(port);
 	printf(" %d ", (unsigned int) in.size());
 	for(unsigned int i = 0; i < in.size(); i++)
-		printf("%d %s ", in[i]->getVertexID(), port[i].c_str());
+		printf("%d %s ", in[i]->getID(), port[i].c_str());
 
 	std::vector<Vertex*> out;
 	vertex->getOutput(out);
 	printf(" %d ", (unsigned int)out.size());
 	for(unsigned int i = 0; i < out.size(); i++)
-		printf("%d %s ", out[i]->getVertexID(), vertex->getOutputPortName(out[i]->getVertexID()).c_str());
+		printf("%d %s ", out[i]->getID(), vertex->getOutputPortName(out[i]->getID()).c_str());
 	printf("\n");
 
 }	
@@ -1329,7 +1329,7 @@ std::string Graph::findOutPortName(int port){
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
 void Graph::addVertex(Vertex* vertex){
-	m_GraphV[vertex->getVertexID()] = vertex;
+	m_GraphV[vertex->getID()] = vertex;
 }
 
 
@@ -1406,7 +1406,7 @@ Vertex* Graph::addVertex(int vID){
  *  @RETURN: Newly created Vertex Object
  ****************************************************************************/
 void Graph::removeVertex(Vertex* vertex){
-	int id = vertex->getVertexID();
+	int id = vertex->getID();
 	delete m_GraphV[id];
 	m_GraphV.erase(id);
 
@@ -1536,6 +1536,7 @@ void Graph::substitute(int node, Graph* sub){
 		//Get the portname of input to match to sub
 		std::string inPortName = nodeInputPorts[i];
 		int subInputIndex = sub->findInPort(inPortName);
+		//printf("Input port name: %s, Index of input in sub to delete: %d\n", inPortName.c_str(), subInputIndex);
 
 		//Get the outputs of IN to sub
 		std::vector<Vertex*> sub_Out_of_In;
@@ -1546,10 +1547,10 @@ void Graph::substitute(int node, Graph* sub){
 			nodeInputs[i]->addOutput(sub_Out_of_In[j], outPortName);
 
 			//Remove the original input of the currently added output
+			//printf("removing input %d from %d\n",  subInputIndex, sub_Out_of_In[j]->getID());
 			std::string inName = sub_Out_of_In[j]->getInputPortName(subInputIndex);
 			int index = sub_Out_of_In[j]->removeInputValue(subInputIndex);
 			assert(index != -1);
-			
 			sub_Out_of_In[j]->removeInPortValue(index);
 			sub_Out_of_In[j]->addInput(nodeInputs[i]);
 			sub_Out_of_In[j]->addInPort(inName);
@@ -1589,10 +1590,10 @@ void Graph::substitute(int node, Graph* sub){
 		int subOutputIndex = sub->findOutPort(outPortNames[i]);
 		//printf("Index of output of prim %d\n", subOutputIndex);
 		for(unsigned int j = 0; j < outputs.size(); j++){
-			//printf("adding %d\n", outputs[j]->getVertexID());
+			//printf("adding %d\n", outputs[j]->getID());
 			sub->getVertex(subOutputIndex)->addOutput(outputs[j], outPortNames[i]);
 
-			//printf("removing input %d from %d\n", node, outputs[j]->getVertexID());
+			//printf("removing2 input %d from %d\n", node, outputs[j]->getID());
 			int index = outputs[j]->removeInputValue(node);
 			//printf("adding input %d\n", subOutputIndex);
 			outputs[j]->addInput(sub->getVertex(subOutputIndex));
@@ -1608,7 +1609,7 @@ void Graph::substitute(int node, Graph* sub){
 	//Add the new vertices into the graph
 	for(it = sub->begin(); it != sub->end(); it++){
 		if(it->second->getType() != "IN"){
-			addVertex(it->second->getVertexID(), it->second);
+			addVertex(it->second->getID(), it->second);
 			it->second = NULL; //Make sure delete sub does not delete content
 		}
 	}
@@ -1628,7 +1629,7 @@ void Graph::renumber(int lb){
 	std::map<int, Vertex*>::iterator it;
 
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
-		int newID = it->second->getVertexID()+lb;
+		int newID = it->second->getID()+lb;
 		it->second->setVertexID(newID);
 		newGraph[newID] = it->second;
 	}
@@ -1661,9 +1662,9 @@ void Graph::renumber(int lb){
 ##############################################################*/
 
 int Graph::DFSearchOut(std::list<int>& mark, Vertex* start, std::set<int>& candidate){
-	//printf("DFS CHECKING V: %d \n", start->getVertexID());
+	//printf("DFS CHECKING V: %d \n", start->getID());
 
-	mark.push_back(start->getVertexID());
+	mark.push_back(start->getID());
 
 	std::vector<Vertex*> out;
 	if(start->getType().find("FD") != std::string::npos)
@@ -1675,16 +1676,16 @@ int Graph::DFSearchOut(std::list<int>& mark, Vertex* start, std::set<int>& candi
 	bool found;
 
 	for(unsigned int i = 0; i < out.size(); i++){
-		//printf("OUT: %d\n", out[i]->getVertexID());
+		//printf("OUT: %d\n", out[i]->getID());
 		if(out[i]->getType().find("FD") != std::string::npos){
-			mark.push_back(out[i]->getVertexID());
-			candidate.insert(out[i]->getVertexID());
+			mark.push_back(out[i]->getID());
+			candidate.insert(out[i]->getID());
 			continue;
 		}
 
 		found = false;
 		for(it = mark.begin(); it!= mark.end(); it++){
-			if(*it == out[i]->getVertexID()){
+			if(*it == out[i]->getID()){
 				found = true;
 				break;
 			}
@@ -1701,49 +1702,117 @@ int Graph::DFSearchOut(std::list<int>& mark, Vertex* start, std::set<int>& candi
 }
 
 
+/*
+		if return is 1, input output loopback is found
+		if return is -1, input output loopback is not found
+*/
+int Graph::DFS_FSM_S(std::set<int>& mark, int stop, Vertex* start){
+	//printf("DFS CHECKING V: %d \n", start->getID());
+	if(start->getID() == stop){
+		//Found the same FF in the input
+		return 1;
+	}
 
-int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start, std::set<int>& candidate){
-	//printf("DFS CHECKING V: %d \n", start->getVertexID());
-	mark.push_back(start->getVertexID());
+
+	mark.insert(start->getID());
 	std::vector<Vertex*> in;
-	int dport= start->getInputPortID("D"); 
-	if(dport != -1)
-		in.push_back(getVertex(dport));
-	else
-		start->getInput(in);
-
-	std::list<int>::iterator it; 
-	bool found;
+	start->getInput(in);
 
 	for(unsigned int i = 0; i < in.size(); i++){
-		//printf("OUT: %d\n", out[i]->getVertexID());
-		if(in[i]->getType().find("FD") != std::string::npos){
-			mark.push_back(in[i]->getVertexID());
-			if(stop.find(in[i]->getVertexID()) != stop.end()){
-				//printf("FOUND INITIAL FF\n");
-				candidate.insert(in[i]->getVertexID());
-			}
-			else
-				continue;
+		//Check if input is marked. If not, traverse
+		if(mark.find(in[i]->getID()) == mark.end()){
+			int rval = DFS_FSM_S(mark, stop, in[i]);
+			if(rval > 0)	return rval;
 		}
+	}
+
+	return -1;
+
+}
+
+void Graph::DFS_FSM_M(std::set<int>& mark, std::set<Vertex*>& stop, Vertex* start, std::set<Vertex*>& candidate){
+	//keep track which of the stop vertices are visited
+	if(stop.find(start) != stop.end()){
+		//printf("FOUND INITIAL FF\n");
+		candidate.insert(start);
+		return;
+	}
+	else if(start->getType().find("FD") != std::string::npos){
+		mark.insert(start->getID());
+		return;
+	}
+
+	//printf("DFS CHECKING V: %d \n", start->getID());
+	mark.insert(start->getID());
+	std::vector<Vertex*> in;
+	start->getInput(in);
+
+	for(unsigned int i = 0; i < in.size(); i++){
+		//printf("OUT: %d\n", out[i]->getID());
+		if(mark.find(in[i]->getID()) == mark.end())
+			DFS_FSM_M(mark, stop, in[i], candidate);
+	}
+}
+
+void Graph::DFS_FSM_T(std::set<int>& mark, Vertex* start, std::set<Vertex*>& candidate){
+	//keep track which of the stop vertices are visited
+	if(start->getType().find("FD") != std::string::npos){
+		mark.insert(start->getID());
+		candidate.insert(start);
+		return;
+	}
+
+	//printf("DFS CHECKING V: %d \n", start->getID());
+	mark.insert(start->getID());
+	std::vector<Vertex*> out;
+	start->getOutput(out);
+
+	for(unsigned int i = 0; i < out.size(); i++){
+		if(mark.find(out[i]->getID()) == mark.end())
+			DFS_FSM_T(mark, out[i], candidate);
+	}
+
+}
+
+
+int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start, std::set<int>& candidate){
+	//keep track which of the stop vertices are visited
+	if(stop.find(start->getID()) != stop.end()){
+		//printf("FOUND INITIAL FF\n");
+		candidate.insert(start->getID());
+		return 0;
+	}
+	else if(start->getType().find("FD") != std::string::npos){
+		mark.push_back(start->getID());
+		return 0;
+	}
+
+	//printf("DFS CHECKING V: %d \n", start->getID());
+	mark.push_back(start->getID());
+	std::vector<Vertex*> in;
+	start->getInput(in);
+
+	std::list<int>::iterator it; 
+
+	bool found;
+	//TODO: Make mark into a set
+	for(unsigned int i = 0; i < in.size(); i++){
+		//printf("OUT: %d\n", out[i]->getID());
 
 		found = false;
 		for(it = mark.begin(); it!= mark.end(); it++){
-			if(*it == in[i]->getVertexID()){
+			if(*it == in[i]->getID()){
 				found = true;
 				break;
 			}
 		}
 		if(!found){
-			int rval = DFSearchIn(mark, stop, in[i], candidate);
-			if(rval >=  0)
-				return rval;
+			DFSearchIn(mark, stop, in[i], candidate);
 		}
 	}
 
 	mark.pop_back();
-	return -1;
-
+	return 0;
 }
 
 /***************************************************************************
@@ -1762,8 +1831,8 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start,
 			return;
 		}
 
-		mark.push_back(vertex->getVertexID());
-		//printf("VID PUSHED %d\n", vertex->getVertexID());
+		mark.push_back(vertex->getID());
+		//printf("VID PUSHED %d\n", vertex->getID());
 
 		std::vector<Vertex*> out;
 		vertex->getOutput(out);
@@ -1774,7 +1843,7 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start,
 			found = false;
 
 			for(it = mark.begin(); it!= mark.end(); it++){
-				if(*it == out[i]->getVertexID()){
+				if(*it == out[i]->getID()){
 					found = true;
 					break;
 				}
@@ -1792,7 +1861,7 @@ int Graph::DFSearchIn (std::list<int>& mark, std::set<int>& stop, Vertex* start,
 int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 	//printf("SEARCHING FOR AND REMOVING CYCLES\n");
 	int previous = mark.back(); 
-	mark.push_back(vertex->getVertexID());
+	mark.push_back(vertex->getID());
 
 	std::vector<Vertex*> out;
 	vertex->getOutput(out);
@@ -1803,7 +1872,7 @@ int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 		found = false;
 
 		for(it = mark.begin(); it!= mark.end(); it++){
-			if(*it == out[i]->getVertexID()){
+			if(*it == out[i]->getID()){
 				found = true;
 				break;
 			}
@@ -1811,7 +1880,7 @@ int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 
 		if(!found){
 			int prev = DFScycle(out[i], mark); 
-			if(prev != vertex->getVertexID()){
+			if(prev != vertex->getID()){
 				mark.pop_back();
 				return prev;
 			}
@@ -1837,22 +1906,22 @@ int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 				}
 			}
 
-			printf("BREAKING FEEDBACK between %d - %d\n", currentV->getVertexID(), nextV->getVertexID());
+			printf("BREAKING FEEDBACK between %d - %d\n", currentV->getID(), nextV->getID());
 
 			if(currentV->getType() == "IN")
 				continue;
 
 			//Break feedback loop, Remove output
-			std::string outPortName = currentV->removeOutputValue(nextV->getVertexID());
+			std::string outPortName = currentV->removeOutputValue(nextV->getID());
 
-			int index = nextV->removeInputValue(currentV->getVertexID());
+			int index = nextV->removeInputValue(currentV->getID());
 			std::vector<std::string> outPorts;
 			nextV->getInPorts(outPorts);
 			nextV->addInPort(outPorts[index]);
 			std::stringstream ss;
 			ss<<"P" << getNumInputs();
 			Vertex* inputV = addVertex(getLast(), "IN");
-			addInput(ss.str(), inputV->getVertexID());
+			addInput(ss.str(), inputV->getID());
 
 			inputV->addOutput(nextV, outPortName);
 			nextV->removeInPortValue(index);
@@ -1879,8 +1948,8 @@ int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
   front = queue.front();
   queue.pop();
 
-  if(mark.find(front->getVertexID()) == mark.end()){
-//printf("Node\t%d not marked. LEVEL: %d\n", front->getVertexID(), level);
+  if(mark.find(front->getID()) == mark.end()){
+//printf("Node\t%d not marked. LEVEL: %d\n", front->getID(), level);
 front->setLevel(level);
 }
 else{

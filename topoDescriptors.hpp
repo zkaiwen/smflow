@@ -68,12 +68,12 @@ namespace TOPOLOGY{
 				ckt->getVertex(item)->getOutput(outputs);
 				
 				for(unsigned int i = 0; i < outputs.size(); i++){
-					if(marked.find(outputs[i]->getVertexID()) == marked.end()){
-						marked.insert(outputs[i]->getVertexID());
+					if(marked.find(outputs[i]->getID()) == marked.end()){
+						marked.insert(outputs[i]->getID());
 
 						//Make sure the BFS doesn't count paths that contain previous starting vertices
-						if(startingMarked.find(outputs[i]->getVertexID()) == startingMarked.end()){
-							queue.push_back(outputs[i]->getVertexID());
+						if(startingMarked.find(outputs[i]->getID()) == startingMarked.end()){
+							queue.push_back(outputs[i]->getID());
 							pathLengthCount[pathLength]++;
 						}
 

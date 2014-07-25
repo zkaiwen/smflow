@@ -31,7 +31,7 @@ graph_b.o: graph_b.cpp graph_b.hpp
 mainRef.o: mainRef.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
+mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp fingerprint.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o

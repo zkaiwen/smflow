@@ -92,40 +92,40 @@ namespace VERIFICATION{
 					vLevel[i][j]->getInput(input);
 
 					if(vLevel[i][j]->getType().find("AND") != std::string::npos){
-						result = nodeVal[input[0]->getVertexID()];
-						//printf("IN: %d ", input[0]->getVertexID());
+						result = nodeVal[input[0]->getID()];
+						//printf("IN: %d ", input[0]->getID());
 						for(unsigned int k = 1; k < input.size(); k++){
-							result = result & nodeVal[input[k]->getVertexID()];
-							//printf("%d ", input[k]->getVertexID());
+							result = result & nodeVal[input[k]->getID()];
+							//printf("%d ", input[k]->getID());
 						}
 						//printf("\n");
 
-						nodeVal[vLevel[i][j]->getVertexID()] = result;
-						//printf("AND NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getVertexID(), result);
+						nodeVal[vLevel[i][j]->getID()] = result;
+						//printf("AND NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
 					}
 					else if(vLevel[i][j]->getType() == "INV"){
-						result = ~nodeVal[input[0]->getVertexID()];
-						nodeVal[vLevel[i][j]->getVertexID()] = result;
-						//printf("IN: %d \n", input[0]->getVertexID());
-						//printf("INV NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getVertexID(), result);
+						result = ~nodeVal[input[0]->getID()];
+						nodeVal[vLevel[i][j]->getID()] = result;
+						//printf("IN: %d \n", input[0]->getID());
+						//printf("INV NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
 					}
 					else if(vLevel[i][j]->getType().find("OR") != std::string::npos){
-						result = nodeVal[input[0]->getVertexID()];
-						//printf("IN: %d ", input[0]->getVertexID());
+						result = nodeVal[input[0]->getID()];
+						//printf("IN: %d ", input[0]->getID());
 						for(unsigned int k = 1; k < input.size(); k++){
-							result = result | nodeVal[input[k]->getVertexID()];
-							//printf("%d ", input[k]->getVertexID());
+							result = result | nodeVal[input[k]->getID()];
+							//printf("%d ", input[k]->getID());
 						}
 						//printf("\n");
 
-						nodeVal[vLevel[i][j]->getVertexID()] = result;
-						//printf("OR NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getVertexID(), result);
+						nodeVal[vLevel[i][j]->getID()] = result;
+						//printf("OR NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
 					}
 
 					if(vLevel[i][j]->getOVSize() == 0){
-						printf("GRAPH OUTPUT: %d\n", vLevel[i][j]->getVertexID());
+						printf("GRAPH OUTPUT: %d\n", vLevel[i][j]->getID());
 						outputResults.push_back(result);
-						outputNode.push_back(vLevel[i][j]->getVertexID());
+						outputNode.push_back(vLevel[i][j]->getID());
 					}
 				}
 			}
@@ -252,22 +252,22 @@ namespace VERIFICATION{
 					inputIndex++;
 				}
 				else if(it->second->getType() == "INV"){
-					result = ~nodeVal[input[0]->getVertexID()];
+					result = ~nodeVal[input[0]->getID()];
 					nodeVal[it->first] = result;
 					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
 				}
 				else if(it->second->getType().find("AND") != std::string::npos){
-					result = nodeVal[input[0]->getVertexID()];
+					result = nodeVal[input[0]->getID()];
 					for(unsigned int i = 1; i < input.size(); i++)
-						result = result & nodeVal[input[i]->getVertexID()];
+						result = result & nodeVal[input[i]->getID()];
 
 					nodeVal[it->first] = result;
 					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
 				}
 				else if(it->second->getType().find("OR") != std::string::npos){
-					result = nodeVal[input[0]->getVertexID()];
+					result = nodeVal[input[0]->getID()];
 					for(unsigned int i = 1; i < input.size(); i++)
-						result = result | nodeVal[input[i]->getVertexID()];
+						result = result | nodeVal[input[i]->getID()];
 
 					nodeVal[it->first] = result;
 					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);

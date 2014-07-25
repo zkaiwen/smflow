@@ -524,14 +524,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else if(gateType.find("TINV") != std::string::npos)
 			exit(1);
 		else{
-			printf("Unknown Gate Type\tI%sI\nPress y to resume, n to quit\n", gateType.c_str());
-
-			char inputchar;
-			std::cin>>inputchar;
-			if(inputchar == 'y')
-				continue;
-			else
-				exit(1);
+			printf("Unknown Gate Type\tI%sI\n\n", gateType.c_str());
+			exit(1);
 		}
 
 
@@ -604,13 +598,13 @@ ckt->setLevels();
 	//Create PI for input LEVEL 0
 	for(unsigned int i = 0; i < vLevel[0].size(); i++){
 		if(vLevel[0][i]->getType() == "VCC")
-			m_GateMap[vLevel[0][i]->getVertexID()] = 1;
+			m_GateMap[vLevel[0][i]->getID()] = 1;
 		else if(vLevel[0][i]->getType() == "GND")
-			m_GateMap[vLevel[0][i]->getVertexID()] = 0;
+			m_GateMap[vLevel[0][i]->getID()] = 0;
 		else{
 			unsigned int input= create_input();
-			m_GateMap[vLevel[0][i]->getVertexID()] = input; 
-			//printf("INPUT:  %d\tAIG: %u\n", vLevel[0][i]->getVertexID(),input);
+			m_GateMap[vLevel[0][i]->getID()] = input; 
+			//printf("INPUT:  %d\tAIG: %u\n", vLevel[0][i]->getID(),input);
 		}
 	}
 
@@ -626,36 +620,36 @@ ckt->setLevels();
 
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
 			Vertex* vertex = vLevel[i][j];
-			int vertexID = vertex->getVertexID();
+			int vertexID = vertex->getID();
 
 			if(vertex->getType().find("AND") != std::string::npos){
 				std::vector<Vertex*> in;
 				vertex->getInput(in);
 
-				unsigned output = create_and2(m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
+				unsigned output = create_and2(m_GateMap[in[0]->getID()], m_GateMap[in[1]->getID()]);
 				m_GateMap[vertexID] = output;
 
-				//printf("AND NODE: %d IN: %d %d\nAIG NODE: %d IN: %d %d\n", vertexID, in[0]->getVertexID(), in[1]->getVertexID(), output, m_GateMap[in[0]->getVertexID()], m_GateMap[in[1]->getVertexID()]);
+				//printf("AND NODE: %d IN: %d %d\nAIG NODE: %d IN: %d %d\n", vertexID, in[0]->getID(), in[1]->getID(), output, m_GateMap[in[0]->getID()], m_GateMap[in[1]->getID()]);
 			}
 			else if(vertex->getType().find("INV") != std::string::npos){
 				std::vector<Vertex*> in;
 				vertex->getInput(in);
 
 
-				if(m_GateMap[in[0]->getVertexID()] == 0)
+				if(m_GateMap[in[0]->getID()] == 0)
 					m_GateMap[vertexID] = 1;
-				else if(m_GateMap[in[0]->getVertexID()] == 1)
+				else if(m_GateMap[in[0]->getID()] == 1)
 					m_GateMap[vertexID] = 0;
 				else{
-					if(m_GateMap[in[0]->getVertexID()]%2 == 0)
-						m_GateMap[vertexID] = m_GateMap[in[0]->getVertexID()] + 1;
+					if(m_GateMap[in[0]->getID()]%2 == 0)
+						m_GateMap[vertexID] = m_GateMap[in[0]->getID()] + 1;
 					else
-						m_GateMap[vertexID] = m_GateMap[in[0]->getVertexID()] - 1;
+						m_GateMap[vertexID] = m_GateMap[in[0]->getID()] - 1;
 				}
 				
 
 				if(vertex->getOVSize() == 0 ){
-					m_Outputs.push_back(m_GateMap[in[0]->getVertexID()]);
+					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
 				}
 				continue;
@@ -669,8 +663,8 @@ ckt->setLevels();
 			//CHeck to see if node has an output
 			if(vertex->getOVSize() == 0){
 				//printf("NO OUTPUT\n");
-				m_Outputs.push_back(m_GateMap[vertex->getVertexID()]);
-				aiger_add_output(m_Aiger, m_GateMap[vertex->getVertexID()], 0);
+				m_Outputs.push_back(m_GateMap[vertex->getID()]);
+				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
 			}
 			//printf("\n");
 		}
@@ -720,11 +714,11 @@ bool AIG::handleFF(int node, Graph* ckt){
 	//Remove ff from the input nodes' output
 	for(unsigned i = 0; i < input.size(); i++){
 		input[i]->removeOutputValue(node);
-		ffNode->removeInputValue(input[i]->getVertexID());
+		ffNode->removeInputValue(input[i]->getID());
 		
 		//Delete the input if the input is isolated	
 		if(input[i]->getNumInputs() == 0 && input[i]->getNumOutputs() == 0){
-			ckt->removeVertex(input[i]->getVertexID());
+			ckt->removeVertex(input[i]->getID());
 		}
 	}
 
@@ -758,27 +752,27 @@ bool AIG::handleFF(int node, Graph* ckt){
 unsigned AIG::create_and2(unsigned e1, unsigned e2){
 	//Structural Hashing/FOLDING
 	if(e1 == 0){
-		printf("FOLD e1 = 0\n"); 
+		//printf("FOLD e1 = 0\n"); 
 		return 0;
 	}
 	if(e2 == 0){
-		printf("FOLD e2 = 0\n");
+		//printf("FOLD e2 = 0\n");
 		return 0; 
 	}
 	if(e1 == 1){
-		printf("FOLD e1 = 1\n");
+		//printf("FOLD e1 = 1\n");
 		return e2;
 	}
 	if(e2 == 1){
-		printf("FOLD e2 = 1\n");
+		//printf("FOLD e2 = 1\n");
 		return e1;
 	}
 	if((e1& 0xFFFFFFFE) == (e2 & 0xFFFFFFFE)){
-		printf("FOLD e1 = -e2: %d %d \n", e1, e2);
+		//printf("FOLD e1 = -e2: %d %d \n", e1, e2);
 		return 0;
 	}
 	if(e1 == e2){
-		printf("FOLD e1 = e2 \n");
+		//printf("FOLD e1 = e2 \n");
 		return e1;
 	}
 

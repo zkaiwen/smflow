@@ -49,7 +49,7 @@ class Vertex
 		unsigned long getLUT();
 		unsigned int getOVSize();
 		unsigned int getIVSize();
-		int getVertexID();
+		int getID();
 		int getLevel();
 		int getNumInputs();
 		int getNumOutputs();

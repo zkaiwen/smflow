@@ -119,6 +119,9 @@ class Graph
 		int DFScycle(Vertex*, std::list<int>&);
 		int DFSearchIn(std::list<int>& , std::set<int>&,  Vertex*, std::set<int>& );
 		int DFSearchOut(std::list<int>& , Vertex*, std::set<int>& );
+		int DFS_FSM_S(std::set<int>& , int,  Vertex*);
+		void DFS_FSM_M(std::set<int>&, std::set<Vertex*>&, Vertex*, std::set<Vertex*>&);
+		void DFS_FSM_T(std::set<int>&, Vertex*, std::set<Vertex*>&);
 
 
 		//Print

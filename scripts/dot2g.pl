@@ -130,9 +130,9 @@ sub parse{
 			
 			if($ARGV[0] !~ m/n/)
 			{
-				@gateNum1 = split("__", $gateOutPort[0]);
+				@gateNum1 = split("---", $gateOutPort[0]);
 				$gateOutPort[0] = $gateNum1[0];
-				@gateNum2 = split("__", $gateInPort[0]);
+				@gateNum2 = split("---", $gateInPort[0]);
 				$gateInPort[0] = $gateNum2[0];
 				$cname[$i] = $gateNum1[2];
 				$cname[$o] = $gateNum2[2];
@@ -143,7 +143,7 @@ sub parse{
 			$type[$i] = $gateOutPort[0];
 			$type[$o] = $gateInPort[0];
 
-			$newDot = $newDot . "\t" . $gateOutPort[0] . "__" . $i . " -> " . $gateInPort[0] . "__" . $o . "\n";
+			$newDot = $newDot . "\t" . $gateOutPort[0] . "---" . $i . " -> " . $gateInPort[0] . "---" . $o . "\n";
 			
 			$numOutput[$i] = $numOutput[$i] + 1;
 			$outputs[$i] = $o . " " . $gateOutPort[1] . " " . $outputs[$i];

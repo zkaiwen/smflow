@@ -13,6 +13,7 @@
 
 Vertex::Vertex(){
 	m_Input.clear();
+	m_InPorts.clear();
 	m_Output.clear();
 	m_Name = "";
 	m_Level = -1;
@@ -22,6 +23,7 @@ Vertex::Vertex(int vID, std::string type){
 	m_Type = type;		
 	m_ID = vID;
 	m_Input.clear();
+	m_InPorts.clear();
 	m_Output.clear();
 	m_Level = -1;
 	m_Name = "";
@@ -31,6 +33,7 @@ Vertex::Vertex(int vID){
 	m_Type = "";		
 	m_ID = vID;
 	m_Input.clear();
+	m_InPorts.clear();
 	m_Output.clear();
 	m_Level = -1;
 	m_Name = "";
@@ -116,7 +119,7 @@ std::string Vertex::removeOutputValue(int outputVal){
 	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++){
-			if(it->second[i]->getVertexID() == outputVal){
+			if(it->second[i]->getID() == outputVal){
 				it->second.erase(it->second.begin() + i);
 				std::string port = it->first;
 				if(it->second.size() == 0)
@@ -129,14 +132,14 @@ std::string Vertex::removeOutputValue(int outputVal){
 	printf("Vertex: %d\tOutputList: ", m_ID);
 	for(it = m_Output.begin(); it != m_Output.end(); it++)
 		for(unsigned int i = 0; i < it->second.size(); i++)
-			printf("%d ", it->second[i]->getVertexID());
+			printf("%d ", it->second[i]->getID());
 	exit(1);
 	return "";
 }
 
 int Vertex::removeInputValue(int inputVal){
 	for(unsigned int i = 0; i < m_Input.size(); i++){
-		if(m_Input[i]->getVertexID() == inputVal){
+		if(m_Input[i]->getID() == inputVal){
 			m_Input.erase(m_Input.begin() + i);
 			return i;
 		}
@@ -184,7 +187,7 @@ std::string  Vertex::getOutputPortName(int id){
 	std::map<std::string, std::vector<Vertex*> >::iterator it;
 	for(it = m_Output.begin(); it != m_Output.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++){
-			if(it->second[i]->getVertexID() == id)
+			if(it->second[i]->getID() == id)
 				return it->first; 
 		}
 	}
@@ -204,7 +207,7 @@ void Vertex::getOutputPortID(std::string port, std::vector<Vertex*>& ids){
 
 std::string  Vertex::getInputPortName(int id){
 	for(unsigned int index = 0; index < m_Input.size(); index++){
-		if(m_Input[index]->getVertexID() == id)
+		if(m_Input[index]->getID() == id)
 			return m_InPorts[index];
 	}
 
@@ -216,7 +219,7 @@ std::string  Vertex::getInputPortName(int id){
 int Vertex::getInputPortID(std::string port){
 	for(unsigned int index = 0; index < m_InPorts.size(); index++){
 		if(m_InPorts[index] == port)
-			return m_Input[index]->getVertexID();
+			return m_Input[index]->getID();
 	}
 	//	printf("[WARNING] -- Input name %s not found\n", port.c_str());
 	return -1;
@@ -237,7 +240,7 @@ unsigned int Vertex::getIVSize(){
 	return m_Input.size();
 }
 
-int Vertex::getVertexID(){
+int Vertex::getID(){
 	return m_ID;
 }
 
