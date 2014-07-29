@@ -91,6 +91,7 @@ int main( int argc, char *argv[] )
 	timeval fb_b, fb_e;
 	timeval reg_b, reg_e;
 	timeval mux_b, mux_e;
+	timeval dec_b, dec_e;
 	timeval fgp_b, fgp_e;
 
 	float elapsedTime;
@@ -120,6 +121,7 @@ int main( int argc, char *argv[] )
 
 	//Mux Type (2-1, 4-1), mux size (2bit, 4bit), count
 	std::vector<std::map<int, std::map<int, int> > >  stat_muxAgg;
+	std::vector<std::map<std::vector<unsigned>, std::vector<unsigned> > >  stat_decAgg;
 
 	//size/count
 	std::vector<std::map<int, int> >  stat_reg;
@@ -334,7 +336,12 @@ int main( int argc, char *argv[] )
 		stat_muxAgg.push_back(sizeCount);		
 
 		
-		AGGREGATION::findDecoder(functionCalc, aigraph);
+		gettimeofday(&dec_b, NULL); //-----------------------------------------------
+		std::map<std::vector<unsigned>, std::vector<unsigned> > decoderResult;
+		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator iDR;
+		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
+		gettimeofday(&dec_e, NULL);//------------------------------------------
+		stat_decAgg.push_back(decoderResult);
 
 
 
@@ -388,6 +395,10 @@ int main( int argc, char *argv[] )
 
 		elapsedTime = (mux_e.tv_sec - mux_b.tv_sec) * 1000.0;
 		elapsedTime += (mux_e.tv_usec - mux_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+
+		elapsedTime = (dec_e.tv_sec - dec_b.tv_sec) * 1000.0;
+		elapsedTime += (dec_e.tv_usec - dec_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
 
 		stat_time.push_back(time);
@@ -562,7 +573,7 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 	}
 	printf("\n");
 
@@ -581,7 +592,7 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 	}
 	printf("\n");
 
@@ -600,7 +611,7 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 	}
 	printf("\n");
 
@@ -642,6 +653,7 @@ int main( int argc, char *argv[] )
 	printf("%-12s", "C-Count");
 	printf("%-12s", "LUT RPLC");
 	printf("%-12s", "MUX AGG");
+	printf("%-12s", "DEC AGG");
 	printf("%-12s", "Fngrprint");
 	printf("\n") ;
 

@@ -104,7 +104,7 @@ class AIG{
 
 		//Print	
 		void print();
-		void printSubgraph(unsigned, std::set<unsigned>&);
+		void printSubgraph(std::list<unsigned>&, std::set<unsigned>&);
 		void printHash();
 		void printMap();
 

@@ -430,7 +430,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::map<int, Vertex*>::iterator end = ckt->end();
 	end--;
 
-	for(it = ckt->begin(); it->first <= end->first; it++){
+	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
 		std::string circuitType;
 
 		//Read in the necessary primitive type
@@ -502,7 +502,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			//Check to see if INPUT is connected to buffer and out is OUTPUT
 			//If it is...delete input
 			if(in[0]->getType() == "IN" && out.size() == 0){
-				printf("BUFFER IS A PASSTHROUGH\n");
+				//printf("BUFFER IS A PASSTHROUGH\n");
 				ptBuffer++;
 			}
 
@@ -556,7 +556,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//Delete substituted nodes from the graph
 	for(unsigned int i = 0; i < toBeDeleted.size(); i++)
 		ckt->removeVertex(toBeDeleted[i]);
-	printf("NUMBER OF PASSTHROUGH BUFFER: %d\n", ptBuffer);
+	printf(" * NUMBER OF PASSTHROUGH BUFFER: %d\n", ptBuffer);
 
 
 	//printf("CONVERTED CIRCUIT\n");
@@ -877,13 +877,14 @@ void AIG::print(){
  *      * output: AIG output node to start printing
  *      * input: AIG input nodes to stop at
  ********************************************************/
-void AIG::printSubgraph(unsigned output, std::set<unsigned>& input){
-	std::list<unsigned> queue;
+void AIG::printSubgraph(std::list<unsigned>& queue, std::set<unsigned>& input){
 	std::set<unsigned> marked;
 	std::map<unsigned int, unsigned int> levelMap;
-	queue.push_back(output);
-	marked.insert(output);
-	levelMap[output] = 0;
+	std::list<unsigned>::iterator iList;
+	for(iList = queue.begin(); iList != queue.end(); iList++){
+		marked.insert(*iList);
+		levelMap[*iList] = 0;
+	}
 
 	bool done = false;
 	unsigned doneLevel = 0;
@@ -927,6 +928,7 @@ void AIG::printSubgraph(unsigned output, std::set<unsigned>& input){
 			dot1 = " [style=dotted]";
 		if((c2&0x1) == 0x1)
 			dot2 = " [style=dotted]";
+
 		std::cout<<"\t"<<node1<<"->"<<itemNode<<dot1<<std::endl;
 		std::cout<<"\t"<<node2<<"->"<<itemNode<<dot2<<std::endl;
 

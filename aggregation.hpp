@@ -1,13 +1,13 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@ 
-  @
-  @  AGGREGATION.cpp
-  @		--Aggregates Common components into higher structures
-  @  
-  @  @AUTHOR:Kevin Zeng
-  @  Copyright 2012 – 2013 
-  @  Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@  AGGREGATION.cpp
+	@		--Aggregates Common components into higher structures
+	@  
+	@  @AUTHOR:Kevin Zeng
+	@  Copyright 2012 – 2013 
+	@  Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef AGG_GUARD
 #define AGG_GUARD
@@ -27,11 +27,13 @@
 
 namespace AGGREGATION{
 	void findHA(CutFunction* cf, AIG* aigraph);
-	void findDecoder(CutFunction* cf, AIG* aigraph);
+	void findDecoder(CutFunction* cf, AIG* aigraph, std::map<std::vector<unsigned>, std::vector<unsigned> >& result);
+
 	unsigned int findMux(CutFunction* cf, AIG* aigraph);
 	void findMux2(CutFunction* cf, AIG* aigraph);
-	void aggregateSignal(std::map<unsigned long, std::vector<std::vector<unsigned>*> >& pmap, std::vector<unsigned long>& andFunction, std::vector<std::set<unsigned> >& andSimIn,	std::vector<std::set<unsigned> >& andSimOut);
+
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in);
+	bool isInputNeg(AIG* aigraph, unsigned out, unsigned in);
 
 
 	void findHA(CutFunction* cf, AIG* aigraph){
@@ -118,13 +120,13 @@ namespace AGGREGATION{
 
 		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator outit;
 		/*
-		   printf("\n\nHALF ADDERS\n");
-		   for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-		   printf("INPUTS: ");
-		   for(unsigned int i = 0; i < outit->first.size(); i++)
-		   printf("%d ", outit->first[i]);
-		   printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
-		   }
+			 printf("\n\nHALF ADDERS\n");
+			 for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+			 printf("INPUTS: ");
+			 for(unsigned int i = 0; i < outit->first.size(); i++)
+			 printf("%d ", outit->first[i]);
+			 printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
+			 }
 		 */
 
 		printf("\n----------------------------------------------------------------\n");
@@ -151,7 +153,7 @@ namespace AGGREGATION{
 
 
 
-		   SEARCHING GREY BLOCKS
+			 SEARCHING GREY BLOCKS
 
 
 
@@ -218,16 +220,16 @@ namespace AGGREGATION{
 		printf("done\n");
 
 		/*			
-					printf("PRINTING GBLOCKS\n");
-					for(unsigned int j = 0; j < gPorts.size(); j++){
-					printf("INPUT: ");
-					unsigned int k = 0;
-					for(k = 0; k < gPorts[j].size()-1; k++){
-					printf("%d ", gPorts[j][k]);
+						printf("PRINTING GBLOCKS\n");
+						for(unsigned int j = 0; j < gPorts.size(); j++){
+						printf("INPUT: ");
+						unsigned int k = 0;
+						for(k = 0; k < gPorts[j].size()-1; k++){
+						printf("%d ", gPorts[j][k]);
 
-					}
-					printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
-					}
+						}
+						printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
+						}
 		 */
 		printf(" * Aggregating Results...");	
 		//Vector of vector of iterators. (Aggregated adders)
@@ -413,20 +415,20 @@ namespace AGGREGATION{
 		printf("done\n");
 
 		/*
-		   printf("Printing ha and hagp set\n");
-		   for(unsigned int i = 0; i < addbitIn.size(); i++){
-		   printf("Input:\t");
-		   for(unsigned int j = 0; j < addbitIn[i].size(); j++){
-		   printf("%d ", addbitIn[i][j]);
-		   }
+			 printf("Printing ha and hagp set\n");
+			 for(unsigned int i = 0; i < addbitIn.size(); i++){
+			 printf("Input:\t");
+			 for(unsigned int j = 0; j < addbitIn[i].size(); j++){
+			 printf("%d ", addbitIn[i][j]);
+			 }
 
-		   printf("\nOutput:\t");
-		   for(unsigned int j = 0; j < addbitOut[i].size(); j++){
-		   printf("%d ", addbitOut[i][j]);
-		   }
-		   printf("\n\n");
+			 printf("\nOutput:\t");
+			 for(unsigned int j = 0; j < addbitOut[i].size(); j++){
+			 printf("%d ", addbitOut[i][j]);
+			 }
+			 printf("\n\n");
 
-		   }
+			 }
 		 */
 		//output index 0
 		std::vector<std::set<unsigned> > marked2; 
@@ -537,139 +539,234 @@ namespace AGGREGATION{
 
 
 
-	void findDecoder(CutFunction* cf, AIG* aigraph){
+	void findDecoder(CutFunction* cf, AIG* aigraph, std::map<std::vector<unsigned>, std::vector<unsigned> >& result){
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING FOR DECODERS-------------------------------");
 
+		//Get the hashmap of circuit names to function tt
 		std::map<unsigned long, std::string>::iterator it;
 		std::map<unsigned long, std::string> hmap;
 		cf->getHashMap(hmap);
 
+		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
 		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
-		//Functions that are carry and sum operations
-		std::vector<unsigned long> and3;
-		//pair of input (key), count
-		std::map<std::vector<unsigned>, int > agg2;
-		std::map<std::vector<unsigned>, int > agg3;
+		std::vector<unsigned long> andInput;
+		//possible inputs for decoder, possible outputs for decoder 
+		std::map<std::vector<unsigned>, std::vector<unsigned> > agg;
+		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator iAgg;
 
+		//Final Result of Aggregation
+		std::list<std::vector<unsigned> > possibleDecoderIn;
+		std::list<std::vector<unsigned> > possibleDecoderOut;
 
-		//find and3 gates
-		printf(" * Parsing function database for decoder blocks...");
+		//Find instances of or gates
+		printf(" * Parsing function database for decoder blocks...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
-			if(it->second.find("or3") != std::string::npos)
-				and3.push_back(it->first);
+			//or and and have the same basic layout. Or is just inverted at in and out
+			if(it->second.find("or") != std::string::npos && it->second.find("xor") == std::string::npos){
+				andInput.push_back(it->first);
+			}
 		}
 
-		for(unsigned int i = 0; i < and3.size(); i++){
-			if(pmap.find(and3[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[and3[i]].size(); j++){
+
+		//Aggregate based on inputs of the and gates
+		for(unsigned int i = 0; i < andInput.size(); i++){
+			if(pmap.find(andInput[i]) != pmap.end()){
+				for(unsigned int j = 0; j < pmap[andInput[i]].size(); j++){
 					unsigned int k = 0;
 					std::vector<unsigned> ports;
 
-					//sort positive inputs (used as key)
-					for(k = 0; k < pmap[and3[i]][j]->size()-1; k++){
-						unsigned in = pmap[and3[i]][j]->at(k);
-						//printf("%d ", in);
-						/*
-						   if(in < 0) in*=-1;
-
-						   unsigned int s;
-						   for(s = 0; i < ports.size(); s++){
-						   if(in < ports[s])
-						   break;
-						   }
-						   ports.insert(ports.begin() + s, in);
-						 */
+					for(k = 0; k < pmap[andInput[i]][j]->size()-1; k++){
+						unsigned in = pmap[andInput[i]][j]->at(k);
 						ports.push_back(in);
-
 					}
-					//printf("\n");
 
-					if(agg3.find(ports) == agg3.end()){
-						agg3[ports] = 1;
-					}
-					else
-						agg3[ports]++;
+					agg[ports].push_back(pmap[andInput[i]][j]->at(k));
 				}
 			}
 		}
-		printf("done\n");
 
 
 
-		//Searching for 2-4 decoders
-		printf(" * Looking for 2-4 decoder function...");
-		int limit = (aigraph->getInputSize()+1) *2;
-		for(unsigned int i = limit; i < aigraph->getSize(); i++){
-			unsigned c1 = aigraph->getChild1(i);
-			unsigned c2 = aigraph->getChild2(i);
-			if(c1 == 0 || c2 == 0)
-				continue;
 
-			std::vector<unsigned> pair;
-			unsigned small, large;
-			c1 = c1 & 0xFFFFFFFE;
-			c2 = c2 & 0xFFFFFFFE;
+		for(iAgg = agg.begin(); iAgg!=agg.end(); iAgg++){
+			bool isDecoder = false;
+			int outputSize = iAgg->second.size();
+			int inputSize= iAgg->first.size();
+			int expectedOutputSize = 1 << inputSize;
+			int expectedOutputSizeWithEnable = 1 << (inputSize -1);
 
-			if(c1 < c2){
-				small = c1;
-				large = c2;
+
+			std::list<int>::iterator iList; 
+
+			//If the output is a power of two to the inputsize, then it is a decoder
+			if(outputSize == expectedOutputSize)
+				isDecoder = true;
+
+			//Check to see if a possible enable bit is introduced
+			else if(expectedOutputSizeWithEnable == outputSize){
+				//Skip 1-bit decoder with enable
+				if(outputSize == 2) continue;
+
+				//Check to see if at least one of the inputs is never negated
+				for(unsigned int i = 0; i < iAgg->first.size(); i++){
+					bool isAInputNeg = false;
+					for(unsigned int k = 0; k < iAgg->second.size(); k++){
+						if(isInputNeg(aigraph, iAgg->second[k], iAgg->first[i])){
+							isAInputNeg = true;;
+							break;
+						}
+					}
+
+					if(isAInputNeg){
+						isDecoder = true;
+						break;
+					}
+				}
 			}
-			else{
-				small = c2;
-				large = c1;
-			}
 
-			pair.push_back(small);
-			pair.push_back(large);
-
-			if(agg2.find(pair) == agg2.end()){
-				agg2[pair] = 1;
+			if(isDecoder){
+				possibleDecoderIn.push_back(iAgg->first);
+				possibleDecoderOut.push_back(iAgg->second);
 			}
-			else
-				agg2[pair]++;
 		}
-		printf("done\n");
 
-		std::map<std::vector<unsigned>, int >::iterator ait;
-		/*
-		   printf("aggregation:\n");
-		   for(ait = agg2.begin(); ait != agg2.end(); ait++){
-		   printf("PAIR: %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->second);	
+		agg.clear();
 
-		   }
-		   for(ait = agg3.begin(); ait != agg3.end(); ait++){
-		   printf("PAIR: %d %d %d\tCOUNT: %d\n", ait->first[0], ait->first[1], ait->first[2], ait->second);	
 
-		   }
-		 */
+		std::list<std::vector<unsigned> >::iterator iPDI;
+		std::list<std::vector<unsigned> >::iterator iPDI2;
+		std::list<std::vector<unsigned> >::iterator iPDO;
+		std::list<std::vector<unsigned> >::iterator iPDO2;
+
+/*
+		printf("\n\n * POSSIBLE DECODERS: \n");
+		printf("IN: \n");
+		for(iPDI= possibleDecoderIn.begin(); iPDI!=possibleDecoderIn.end(); iPDI++){
+			for(unsigned int i = 0; i < iPDI->size(); i++)
+				printf("%d ", iPDI->at(i));
+			printf("\n");
+
+		}
+		printf("OUT: \n");
+		for(iPDO= possibleDecoderOut.begin(); iPDO!=possibleDecoderOut.end(); iPDO++){
+			for(unsigned int i = 0; i < iPDO->size(); i++)
+				printf("%d ", iPDO->at(i));
+			printf("\n");
+		}
+		printf("\n");
+*/
+
+
+		printf(" * REMOVING REDUNDANCIES\n");
+		iPDI = possibleDecoderIn.begin();
+		iPDO = possibleDecoderOut.begin();
+
+		while(iPDI != possibleDecoderIn.end()){
+			iPDI2 = iPDI;
+			iPDI2++;
+			iPDO2 = iPDO;
+			iPDO2++;
+
+			bool next = true;
+			while(iPDI2 != possibleDecoderIn.end()){
+				//TODO: Assume if same size, cannot be contained
+				if(iPDI2->size() == iPDI->size()){
+					iPDI2++;
+					iPDO2++;
+					continue;
+				}
+
+				unsigned int numMatch = 0; 
+				for(unsigned int i = 0; i < iPDI->size(); i++){
+					for(unsigned int k = 0; k < iPDI2->size(); k++){
+						if(iPDI->at(i) == iPDI2->at(k)){
+							numMatch++;	
+							break;
+						}
+					}
+				}
+
+				if(numMatch == iPDI->size()){
+					iPDI = possibleDecoderIn.erase(iPDI);
+					iPDO = possibleDecoderOut.erase(iPDO);
+					next = false;
+					break;
+				}
+				else if(numMatch == iPDI2->size()){
+					iPDI2= possibleDecoderIn.erase(iPDI2);
+					iPDO2 = possibleDecoderOut.erase(iPDO2);
+				}
+				else{
+					iPDI2++;
+					iPDO2++;
+				}
+			}
+			if(next){
+				iPDI++;
+				iPDO++;
+			}
+		}
+
+
+		printf("\n\n * POSSIBLE DECODERS: \n");
+		iPDI = possibleDecoderIn.begin();
+		iPDO = possibleDecoderOut.begin();
+
+		while(possibleDecoderIn.size() > 0){
+			result[*iPDI] = *iPDO;
+
+			printf("IN: ");
+			for(unsigned int i = 0; i < iPDI->size(); i++)
+				printf("%d ", iPDI->at(i));
+			printf("\t\tOUT:");
+			for(unsigned int i = 0; i < iPDO->size(); i++)
+				printf("%d ", iPDO->at(i));
+			printf("\n");
+
+			iPDI = possibleDecoderIn.erase(iPDI);
+			iPDO = possibleDecoderOut.erase(iPDO);
+		}
+
+
+
+
+
+
 
 		printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		printf("\n----------------------------------------------------------------\n");
 		printf("Result Search:\n");
 		printf("----------------------------------------------------------------\n");
-		int numdec24 = 0; 
-		int numdec38 = 0; 
-		for(ait = agg2.begin(); ait != agg2.end(); ait++){
-			if(ait->second == 4){
-				printf("   2x4 Decoder: PAIR: %d %d\n", ait->first[0], ait->first[1]);	
-				numdec24++;
-			}
-		}
-		for(ait = agg3.begin(); ait != agg3.end(); ait++){
-			if(ait->second == 8){
-				printf("   3x8 Decoder: PAIR: %d %d %d\n", ait->first[0], ait->first[1], ait->first[2]);	
-				numdec38++;
-			}
-		}
-		printf("\nNum 2x4 decoders:\t%d\n", numdec24);
-		printf("\nNum 3x8 decoders:\t%d\n", numdec38); 
-		printf("\nNum decoders:\t%d\n", numdec24+numdec38);
 		printf("----------------------------------------------------------------\n");
-
+/*
+		std::list<unsigned> queue;
+		queue.push_back(2496);
+		queue.push_back(2480);
+		queue.push_back(2488);
+		queue.push_back(2472);
+		queue.push_back(2492);
+		queue.push_back(2476);
+		queue.push_back(2484);
+		queue.push_back(2468);
+		queue.push_back(2400);
+		queue.push_back(2392);
+		queue.push_back(2388);
+		queue.push_back(2398);
+		queue.push_back(2390);
+		queue.push_back(2394);
+		queue.push_back(2384);
+		queue.push_back(2396);
+		std::set<unsigned> input;
+		input.insert(254);
+		input.insert(256);
+		input.insert(258);
+		input.insert(2196);
+		aigraph->printSubgraph(queue, input);
+		*/
 
 	}
 
@@ -849,30 +946,30 @@ namespace AGGREGATION{
 			printf("   %2d-bit mux.....%d\n", cnt->first, (int) cnt->second.size());
 			returnlist.push_back(cnt->first);
 			/*
-			   for(unsigned int i = 0; i < cnt->second.size(); i++){
-			   printf("    *   ");
-			   for(unsigned int j = 0; j < cnt->second[i].size(); j++){
-			   printf("%d ", cnt->second[i][j]);
-			   }
-			   printf("\n");
-			   }
-			   printf("\n\n");
+				 for(unsigned int i = 0; i < cnt->second.size(); i++){
+				 printf("    *   ");
+				 for(unsigned int j = 0; j < cnt->second[i].size(); j++){
+				 printf("%d ", cnt->second[i][j]);
+				 }
+				 printf("\n");
+				 }
+				 printf("\n\n");
 			 */
 		}
 
 
 
 		/*
-		   printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
-		   for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
-		   printf("    %2d-bit mux\n", (int) muxset4it->second.size());
-		   printf("      OR4: ");
-		   for(unsigned int i = 0; i < muxset4it->second.size(); i++){
-		   printf("%d ", muxset4it->second[i]);
-		   }
-		   printf("\n");
+			 printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
+			 for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
+			 printf("    %2d-bit mux\n", (int) muxset4it->second.size());
+			 printf("      OR4: ");
+			 for(unsigned int i = 0; i < muxset4it->second.size(); i++){
+			 printf("%d ", muxset4it->second[i]);
+			 }
+			 printf("\n");
 
-		   }
+			 }
 		 */
 
 
@@ -1033,30 +1130,30 @@ namespace AGGREGATION{
 			printf("   %2d-bit mux.....%d\n", cnt->first, (int) cnt->second.size());
 			returnlist.push_back(cnt->first);
 			/*
-			   for(unsigned int i = 0; i < cnt->second.size(); i++){
-			   printf("    *   ");
-			   for(unsigned int j = 0; j < cnt->second[i].size(); j++){
-			   printf("%d ", cnt->second[i][j]);
-			   }
-			   printf("\n");
-			   }
-			   printf("\n\n");
+				 for(unsigned int i = 0; i < cnt->second.size(); i++){
+				 printf("    *   ");
+				 for(unsigned int j = 0; j < cnt->second[i].size(); j++){
+				 printf("%d ", cnt->second[i][j]);
+				 }
+				 printf("\n");
+				 }
+				 printf("\n\n");
 			 */
 		}
 
 
 
 		/*
-		   printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
-		   for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
-		   printf("    %2d-bit mux\n", (int) muxset4it->second.size());
-		   printf("      OR4: ");
-		   for(unsigned int i = 0; i < muxset4it->second.size(); i++){
-		   printf("%d ", muxset4it->second[i]);
-		   }
-		   printf("\n");
+			 printf("4-1 Mux Found:\t%d\n", (int)muxset4.size());
+			 for(muxset4it = muxset4.begin(); muxset4it != muxset4.end(); muxset4it++){
+			 printf("    %2d-bit mux\n", (int) muxset4it->second.size());
+			 printf("      OR4: ");
+			 for(unsigned int i = 0; i < muxset4it->second.size(); i++){
+			 printf("%d ", muxset4it->second[i]);
+			 }
+			 printf("\n");
 
-		   }
+			 }
 		 */
 
 
@@ -1079,10 +1176,10 @@ namespace AGGREGATION{
 
 
 
-/*
-	Works for traditional 4-1 amd 2-1 muxes
-	Needs more work for 3-1 and those abve 4-1
-	*/
+	/*
+		 Works for traditional 4-1 amd 2-1 muxes
+		 Needs more work for 3-1 and those abve 4-1
+	 */
 
 	void findMux2(CutFunction* cf, AIG* aigraph, std::map<int,std::map<int, int> >& sizeCountMap){
 		printf("\n\n\n");
@@ -1160,22 +1257,22 @@ namespace AGGREGATION{
 			}
 		}
 		printf("done\n");
-		
-		/*printf("\n\nPossible Mux or gates\n");	
-		orinit = orIn.begin();
-		oroutit = orOut.begin();
 
-		while(orinit != orIn.end()){
+		/*printf("\n\nPossible Mux or gates\n");	
+			orinit = orIn.begin();
+			oroutit = orOut.begin();
+
+			while(orinit != orIn.end()){
 			printf("INPUT: ");
 			for(unsigned int i = 0; i < orinit->size(); i++){
-				printf("%d ", orinit->at(i));
+			printf("%d ", orinit->at(i));
 			}
 			printf("\t\tOutput: %d\n", *oroutit);
 
 			orinit++;
 			oroutit++;
-		}
-		*/
+			}
+		 */
 
 
 		//Remove or gates contained within another. 
@@ -1190,7 +1287,7 @@ namespace AGGREGATION{
 		unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
-			
+
 
 		//BFS
 		while(orinit != orIn.end()){
@@ -1206,9 +1303,9 @@ namespace AGGREGATION{
 				unsigned int signal = orinit->at(i);
 
 				/*
-					Makes sure input to or gate does not go into 
-					other inputs of the or gate
-				*/
+					 Makes sure input to or gate does not go into 
+					 other inputs of the or gate
+				 */
 				if(signal > aigInputLimit){
 
 					//Check if other inputs are connected to it
@@ -1217,7 +1314,7 @@ namespace AGGREGATION{
 					unsigned int node1 = c1 & 0xFFFFFFFE;
 					unsigned int node2 = c2 & 0xFFFFFFFE;
 
-				
+
 					for(unsigned int k = 0; k < orinit->size(); k++){
 						if(orinit->at(k) == node1 || orinit->at(k) == node2){
 							//printf("CONFLICT\n");
@@ -1238,10 +1335,10 @@ namespace AGGREGATION{
 
 			if(conflict){
 				/*printf("CONFLICT REMOVAL\n");
-				for(unsigned int i = 0; i < orinit->size(); i++)
+					for(unsigned int i = 0; i < orinit->size(); i++)
 					printf("%d ", orinit->at(i));
-				printf("\t\tOutput: %d\n", *oroutit);
-				*/
+					printf("\t\tOutput: %d\n", *oroutit);
+				 */
 
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1275,12 +1372,12 @@ namespace AGGREGATION{
 
 			while(!isQueueEmpty && !isLevelLimit){
 				/*
-				   if(orinit->size() != 4) break;
-				printf("\n\nINPUT: ");
-				for(unsigned int i = 0; i < orinit->size(); i++){
-					printf("%d ", orinit->at(i));
-				}
-				printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
+					 if(orinit->size() != 4) break;
+					 printf("\n\nINPUT: ");
+					 for(unsigned int i = 0; i < orinit->size(); i++){
+					 printf("%d ", orinit->at(i));
+					 }
+					 printf("\t\tOutput: %d\tNUMSAMESIGNAL: %d\n", *oroutit, numSameSignal);
 				 */
 
 				isQueueEmpty = true;
@@ -1348,10 +1445,10 @@ namespace AGGREGATION{
 					levelMap[node2] = levelMap[signal]+1;
 
 					/*printf("    * Signal Pushed: ");
-					printf("%d ", c1);
-					printf("%d ", c2);
-					printf("\n");
-					*/
+						printf("%d ", c1);
+						printf("%d ", c2);
+						printf("\n");
+					 */
 				}
 			}
 
@@ -1361,21 +1458,21 @@ namespace AGGREGATION{
 			bool isSelectNeg = false;
 			for(iSet = selectBit.begin(); iSet != selectBit.end(); iSet++){
 				if(selectNegMap[*iSet].size() != 2){
-						isSelectNeg = true;
-						break;
+					isSelectNeg = true;
+					break;
 				}
 			}
 
 			if(selectBit.size() != numSameSignal || 
-		  selectBit.size() == 0 ||
-			isSelectNeg ){
+					selectBit.size() == 0 ||
+					isSelectNeg ){
 
 				/*
-				printf("Not possible...Deleting from list...\n");
-				for(unsigned int i = 0; i < orinit->size(); i++)
-					printf("%d ", orinit->at(i));
-				printf("\t\tOutput: %d\n", *oroutit);
-				*/
+					 printf("Not possible...Deleting from list...\n");
+					 for(unsigned int i = 0; i < orinit->size(); i++)
+					 printf("%d ", orinit->at(i));
+					 printf("\t\tOutput: %d\n", *oroutit);
+				 */
 
 				orinit = orIn.erase(orinit);
 				oroutit = orOut.erase(oroutit);
@@ -1389,31 +1486,31 @@ namespace AGGREGATION{
 
 			//printf("\n\n");
 		}
-		
+
 		/*
-		printf("\n\nPossible Mux or gates\n");	
-		orinit = orIn.begin();
-		oroutit = orOut.begin();
+			 printf("\n\nPossible Mux or gates\n");	
+			 orinit = orIn.begin();
+			 oroutit = orOut.begin();
 
-		unsigned int index = 0;
-		while(orinit != orIn.end()){
-			printf("INPUT: ");
-			for(unsigned int i = 0; i < orinit->size(); i++){
-				printf("%d ", orinit->at(i));
-			}
-			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
-			std::set<int>::iterator iSB;
-			for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
-				printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
-			}
-			printf("\n");
+			 unsigned int index = 0;
+			 while(orinit != orIn.end()){
+			 printf("INPUT: ");
+			 for(unsigned int i = 0; i < orinit->size(); i++){
+			 printf("%d ", orinit->at(i));
+			 }
+			 printf("\t\tOutput: %d\t\tSB: ", *oroutit);
+			 std::set<int>::iterator iSB;
+			 for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
+			 printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
+			 }
+			 printf("\n");
 
-			orinit++;
-			oroutit++;
-			index++;
-		}
-		printf("\n\n");
-*/
+			 orinit++;
+			 oroutit++;
+			 index++;
+			 }
+			 printf("\n\n");
+		 */
 
 
 
@@ -1478,18 +1575,18 @@ namespace AGGREGATION{
 		oroutit = orOut.begin();
 
 		while(orinit != orIn.end()){
-				if(stats.find(orinit->size()) == stats.end()){
-					std::map<std::set<int>, int> count;
-					count[selectBits[*orinit]] = 1;
-					stats[orinit->size()] = count;
+			if(stats.find(orinit->size()) == stats.end()){
+				std::map<std::set<int>, int> count;
+				count[selectBits[*orinit]] = 1;
+				stats[orinit->size()] = count;
+			}
+			else{
+				if(stats[orinit->size()].find(selectBits[*orinit]) == stats[orinit->size()].end()){
+					stats[orinit->size()][selectBits[*orinit]] = 1;
 				}
-				else{
-					if(stats[orinit->size()].find(selectBits[*orinit]) == stats[orinit->size()].end()){
-						stats[orinit->size()][selectBits[*orinit]] = 1;
-					}
-					else
-						stats[orinit->size()][selectBits[*orinit]] ++;
-				}
+				else
+					stats[orinit->size()][selectBits[*orinit]] ++;
+			}
 
 			orinit++;
 			oroutit++;
@@ -1497,48 +1594,48 @@ namespace AGGREGATION{
 
 
 
-/*
-		printf("\n\nPossible Mux or gates\n");	
-		orinit = orIn.begin();
-		oroutit = orOut.begin();
+		/*
+			 printf("\n\nPossible Mux or gates\n");	
+			 orinit = orIn.begin();
+			 oroutit = orOut.begin();
 
-		unsigned int index = 0;
-		while(orinit != orIn.end()){
-			printf("INPUT: ");
-			for(unsigned int i = 0; i < orinit->size(); i++){
-				printf("%d ", orinit->at(i));
-			}
-			printf("\t\tOutput: %d\t\tSB: ", *oroutit);
-			std::set<int>::iterator iSB;
-			for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
-				printf("%d ", *iSB);
-			}
-			printf("\n");
+			 unsigned int index = 0;
+			 while(orinit != orIn.end()){
+			 printf("INPUT: ");
+			 for(unsigned int i = 0; i < orinit->size(); i++){
+			 printf("%d ", orinit->at(i));
+			 }
+			 printf("\t\tOutput: %d\t\tSB: ", *oroutit);
+			 std::set<int>::iterator iSB;
+			 for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
+			 printf("%d ", *iSB);
+			 }
+			 printf("\n");
 
-			orinit++;
-			oroutit++;
-			index++;
-		}
-		printf("\n\n");
-		*/
+			 orinit++;
+			 oroutit++;
+			 index++;
+			 }
+			 printf("\n\n");
+		 */
 
 
 		for(iStats = stats.begin(); iStats!=stats.end(); iStats++){
 			std::map<std::set<int>, int>::iterator iCount;
-//			printf("%d-1 Mux:\n", iStats->first);
-				
+			//			printf("%d-1 Mux:\n", iStats->first);
+
 			std::map<int, int> sizeCount;
 			sizeCountMap[iStats->first] = sizeCount;
 
 			for(iCount = iStats->second.begin(); iCount!=iStats->second.end(); iCount++){
 				/*
-				printf("\t* %d-Bit Mux\t\tSEL: ", iCount->second);
-				std::set<int>::iterator iSB;
-				for(iSB = iCount->first.begin(); iSB != iCount->first.end(); iSB++)
-					printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
-				printf("\n");
-				*/
-			
+					 printf("\t* %d-Bit Mux\t\tSEL: ", iCount->second);
+					 std::set<int>::iterator iSB;
+					 for(iSB = iCount->first.begin(); iSB != iCount->first.end(); iSB++)
+					 printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
+					 printf("\n");
+				 */
+
 				if(sizeCountMap[iStats->first].find(iCount->second) == sizeCountMap[iStats->first].end())
 					sizeCountMap[iStats->first][iCount->second] = 1;
 				else
@@ -1551,166 +1648,6 @@ namespace AGGREGATION{
 	}
 
 
-
-	void aggregateSignal(std::map<unsigned long, std::vector<std::vector<unsigned>*> >& pmap, std::vector<unsigned long>& andFunction, std::vector<std::set<unsigned> >& andSimIn,	std::vector<std::set<unsigned> >& andSimOut){
-		std::list<std::vector<unsigned> > andIn;
-		std::list<std::vector<unsigned> >::iterator andinit;
-		std::list<std::vector<unsigned> >::iterator andinit2;
-		std::list<unsigned> andOut;
-		std::list<unsigned>::iterator  andoutit;
-		std::list<unsigned>::iterator  andoutit2;
-
-
-		for(unsigned int i = 0; i < andFunction.size(); i++){
-			if(pmap.find(andFunction[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[andFunction[i]].size(); j++){
-					unsigned int k = 0;
-					//printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < pmap[andFunction[i]][j]->size()-1; k++){
-						//printf("%d ", pmap[andFunction[i]][j]->at(k));
-						ports.push_back(pmap[andFunction[i]][j]->at(k));
-					}
-
-					//If input is not contained in an already found, store. 
-					//printf("\nOUTPUT:\t%d\n", pmap[andFunction[i]][j]->at(k));
-					unsigned outnode = pmap[andFunction[i]][j]->at(k);
-					andIn.push_back(ports);
-					andOut.push_back(outnode);
-				}
-			}
-		}
-		if(andIn.size() == 0)
-			return;
-
-		//std::vector<std::set<int> > andSimIn;
-		//std::vector<std::set<int> > andSimOut;
-
-		andoutit = andOut.begin();
-		andoutit2 = andOut.begin();
-
-
-		//Group outputs with similar inputs. 
-		for(andinit = andIn.begin(); andinit != andIn.end(); andinit++){
-			andinit2 = andinit;
-			andoutit2 = andoutit;
-			andoutit2++;
-			for(++andinit2; andinit2 != andIn.end(); andinit2++){
-
-				//Find similar inputs
-				for(unsigned int i = 0; i < andinit->size(); i++){
-					for(unsigned int j = 0; j < andinit2->size(); j++){
-						if(andinit->at(i) == andinit2->at(j)){
-							//Check if input has been found before
-							bool foundInput = false;
-							for(unsigned int q = 0; q < andSimIn.size(); q++){
-								if(andSimIn[q].find(andinit->at(i)) != andSimIn[q].end()){
-									if(andSimIn[q].size() != 1){
-										continue;
-									}
-									andSimOut[q].insert(*andoutit);
-									andSimOut[q].insert(*andoutit2);
-									foundInput = true;
-									break;
-								}
-							}
-
-							if(!foundInput){
-								std::set<unsigned> andSimSetIn;
-								std::set<unsigned> andSimSetOut;
-								andSimSetIn.insert(andinit->at(i));
-								andSimSetOut.insert(*andoutit);
-								andSimSetOut.insert(*andoutit2);
-								andSimIn.push_back(andSimSetIn);
-								andSimOut.push_back(andSimSetOut);
-							}
-
-						}
-					}
-				}
-
-				andoutit2++;
-			}
-			andoutit++;
-		}
-		/*	
-			std::set<int>::iterator andsetit;
-			for(unsigned int i = 0; i < andSimIn.size(); i++){
-			printf("\nSimilar Input: ");
-			for(andsetit = andSimIn[i].begin(); andsetit != andSimIn[i].end(); andsetit++){
-			printf("%d ", *andsetit);
-			}
-			printf("\nOutputs: ");
-			for(andsetit = andSimOut[i].begin(); andsetit != andSimOut[i].end(); andsetit++){
-			printf("%d ", *andsetit);
-			}
-			printf("\n");
-			}
-			printf("\n\n");
-		 */
-
-		//Remove redundancies
-
-		if(andSimOut.size() == 0 && andSimIn.size() == 0){
-			return;
-		}
-
-		//Different similar inputs with exactly the same output
-		std::set<unsigned>::iterator andsimit;
-		for(unsigned int i = 0; i < andSimOut.size()-1; i++){
-			for(unsigned int j = i+1; j < andSimOut.size(); j++){
-
-				//Check to see if Entire output is the same
-				if(andSimOut[i].size() == andSimOut[j].size()){
-					bool isDiff = false;
-					for(andsimit = andSimOut[i].begin(); andsimit != andSimOut[i].end(); andsimit++){
-						if(andSimOut[j].find(*andsimit) == andSimOut[j].end()){
-							isDiff = true;
-							break;
-						}
-					}
-					if(!isDiff){
-						andSimOut.erase(andSimOut.begin() + j);
-						for(andsimit = andSimIn[j].begin(); andsimit != andSimIn[j].end(); andsimit++){
-							andSimIn[i].insert(*andsimit);
-						}
-						andSimIn.erase(andSimIn.begin() + j);
-					}
-				}
-
-			}		
-		}
-
-
-		//Combine similar inputs
-		for(unsigned int i = 0; i < andSimIn.size()-1; i++){
-			for(unsigned int j = i+1; j < andSimIn.size(); j++){
-
-				//Check to see if Entire input is the same
-				if(andSimIn[i].size() == andSimIn[j].size()){
-					bool isDiff = false;
-					for(andsimit = andSimIn[i].begin(); andsimit != andSimIn[i].end(); andsimit++){
-						if(andSimIn[j].find(*andsimit) == andSimIn[j].end()){
-							isDiff = true;
-							break;
-						}
-					}
-					if(!isDiff){
-						for(andsimit = andSimOut[j].begin(); andsimit != andSimOut[j].end(); andsimit++){
-							andSimOut[i].insert(*andsimit);
-						}
-						andSimOut.erase(andSimOut.begin() + j);
-						andSimIn.erase(andSimIn.begin() + j);
-						j--;
-					}
-				}
-
-			}
-		}
-		printf("DONE\n");
-
-
-	}
 
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in){
 		std::list<unsigned> queue;
@@ -1777,8 +1714,53 @@ namespace AGGREGATION{
 	}
 
 
-}
+	bool isInputNeg(AIG* aigraph, unsigned out, unsigned in){
+		std::list<unsigned> queue;
+		std::set<unsigned> mark;
+		std::vector<unsigned*> nChilds;
 
+
+		//Enqueue
+		queue.push_back(out);
+		mark.insert(out);
+
+		while(queue.size() != 0){
+			unsigned qitem = queue.front();
+			unsigned qNode = qitem & 0xFFFFFFFE;
+			queue.pop_front();
+
+			unsigned input =  in & 0xFFFFFFFE;
+
+			//If node is the node we're looking for, check to see if it is neg
+			if(qNode == input){
+				if(qitem & 0x1)
+					return true;
+			}
+
+			//Continue because node is an input, no child
+			if(qNode <= aigraph->getInputSize()*2) continue;
+
+			//Enqueue childs
+			unsigned c1node = aigraph->getChild1(qNode);
+			unsigned c2node = aigraph->getChild2(qNode);
+			unsigned c1 = c1node & 0xFFFFFFFE;
+			unsigned c2 = c2node & 0xFFFFFFFE;
+
+			if(mark.find(c1) == mark.end()){
+				queue.push_back(c1node);
+				mark.insert(c1);
+			}
+			if(mark.find(c2) == mark.end()){
+				queue.push_back(c2node);
+				mark.insert(c2);
+			}
+		}
+
+		return false;
+	}
+
+
+}
 
 
 /*
