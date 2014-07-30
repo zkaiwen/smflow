@@ -17,6 +17,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <math.h>
 #include "graph.hpp"
 #include "vertex.hpp"
 #include "aig.hpp"
@@ -72,8 +73,8 @@ namespace FINGERPRINT{
 			fingerprint[bIndex] = fingerprint[bIndex] | (((unsigned long)1)<<(regbit-1));
 		}
 	}
-
-
+	
+	
 	float tanimoto(std::vector<unsigned long>& f1, std::vector<unsigned long>&f2){
 		//Assert the bitlenght of the two fingerprints are the same
 		assert(f1.size() == f2.size());
@@ -117,6 +118,19 @@ namespace FINGERPRINT{
 		}
 
 		return N_f1f2 / (N_f1 + N_f2 - N_f1f2);
+	}
+	
+	float euclideanDistance(std::vector<int>& f1, std::vector<int>&f2){
+		assert(f1.size() == f2.size());
+
+		double distance = 0.0;
+		for(unsigned int i = 0; i < f1.size(); i++){
+			double diff = (double) (f1[i] - f2[i]);
+			distance += (diff * diff) ;
+		}
+
+		return sqrt(distance);
+
 	}
 
 

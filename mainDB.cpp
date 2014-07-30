@@ -93,6 +93,7 @@ int main( int argc, char *argv[] )
 	timeval mux_b, mux_e;
 	timeval dec_b, dec_e;
 	timeval fgp_b, fgp_e;
+	timeval add_b, add_e;
 
 	float elapsedTime;
 	int k = 4;                              //k-Cut enumeration value 
@@ -121,7 +122,8 @@ int main( int argc, char *argv[] )
 
 	//Mux Type (2-1, 4-1), mux size (2bit, 4bit), count
 	std::vector<std::map<int, std::map<int, int> > >  stat_muxAgg;
-	std::vector<std::map<std::vector<unsigned>, std::vector<unsigned> > >  stat_decAgg;
+	std::vector<std::map<int, int> >  stat_decAgg;
+	std::vector<std::vector<int> >  stat_addAgg;
 
 	//size/count
 	std::vector<std::map<int, int> >  stat_reg;
@@ -330,18 +332,23 @@ int main( int argc, char *argv[] )
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
 		//4-1         8 bit       2 of them
 		//mux size, array size, count 
-		std::map<int,std::map<int, int> > sizeCount;
-		AGGREGATION::findMux2(functionCalc, aigraph, sizeCount);
+		std::map<int,std::map<int, int> > muxResult;
+		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
 		gettimeofday(&mux_e, NULL);//------------------------------------------
-		stat_muxAgg.push_back(sizeCount);		
+		stat_muxAgg.push_back(muxResult);		
 
 		
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
-		std::map<std::vector<unsigned>, std::vector<unsigned> > decoderResult;
-		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator iDR;
+		std::map<int, int > decoderResult;
 		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
+		
+		gettimeofday(&add_b, NULL); //-----------------------------------------------
+		std::vector<int> addResult;
+		AGGREGATION::findAdder(functionCalc, aigraph, addResult);
+		stat_addAgg.push_back(addResult);
+		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
 
@@ -399,6 +406,10 @@ int main( int argc, char *argv[] )
 
 		elapsedTime = (dec_e.tv_sec - dec_b.tv_sec) * 1000.0;
 		elapsedTime += (dec_e.tv_usec - dec_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+
+		elapsedTime = (add_e.tv_sec - add_b.tv_sec) * 1000.0;
+		elapsedTime += (add_e.tv_usec - add_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
 
 		stat_time.push_back(time);
@@ -468,6 +479,7 @@ int main( int argc, char *argv[] )
 		}
 
 
+
 		printf("\nRegisters\n");
 		int totalReg = 0;
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
@@ -489,6 +501,16 @@ int main( int argc, char *argv[] )
 			printf("\t%d-bit Reg %7d\n", iMap->first, iMap->second);
 			totalReg+=iMap->second;
 		}
+		
+		printf("\nDecoders\n");
+		std::map<int, int>::iterator iMap;
+		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++){
+			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
+		}
+
+
+
+
 
 		stat_numMux.push_back(totalMux);
 		stat_numReg.push_back(totalReg);
@@ -529,6 +551,8 @@ int main( int argc, char *argv[] )
 	printf("%8s", "|FF|");
 	printf("%8s", "|MUX|");
 	printf("%8s", "|REG|");
+	printf("%8s", "|FAC|");
+	printf("%8s", "|HA|");
 	printf("%8s", "|DSP|");
 	printf("%8s", "|FFL|");
 	printf("%8s", "|MCY|");
@@ -545,8 +569,10 @@ int main( int argc, char *argv[] )
 		//printf("%8d", stat_wienerIndex[i]);
 		printf("%8d", stat_aigSize[i]);
 		printf("%8d", stat_ffSize[i]);
-		printf("%8d", stat_numReg[i]);
 		printf("%8d", stat_numMux[i]);
+		printf("%8d", stat_numReg[i]);
+		printf("%8d", stat_addAgg[i][0]);
+		printf("%8d", stat_addAgg[i][1]);
 		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numFFFeedback[i]);
 		printf("%8d", stat_numMuxcy[i]);
@@ -597,6 +623,7 @@ int main( int argc, char *argv[] )
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
+
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 
@@ -628,7 +655,60 @@ int main( int argc, char *argv[] )
 
 
 
+	printf("\n\n%-15s", "Euclidean Distance");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+	}
+	printf("\n");
 
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+
+		std::vector<int> f1;
+		f1.reserve(14);
+		f1.push_back(stat_numInput[i]);
+		f1.push_back(count[i]);
+		f1.push_back(stat_aigSize[i]);
+		f1.push_back(stat_ffSize[i]);
+		f1.push_back(stat_numMux[i]);
+		f1.push_back(stat_numReg[i]);
+		f1.push_back(stat_addAgg[i][0]);
+		f1.push_back(stat_addAgg[i][1]);
+		f1.push_back(stat_dspSize[i]);
+		f1.push_back(stat_numFFFeedback[i]);
+		/*
+		f1.push_back(stat_numMuxcy[i]);
+		f1.push_back(stat_numXorcy[i]);
+		f1.push_back(stat_numLUTs[i]);
+		*/
+
+		for(unsigned int k = 0; k < name.size(); k++){
+			std::vector<int> f2;
+			f2.reserve(14);
+			f2.push_back(stat_numInput[k]);
+			f2.push_back(count[k]);
+			f2.push_back(stat_aigSize[k]);
+			f2.push_back(stat_ffSize[k]);
+			f2.push_back(stat_numMux[k]);
+			f2.push_back(stat_numReg[k]);
+			f2.push_back(stat_addAgg[k][0]);
+			f2.push_back(stat_addAgg[k][1]);
+			f2.push_back(stat_dspSize[k]);
+			f2.push_back(stat_numFFFeedback[k]);
+			/*
+			f2.push_back(stat_numMuxcy[k]);
+			f2.push_back(stat_numXorcy[k]);
+			f2.push_back(stat_numLUTs[k]);
+			*/
+
+			double sim = FINGERPRINT::euclideanDistance(f1, f2);
+			printf("%15.3f", sim);
+		}
+		printf("\n");
+
+	}
 
 
 
@@ -654,6 +734,7 @@ int main( int argc, char *argv[] )
 	printf("%-12s", "LUT RPLC");
 	printf("%-12s", "MUX AGG");
 	printf("%-12s", "DEC AGG");
+	printf("%-12s", "ADD AGG");
 	printf("%-12s", "Fngrprint");
 	printf("\n") ;
 

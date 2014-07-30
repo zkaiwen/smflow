@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
 	gettimeofday(&func_e, NULL);
 	
 	std::vector<unsigned int> muxlist;
-	AGGREGATION::findMux(functionCalc, aigraph2, muxlist);
+	//AGGREGATION::findMux(functionCalc, aigraph2, muxlist);
 	for(unsigned int j = 0; j < muxlist.size(); j++){
 		printf("%5d ", muxlist[j]);
 	}
