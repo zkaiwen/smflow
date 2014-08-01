@@ -324,6 +324,38 @@ int main( int argc, char *argv[] )
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
+		functionCalc->processAIGCuts_Perm(true);
+		functionCalc->printFunctionCount();
+		functionCalc->printUniqueFunctionStat();
+		functionCalc->reset();
+
+/*
+		std::list<unsigned> out;
+		std::set<unsigned> in;
+		out.push_back(2248);
+		in.insert(236);
+		in.insert(1384);
+		in.insert(1656);
+		in.insert(1816);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		in.clear();
+		out.push_back(3060);
+		in.insert(262);
+		in.insert(1368);
+		in.insert(3030);
+		in.insert(3032);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		in.clear();
+		out.push_back(2672);
+		in.insert(1396);
+		in.insert(2062);
+		in.insert(2170);
+		in.insert(2172);
+		aigraph->printSubgraph(out, in);
+		*/
+
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 
 
@@ -552,6 +584,7 @@ int main( int argc, char *argv[] )
 	printf("%8s", "|MUX|");
 	printf("%8s", "|REG|");
 	printf("%8s", "|FAC|");
+	printf("%8s", "|FAS|");
 	printf("%8s", "|HA|");
 	printf("%8s", "|DSP|");
 	printf("%8s", "|FFL|");
@@ -573,6 +606,7 @@ int main( int argc, char *argv[] )
 		printf("%8d", stat_numReg[i]);
 		printf("%8d", stat_addAgg[i][0]);
 		printf("%8d", stat_addAgg[i][1]);
+		printf("%8d", stat_addAgg[i][2]);
 		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numFFFeedback[i]);
 		printf("%8d", stat_numMuxcy[i]);
@@ -655,7 +689,7 @@ int main( int argc, char *argv[] )
 
 
 
-	printf("\n\n%-15s", "Euclidean Distance");
+	printf("\n\n%-15s", "Ecdn Distance");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
@@ -666,18 +700,19 @@ int main( int argc, char *argv[] )
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
 
-		std::vector<int> f1;
+		std::vector<double> f1;
 		f1.reserve(14);
-		f1.push_back(stat_numInput[i]);
-		f1.push_back(count[i]);
-		f1.push_back(stat_aigSize[i]);
-		f1.push_back(stat_ffSize[i]);
-		f1.push_back(stat_numMux[i]);
-		f1.push_back(stat_numReg[i]);
-		f1.push_back(stat_addAgg[i][0]);
-		f1.push_back(stat_addAgg[i][1]);
-		f1.push_back(stat_dspSize[i]);
-		f1.push_back(stat_numFFFeedback[i]);
+		f1.push_back((double)stat_numInput[i]);
+		f1.push_back((double)count[i]);
+		f1.push_back((double)stat_aigSize[i]);
+		f1.push_back((double)stat_ffSize[i]);
+		f1.push_back((double)stat_numMux[i]);
+		f1.push_back((double)stat_numReg[i]);
+		f1.push_back((double)stat_addAgg[i][0]);
+		f1.push_back((double)stat_addAgg[i][1]);
+		f1.push_back((double)stat_addAgg[i][2]);
+		f1.push_back((double)stat_dspSize[i]);
+		f1.push_back((double)stat_numFFFeedback[i]);
 		/*
 		f1.push_back(stat_numMuxcy[i]);
 		f1.push_back(stat_numXorcy[i]);
@@ -685,18 +720,19 @@ int main( int argc, char *argv[] )
 		*/
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			std::vector<int> f2;
+			std::vector<double> f2;
 			f2.reserve(14);
-			f2.push_back(stat_numInput[k]);
-			f2.push_back(count[k]);
-			f2.push_back(stat_aigSize[k]);
-			f2.push_back(stat_ffSize[k]);
-			f2.push_back(stat_numMux[k]);
-			f2.push_back(stat_numReg[k]);
-			f2.push_back(stat_addAgg[k][0]);
-			f2.push_back(stat_addAgg[k][1]);
-			f2.push_back(stat_dspSize[k]);
-			f2.push_back(stat_numFFFeedback[k]);
+			f2.push_back((double)stat_numInput[k]);
+			f2.push_back((double)count[k]);
+			f2.push_back((double)stat_aigSize[k]);
+			f2.push_back((double)stat_ffSize[k]);
+			f2.push_back((double)stat_numMux[k]);
+			f2.push_back((double)stat_numReg[k]);
+			f2.push_back((double)stat_addAgg[k][0]);
+			f2.push_back((double)stat_addAgg[k][1]);
+			f2.push_back((double)stat_addAgg[k][2]);
+			f2.push_back((double)stat_dspSize[k]);
+			f2.push_back((double)stat_numFFFeedback[k]);
 			/*
 			f2.push_back(stat_numMuxcy[k]);
 			f2.push_back(stat_numXorcy[k]);
@@ -710,6 +746,63 @@ int main( int argc, char *argv[] )
 
 	}
 
+	printf("\n\n%-15s", "ENORM Distance");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+	}
+	printf("\n");
+
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+
+		std::vector<double> f1;
+		f1.reserve(14);
+		f1.push_back((double)stat_numInput[i]);
+		f1.push_back((double)count[i]);
+		f1.push_back((double)stat_aigSize[i]);
+		f1.push_back((double)stat_ffSize[i]);
+		f1.push_back((double)stat_numMux[i]);
+		f1.push_back((double)stat_numReg[i]);
+		f1.push_back((double)stat_addAgg[i][0]);
+		f1.push_back((double)stat_addAgg[i][1]);
+		f1.push_back((double)stat_addAgg[k][2]);
+		f1.push_back((double)stat_dspSize[i]);
+		f1.push_back((double)stat_numFFFeedback[i]);
+		/*
+		f1.push_back(stat_numMuxcy[i]);
+		f1.push_back(stat_numXorcy[i]);
+		f1.push_back(stat_numLUTs[i]);
+		*/
+
+		for(unsigned int k = 0; k < name.size(); k++){
+			std::vector<double> f2;
+			f2.reserve(14);
+			f2.push_back((double)stat_numInput[k]);
+			f2.push_back((double)count[k]);
+			f2.push_back((double)stat_aigSize[k]);
+			f2.push_back((double)stat_ffSize[k]);
+			f2.push_back((double)stat_numMux[k]);
+			f2.push_back((double)stat_numReg[k]);
+			f2.push_back((double)stat_addAgg[k][0]);
+			f2.push_back((double)stat_addAgg[k][1]);
+			f2.push_back((double)stat_addAgg[k][2]);
+			f2.push_back((double)stat_dspSize[k]);
+			f2.push_back((double)stat_numFFFeedback[k]);
+			/*
+			f2.push_back(stat_numMuxcy[k]);
+			f2.push_back(stat_numXorcy[k]);
+			f2.push_back(stat_numLUTs[k]);
+			*/
+
+			double sim = FINGERPRINT::euclideanDistanceWNorm(f1, f2);
+			printf("%15.3f", sim);
+		}
+		printf("\n");
+
+	}
+	//std::cout<<"\033[1;4;31m"<<"BLUE TEXT"<<"\033[0m"<<std::endl;
 
 
 

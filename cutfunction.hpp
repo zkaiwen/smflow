@@ -54,6 +54,10 @@ class CutFunction{
 		std::map<std::string, unsigned int> m_PrimInputSize;
 
 
+		//Set of functions that define the output, list of input and output of the cut
+		std::map<std::set<unsigned long>, std::vector<std::vector<unsigned> > > m_UniqueFunction;
+
+
 		//AIG Node, Output Tru
 		unsigned long* m_Xval;
 
@@ -63,18 +67,22 @@ class CutFunction{
 	public:
 		//AIG Node, Truth Table Result
 		std::map<unsigned int, unsigned long> m_NodeValue;
+		std::map<unsigned int, unsigned long> m_NodeValueIn;
 
 
 		//Constructors
 		CutFunction();
 		~CutFunction();
+		void reset();
 
 
 		//Boolean Matching
 		void preProcessLibrary(std::string);
 		void processAIGCuts(bool);
+		void processAIGCuts_Perm(bool);
 		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long> >&);
 		unsigned long calculate(unsigned);
+		unsigned long calculate2(unsigned);
 		unsigned int* setPermutation(int);
 
 
@@ -93,6 +101,8 @@ class CutFunction{
 		void printStat();
 		void printLibrary();
 		void printFunctionCount();
+		void printUniqueFunction();
+		void printUniqueFunctionStat();
 };
 
 

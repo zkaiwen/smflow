@@ -104,9 +104,12 @@ class AIG{
 
 		//Print	
 		void print();
-		void printSubgraph(std::list<unsigned>&, std::set<unsigned>&);
 		void printHash();
 		void printMap();
+
+
+		//List of outputs, input set
+		void printSubgraph(std::list<unsigned>&, std::set<unsigned>&);
 
 };
 

@@ -120,12 +120,41 @@ namespace FINGERPRINT{
 		return N_f1f2 / (N_f1 + N_f2 - N_f1f2);
 	}
 	
-	float euclideanDistance(std::vector<int>& f1, std::vector<int>&f2){
+	double euclideanDistanceWNorm(std::vector<double>& f1, std::vector<double>&f2){
+		assert(f1.size() == f2.size());
+
+		double f1norm = 0.0;
+		double f2norm = 0.0;
+		for(unsigned int i = 0; i < f1.size(); i++){
+			f1norm += (f1[i] * f1[i]);
+			f2norm += (f2[i] * f2[i]);
+		}
+
+		f1norm = sqrt(f1norm);
+		f2norm = sqrt(f2norm);
+
+		for(unsigned int i = 0; i < f1.size(); i++){
+			f1[i] = f1[i] / f1norm;
+			f2[i] = f2[i] / f2norm;
+		}
+
+		double distance = 0.0;
+		for(unsigned int i = 0; i < f1.size(); i++){
+			double diff = (f1[i] - f2[i]);
+			distance += (diff * diff) ;
+		}
+
+		return sqrt(distance);
+
+	}
+	
+	
+	double euclideanDistance(std::vector<double>& f1, std::vector<double>&f2){
 		assert(f1.size() == f2.size());
 
 		double distance = 0.0;
 		for(unsigned int i = 0; i < f1.size(); i++){
-			double diff = (double) (f1[i] - f2[i]);
+			double diff = (f1[i] - f2[i]);
 			distance += (diff * diff) ;
 		}
 

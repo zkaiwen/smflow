@@ -523,7 +523,8 @@ namespace AGGREGATION{
 
 /*
 	0 - Number of FAcarry
-	1 - Number of HA
+	1 - Number of FAsum
+	2 - Number of HA
 */
 	void findAdder(CutFunction* cf, AIG* aigraph, std::vector<int>& result){
 		printf("\n\n\n");
@@ -539,6 +540,7 @@ namespace AGGREGATION{
 		std::vector<unsigned long> xorFunction;
 		std::vector<unsigned long> andFunction;
 		std::vector<unsigned long> faCarry;
+		std::vector<unsigned long> faSum;
 		printf(" * Parsing function database for half adder components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("xor") != std::string::npos){
@@ -549,6 +551,9 @@ namespace AGGREGATION{
 			}
 			else if(it->second.find("faCarry") != std::string::npos){
 				faCarry.push_back(it->first);
+			}
+			else if(it->second.find("faSum") != std::string::npos){
+				faSum.push_back(it->first);
 			}
 		}
 
@@ -571,19 +576,19 @@ namespace AGGREGATION{
 		std::map<unsigned long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
 		cf->getPortMap(pmap);
 
-		printf("XOR FUNCTIONS: \n");
+		//printf("XOR FUNCTIONS: \n");
 		for(unsigned int i = 0; i < xorFunction.size(); i++){
 			iPMAP = pmap.find(xorFunction[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					unsigned int k = 0;
-					printf("INPUT: ");
+					//printf("INPUT: ");
 					std::vector<unsigned> ports;
 					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
+						//printf("%d ", iPMAP->second[j]->at(k));
 						ports.push_back(iPMAP->second[j]->at(k));
 					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
 					//If input is not contained in an already found, store. 
 					unsigned outnode = iPMAP->second[j]->at(k);
@@ -596,19 +601,19 @@ namespace AGGREGATION{
 			}
 		}
 
-		printf("AND FUNCTIONS: \n");
+		//printf("AND FUNCTIONS: \n");
 		for(unsigned int i = 0; i < andFunction.size(); i++){
 			iPMAP = pmap.find(andFunction[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					unsigned int k = 0;
-					printf("INPUT: ");
+					//printf("INPUT: ");
 					std::vector<unsigned> ports;
 					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
+						//printf("%d ", iPMAP->second[j]->at(k));
 						ports.push_back(iPMAP->second[j]->at(k));
 					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
 					//If input is not contained in an already found, store. 
 					unsigned outnode = iPMAP->second[j]->at(k);
@@ -625,20 +630,20 @@ namespace AGGREGATION{
 		}
 
 
-		printf("FACARRY FUNCTIONS: \n");
+		//printf("FACARRY FUNCTIONS: \n");
 		int numFACarry = 0;
 		for(unsigned int i = 0; i < faCarry.size(); i++){
 			iPMAP = pmap.find(faCarry[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					unsigned int k = 0;
-					printf("INPUT: ");
+					//printf("INPUT: ");
 					std::vector<unsigned> ports;
 					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
+						//printf("%d ", iPMAP->second[j]->at(k));
 						ports.push_back(iPMAP->second[j]->at(k));
 					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
 					//If input is not contained in an already found, store. 
 					//unsigned outnode = iPMAP->second[j]->at(k);
@@ -647,6 +652,29 @@ namespace AGGREGATION{
 			}
 		}
 
+		//printf("FASUM FUNCTIONS: \n");
+		int numFASum= 0;
+		for(unsigned int i = 0; i < faSum.size(); i++){
+			iPMAP = pmap.find(faSum[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+					unsigned int k = 0;
+					//printf("INPUT: ");
+					std::vector<unsigned> ports;
+					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
+						//printf("%d ", iPMAP->second[j]->at(k));
+						ports.push_back(iPMAP->second[j]->at(k));
+					}
+					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+
+					//If input is not contained in an already found, store. 
+					//unsigned outnode = iPMAP->second[j]->at(k);
+					numFASum++;
+				}
+			}
+		}
+
+/*
 		printf("Possible HA: \n");
 		iCout = cout.begin(); 
 		iSum = sum.begin();
@@ -660,9 +688,12 @@ namespace AGGREGATION{
 			iSum++;
 			possibleHASet.insert(*iPHA);
 		}
+		*/
 		printf("Number of FACarry: %d\n", numFACarry);
+		printf("Number of FASum: %d\n", numFASum);
 		printf("Number of HA     : %d\n", (int)possibleHASet.size());
 		result.push_back(numFACarry);
+		result.push_back(numFASum);
 		result.push_back(possibleHASet.size());
 	}
 
