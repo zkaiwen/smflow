@@ -325,7 +325,7 @@ int main( int argc, char *argv[] )
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
 		functionCalc->processAIGCuts_Perm(true);
-		functionCalc->printFunctionCount();
+		gettimeofday(&func_e, NULL);//-----------------------------------------------
 		functionCalc->printUniqueFunctionStat();
 		functionCalc->reset();
 
@@ -356,7 +356,6 @@ int main( int argc, char *argv[] )
 		aigraph->printSubgraph(out, in);
 		*/
 
-		gettimeofday(&func_e, NULL);//-----------------------------------------------
 
 
 
