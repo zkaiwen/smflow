@@ -29,6 +29,16 @@ Vertex::Vertex(int vID, std::string type){
 	m_Name = "";
 }
 
+Vertex::Vertex(int vID, std::string type, std::string name){
+	m_Type = type;		
+	m_ID = vID;
+	m_Input.clear();
+	m_InPorts.clear();
+	m_Output.clear();
+	m_Level = -1;
+	m_Name = name;
+}
+
 Vertex::Vertex(int vID){
 	m_Type = "";		
 	m_ID = vID;
@@ -68,11 +78,15 @@ void Vertex::setLUT(std::string func){
 			m_LUT += (func[i]-48)*base;
 		}
 		else{
-			m_LUT +=(func[i]-55)*base;
+			if(func[i] < 'a')
+				m_LUT +=((func[i]-'A'+10)*base);
+			else if (func[i] > 'Z')
+				m_LUT +=((func[i]-'a'+10)*base);
 		}
 		base *= 16;
 	}
 }
+
 
 void Vertex::setLUT(unsigned long lut){
 	m_LUT = lut;

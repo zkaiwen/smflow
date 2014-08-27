@@ -36,6 +36,7 @@ class Vertex
 
 		Vertex();
 		Vertex(int, std::string);
+		Vertex(int, std::string, std::string);
 		Vertex(int);
 		Vertex(const Vertex& rhs);
 

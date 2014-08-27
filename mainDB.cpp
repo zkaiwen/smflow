@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
 	timeval add_b, add_e;
 
 	float elapsedTime;
-	int k = 4;                              //k-Cut enumeration value 
+	int k = 6;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long> > pDatabase;
@@ -112,6 +112,8 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned int> stat_ffSize;
 	std::vector<unsigned int> stat_dspSize;
 	std::vector<unsigned int> stat_numInput;
+	std::vector<unsigned int> stat_numCktInput;
+	std::vector<unsigned int> stat_numCktOutput;
 	std::vector<unsigned int> stat_numOutput;
 	std::vector<unsigned int> stat_numMux;
 	std::vector<unsigned int> stat_numReg;
@@ -129,6 +131,8 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<int, int> >  stat_reg;
 	std::vector< std::vector<float> > stat_time;
 	std::vector<float> stat_fingerprintTime;
+	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
+	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
 
 
 
@@ -288,6 +292,8 @@ int main( int argc, char *argv[] )
 		gettimeofday(&reg_e, NULL); //--------------------------------------------
 
 
+		stat_numCktInput.push_back(ckt->getNumInputs());
+		stat_numCktOutput.push_back(ckt->getNumOutputs());
 
 
 
@@ -295,7 +301,7 @@ int main( int argc, char *argv[] )
 		AIG* aigraph = new AIG();
 		/*aigraph->convertGraph2AIG(ckt, true);
 			int lastSlashIndex = file.find_last_of("/") + 1;
-			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-2);
+			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
 			ckt->exportGraphSDFV3000(cname, sdfid);
 			sdfid++;
 		 */
@@ -315,6 +321,47 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
+
+		//Find input cut for FF nodes----------------------------
+		std::vector<unsigned> nodes;
+		aigraph->getFFInput(nodes);
+		cut->findInputCut(nodes);
+
+		//Node, Set of inputs to the node
+		std::map<unsigned, std::set<unsigned> > cutIn;
+		std::map<unsigned, std::set<unsigned> >::iterator iCut;
+
+		//Cut input size, count
+		std::map<unsigned, unsigned> cutCountFF;
+		cut->getCut2(cutIn);
+		for(iCut = cutIn.begin(); iCut != cutIn.end(); iCut++){
+			if(cutCountFF.find(iCut->second.size()) == cutCountFF.end())
+				cutCountFF[iCut->second.size()] = 1;
+			else
+				cutCountFF[iCut->second.size()]++; 
+		}
+		stat_spCutCountFF.push_back(cutCountFF);
+		
+		
+		//Find input cut for out nodes----------------------------
+		aigraph->getOutInput(nodes);
+		cut->findInputCut(nodes);
+
+		//Cut input size, count
+		std::map<unsigned, unsigned> cutCountOut;
+		cut->getCut2(cutIn);
+		for(iCut = cutIn.begin(); iCut != cutIn.end(); iCut++){
+			if(cutCountOut.find(iCut->second.size()) == cutCountOut.end())
+				cutCountOut[iCut->second.size()] = 1;
+			else
+				cutCountOut[iCut->second.size()]++; 
+		}
+		stat_spCutCountOut.push_back(cutCountOut);
+		
+
+
+
+
 		gettimeofday(&ce_e, NULL); //------------------------------------------------
 
 
@@ -324,10 +371,9 @@ int main( int argc, char *argv[] )
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
-		functionCalc->processAIGCuts_Perm(true);
+		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 		functionCalc->printUniqueFunctionStat();
-		functionCalc->reset();
 
 /*
 		std::list<unsigned> out;
@@ -365,6 +411,8 @@ int main( int argc, char *argv[] )
 		//mux size, array size, count 
 		std::map<int,std::map<int, int> > muxResult;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
+		//std::vector<unsigned int> muxResult1;
+		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
 		gettimeofday(&mux_e, NULL);//------------------------------------------
 		stat_muxAgg.push_back(muxResult);		
 
@@ -448,6 +496,7 @@ int main( int argc, char *argv[] )
 		delete aigraph;
 		delete cut;
 		delete ckt;
+		functionCalc->reset();
 	}
 
 	outdb << "END\n";
@@ -476,9 +525,10 @@ int main( int argc, char *argv[] )
 	fingerprintList.reserve(name.size());
 
 	for(unsigned int i = 0; i < name.size(); i++){
-		printf("================================================================================\n");
+		printf("\n================================================================================\n");
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-20s\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-20s\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		printf("================================================================================\n");
 
 		//Get fingerprint for mux
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
@@ -511,7 +561,6 @@ int main( int argc, char *argv[] )
 
 
 
-		printf("\nRegisters\n");
 		int totalReg = 0;
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
 		std::vector<unsigned long> fingerprintReg;
@@ -539,22 +588,29 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 		}
 
-
-
+		printf("Special Cut FF Input size Count\n");
+		std::map<unsigned, unsigned>::iterator iCount;
+		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
+			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
+		}
+		printf("Special Cut Out Input size Count\n");
+		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
+			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
+		}
 
 
 		stat_numMux.push_back(totalMux);
 		stat_numReg.push_back(totalReg);
 		stat_fingerprintTime.push_back(elapsedTime);
 
-		printf("\nMux Fingerprint\n");
+		printf("\nMux Fingerprint:\t");
 		//for(unsigned int i = fingerprintMux.size() - 1; i >= 0; i--){
 		for(unsigned int i =  0; i < fingerprintMux.size(); i++){
 			printf("%lx ", fingerprintMux[i]);
 		}
 		printf("\n");
 
-		printf("Register fingerprint\n");
+		printf("Register fingerprint:\t");
 		for(unsigned int i =  0; i < fingerprintReg.size(); i++){
 			printf("%lx ", fingerprintReg[i]);
 		}
@@ -574,8 +630,9 @@ int main( int argc, char *argv[] )
 	//* MKR-  Print additional statistics  
 	//**************************************************************************
 	printf("%-20s", "Circuit");
+	printf("%5s", "CkPI");
 	printf("%5s", "In");
-	//printf("%5s", "Out");
+	printf("%5s", "CkPO");
 	printf("%8s", "Func");
 	//printf("%8s", "Wiener");
 	printf("%8s", "|AIG|");
@@ -594,9 +651,10 @@ int main( int argc, char *argv[] )
 	printf("--------------------------------------------------------------------------------\n");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-20s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-20s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		printf("%5d", stat_numCktInput[i]);
 		printf("%5d", stat_numInput[i]);
-		//printf("%5d", stat_numOutput[i]);
+		printf("%5d", stat_numCktOutput[i]);
 		printf("%8d", count[i]);
 		//printf("%8d", stat_wienerIndex[i]);
 		printf("%8d", stat_aigSize[i]);
@@ -632,17 +690,18 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			double sim = FINGERPRINT::tanimoto(fpRegs[i], fpRegs[k]);
-			printf("%10.3f", sim*100);
+			if(i!=k) printf("%10.3f", sim*100);
+			else printf("%10s", " ");
 		}
 		printf("\n");
 	}
@@ -651,18 +710,19 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
 
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			double sim = FINGERPRINT::tanimoto(fpMuxes[i], fpMuxes[k]);
-			printf("%10.3f", sim*100);
+			if(i!=k) printf("%10.3f", sim*100);
+			else printf("%10s", " ");
 		}
 		printf("\n");
 	}
@@ -671,33 +731,34 @@ int main( int argc, char *argv[] )
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			double sim = FINGERPRINT::tanimoto(fingerprintList[i], fingerprintList[k]);
-			printf("%10.3f", sim*100);
+			if(i!=k) printf("%10.3f", sim*100);
+			else printf("%10s", " ");
 		}
 		printf("\n");
 	}
 
 
 
-	printf("\n\n%-15s", "Ecdn Distance");
+	printf("\n\n%-12s", "Ecdn Distance");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		std::vector<double> f1;
 		f1.reserve(14);
@@ -739,22 +800,22 @@ int main( int argc, char *argv[] )
 			*/
 
 			double sim = FINGERPRINT::euclideanDistance(f1, f2);
-			printf("%15.3f", sim);
+			printf("%12.3f", sim);
 		}
 		printf("\n");
 
 	}
-
-	printf("\n\n%-15s", "ENORM Distance");
+/*
+	printf("\n\n%-12s", "ENORM Distance");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-15s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		std::vector<double> f1;
 		f1.reserve(14);
@@ -769,11 +830,6 @@ int main( int argc, char *argv[] )
 		f1.push_back((double)stat_addAgg[k][2]);
 		f1.push_back((double)stat_dspSize[i]);
 		f1.push_back((double)stat_numFFFeedback[i]);
-		/*
-		f1.push_back(stat_numMuxcy[i]);
-		f1.push_back(stat_numXorcy[i]);
-		f1.push_back(stat_numLUTs[i]);
-		*/
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			std::vector<double> f2;
@@ -789,18 +845,14 @@ int main( int argc, char *argv[] )
 			f2.push_back((double)stat_addAgg[k][2]);
 			f2.push_back((double)stat_dspSize[k]);
 			f2.push_back((double)stat_numFFFeedback[k]);
-			/*
-			f2.push_back(stat_numMuxcy[k]);
-			f2.push_back(stat_numXorcy[k]);
-			f2.push_back(stat_numLUTs[k]);
-			*/
 
 			double sim = FINGERPRINT::euclideanDistanceWNorm(f1, f2);
-			printf("%15.3f", sim);
+			printf("%12.3f", sim);
 		}
 		printf("\n");
 
 	}
+	*/
 	//std::cout<<"\033[1;4;31m"<<"BLUE TEXT"<<"\033[0m"<<std::endl;
 
 
@@ -836,7 +888,7 @@ int main( int argc, char *argv[] )
 
 	for(unsigned int i = 0; i < stat_time.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-20s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-2).c_str());
+		printf("%-20s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 		for(unsigned int k = 0; k < stat_time[i].size(); k++){
 			printf("%-12.3f", stat_time[i][k]);
 			totalTime[k]+=stat_time[i][k];

@@ -234,18 +234,16 @@ void CutFunction::processAIGCuts(bool np){
 		unsigned node = i * 2; //AIG FORMAT Evens are the nodes, Odds are inv 
 		//printf("################################################################################\n");
 		//printf("--------------------------------\nProcessing node %d\n", node);
-		std::list<std::set<unsigned>*>* cutList;
-		std::list<std::set<unsigned>*>::iterator cuts;
+		std::list<std::set<unsigned> > cutList;
+		std::list<std::set<unsigned> >::iterator cuts;
 
-		cutList = m_CutEnumeration->getCuts(i);	
+		m_CutEnumeration->getCuts(i, cutList);	
 
-		//Skip if input
-		if(cutList == NULL) 	continue;
 
 		//Go through each cut of the node
-		for(cuts = cutList->begin(); cuts != cutList->end(); cuts++){
+		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
 			//Skip trivial cut
-			unsigned int inputSize = (*cuts)->size();
+			unsigned int inputSize = cuts->size();
 			if(inputSize == 1)		continue;
 
 			//Permutation of indexes
@@ -257,7 +255,7 @@ void CutFunction::processAIGCuts(bool np){
 			gateInputs->reserve(inputSize+1);
 
 			//Set the assignments for the inputs
-			for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++){
+			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 				unsigned int permVal = permutation[pIndex];
 				unsigned long input = m_Xval[permVal];
 
@@ -326,22 +324,17 @@ void CutFunction::processAIGCuts_Perm(bool np){
 		unsigned node = i * 2;
 		//printf("############################################################################################################\n");
 		//printf("--------------------------------\nProcessing node %d\n", node);
-		std::list<std::set<unsigned>*>* cutList;
-		std::list<std::set<unsigned>*>::iterator cuts;
+		std::list<std::set<unsigned> > cutList;
+		std::list<std::set<unsigned> >::iterator cuts;
 
-		cutList = m_CutEnumeration->getCuts(i); 
-
-		//Skip if input
-		if(cutList == NULL)
-			continue;
-
+		m_CutEnumeration->getCuts(i, cutList); 
 
 		//Go through each cut of the node
-		for(cuts = cutList->begin(); cuts != cutList->end(); cuts++){
+		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
 
 			//Skip trivial cut
-			unsigned int inputSize = (*cuts)->size();
-			if(inputSize < 2)
+			unsigned int inputSize = cuts->size();
+			if(inputSize < 5)
 				continue;
 
 			//Permutation of indexes
@@ -352,7 +345,7 @@ void CutFunction::processAIGCuts_Perm(bool np){
 
 			//printf("CUT: ");
 			std::vector<unsigned> gateInput;
-			for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++)
+			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
 			{
 			  //printf("%d ", *cutIT);
 				gateInput.push_back(*cutIT);
@@ -378,7 +371,7 @@ void CutFunction::processAIGCuts_Perm(bool np){
 
 					//printf("\n\nInputSize: %d\n", inputSize);
 					//Set the assignments for the inputs
-					for(cutIT = (*cuts)->begin(); cutIT != (*cuts)->end(); cutIT++){
+					for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 						unsigned int permVal = permutation[pIndex];
 						unsigned long input = m_Xval[permVal];
 

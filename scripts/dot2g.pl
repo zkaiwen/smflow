@@ -66,6 +66,8 @@ sub parse{
 	%vertex = ();
 	%inputNodes = ();
 	%inputNodeNames = ();
+	%outputNodes = ();
+	%outputNodeNames = ();
 	%lutmap = ();
 
 	$index = 0;
@@ -99,6 +101,7 @@ sub parse{
 			#Get inputs and outputs
 			@inout = split(/->/);
 			@gateOutPort = split(':', $inout[0]);
+			
 		
 			#Checks source to see if a label has been assigned to the component
 			if(exists($vertex{$gateOutPort[0]}) == false)
@@ -113,9 +116,20 @@ sub parse{
 			#Get rid of port information
 			@gateInPort = split(':', $inout[1]);
 			#print $gateInPort[0] . " ------ " . $gateInPort[1];
+			
 				
 			#Checks destination to see if a label has been assigned to the component
-			if(exists($vertex{$gateInPort[0]}) == false)
+			$temp = $vertex{$gateOutPort[0]};
+			if($gateInPort[0] =~ m/OUT/ ){
+				if(exists($outputNodes{$temp}) == false){
+					@gateNum1 = split("---", $gateInPort[0]);
+
+					$outputNodes{$temp} = $temp;
+					$outputNodeNames{$temp} = $gateNum1[2];
+				}
+				next;
+			}
+			elsif(exists($vertex{$gateInPort[0]}) == false)
 			{
 				$vertex{$gateInPort[0]} = $index;
 				$numInput[$index] = 0;
@@ -143,7 +157,7 @@ sub parse{
 			$type[$i] = $gateOutPort[0];
 			$type[$o] = $gateInPort[0];
 
-			$newDot = $newDot . "\t" . $gateOutPort[0] . "---" . $i . " -> " . $gateInPort[0] . "---" . $o . "\n";
+			#$newDot = $newDot . "\t" . $gateOutPort[0] . "---" . $i . " -> " . $gateInPort[0] . "---" . $o . "\n";
 			
 			$numOutput[$i] = $numOutput[$i] + 1;
 			$outputs[$i] = $o . " " . $gateOutPort[1] . " " . $outputs[$i];
@@ -155,7 +169,6 @@ sub parse{
 				$inputNodes{$i} = $i;
 				$inputNodeNames{$i} = $cname[$i];
 			}
-	
 		}
 	}
 
@@ -168,13 +181,16 @@ sub parse{
 	if($g != 0)
 	{
 		$g = $g . "\n" . keys(%inputNodes) . " ";
-		$count = 0;
 		for my $key (keys %inputNodes)
 		{
 			$g = $g . $key . " " . $inputNodeNames{$key}. " ";
-			$count = $count + 1;
 		}
 
+		$g = $g . "\n" . keys(%outputNodes) . " ";
+		for my $key (keys %outputNodes)
+		{
+			$g = $g . $key . " " . $outputNodeNames{$key}. " ";
+		}
 		$g = $g . "\n";
 		
 		#Concatenate the necessary information for the file 

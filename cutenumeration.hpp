@@ -21,7 +21,11 @@
 
 class CutEnumeration{
 	private:
-		std::vector<std::list<std::set<unsigned>*>*> m_Cuts;
+		std::vector<std::list<std::set<unsigned> > > m_Cuts;
+		std::vector<std::list<unsigned> > m_Signatures;
+		std::map<unsigned, std::set<unsigned> > m_Cuts2;
+
+		std::map<unsigned, std::list<std::set<unsigned> > > m_SubCut;
 		AIG* m_AIGraph;
 		unsigned int m_K;
 
@@ -34,19 +38,25 @@ class CutEnumeration{
 
 		//Algorithm methods for cut enumeration
 		void findKFeasibleCuts(unsigned int);
-		std::list<std::set<unsigned>*>* merge(std::list<std::set<unsigned>*>*, std::list<std::set<unsigned>*>*);
+		void findKFeasibleCuts_In(unsigned int, std::vector<unsigned int>&);
+		void findInputCut(std::vector<unsigned>&);
+		void merge(std::list<std::set<unsigned> >&, std::list<std::set<unsigned> >&, std::list<std::set<unsigned> >&);
+		unsigned calculateSignature(std::set<unsigned>&);
 
 
 		//Getter Methods
-		std::list<std::set<unsigned>*>* getCuts(unsigned);
+		void getCuts(unsigned, std::list<std::set<unsigned> >& );
+		void getCuts_In(unsigned, std::list<std::set<unsigned> >& );
+		void getCut2(std::map<unsigned, std::set<unsigned> >&);
 
 
 
 		//Printing methods
 		void print();
 		void printStat();
-		void printSet(std::set<unsigned>*);
+		void printSet(std::set<unsigned>&);
 		void printCutSet(unsigned);
+		void printCutSet_In(unsigned);
 };
 
 

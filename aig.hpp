@@ -47,6 +47,8 @@ class AIG{
 
 	private:
 		std::vector<unsigned> m_Outputs;
+		std::vector<unsigned> m_FFInput;
+		std::vector<unsigned> m_OutInput;
 		std::map<std::vector<unsigned >, unsigned > m_HashTable;
 		aiger* m_Aiger;
 
@@ -69,6 +71,8 @@ class AIG{
 
 
 		//Getters
+		void getFFInput(std::vector<unsigned>&);
+		void getOutInput(std::vector<unsigned>&);
 		void getAIG(std::vector<std::vector<int>*>&);
 		void getOutputs(std::vector<unsigned>&);
 		unsigned int getOutputSize();

@@ -79,9 +79,13 @@ class Graph
 		unsigned int getMaxLevel();
 		std::string getName();
 		void getLUTs(std::map<unsigned long, int>&);
-		bool hasLUTs();
 		int getNumNets();
 		std::string getNodeName(unsigned int);
+
+		//Boolean
+		bool hasLUTs();
+		bool isOutput(std::string);
+		std::string isOutput(int); //returns portname, else returns ""
 
 
 		//Setters
@@ -89,6 +93,7 @@ class Graph
 		void setLevels();
 		void resetLevels();
 		void removeCycles();
+		void setOutput(std::string, int);
 
 
 		//Finders
@@ -108,7 +113,7 @@ class Graph
 		void addConstant(int);
 		void removeVertex(Vertex*);
 		void removeVertex(int);
-		void substitute(int, Graph*);
+		unsigned substitute(int, Graph*);  //returns output node
 		void subLUT(int, Graph*);
 		void renumber(int);
 

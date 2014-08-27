@@ -117,7 +117,9 @@ namespace FINGERPRINT{
 			}
 		}
 
-		return N_f1f2 / (N_f1 + N_f2 - N_f1f2);
+		double denom = (N_f1+N_f2-N_f1f2);
+		if(denom == 0.0)	return 0;
+		return N_f1f2 / denom;
 	}
 	
 	double euclideanDistanceWNorm(std::vector<double>& f1, std::vector<double>&f2){

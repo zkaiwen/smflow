@@ -82,6 +82,31 @@ void AIG::clearAIG(){
 ############################################################## 
 ##############################################################*/
 
+/*******************************************************
+ *  geFFInput
+ *    Gets the nodes that lead out to FFs 
+ *
+ *    @PARAM: 
+ *      * output: Reference to the ffinput vector 
+ ********************************************************/
+void AIG::getFFInput(std::vector<unsigned>& ffin){
+	ffin = m_FFInput;
+}
+
+
+
+/*******************************************************
+ *  geFFInput
+ *    Gets the nodes that lead out to FFs 
+ *
+ *    @PARAM: 
+ *      * output: Reference to the ffinput vector 
+ ********************************************************/
+void AIG::getOutInput(std::vector<unsigned>& outin){
+	outin = m_OutInput;
+}
+
+
 
 
 /*******************************************************
@@ -397,7 +422,7 @@ void AIG::writeAiger(std::string filename, bool isBinary){
  *      * ckt:    Graph to convert to AIG
  ********************************************************/
 void AIG::convertGraph2AIG(Graph* ckt, bool sub){
-	printf("[AIG] -- Converting Graph to AIG\n");
+	printf("\n[AIG] -- Converting Graph to AIG\n");
 
 	//Overwrite AIG if one exists
 	if(getSize() != 0){
@@ -422,16 +447,27 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::vector<int> flipflops;
 	int ptBuffer = 0; 
 
-
-
+	std::vector<std::map<int, Vertex*>::iterator> ffList;
+	std::set<unsigned> outInput;
 
 	//Go through each node in the circuit and covert it to its
 	//  AND/INV representative
 	std::map<int, Vertex*>::iterator end = ckt->end();
 	end--;
 
+
+	//Prepare datastructure for easy output search
+	std::set<unsigned int> outputSet; 
+	std::vector<int> cktout;
+	ckt->getOutputs(cktout);
+	for(unsigned int i = 0; i < cktout.size(); i++)
+			outputSet.insert(cktout[i]);
+
+
+	int outputNode;
 	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
 		std::string circuitType;
+		bool noSub = false;
 
 		//Read in the necessary primitive type
 		//printf("CONVERTING V%d to AIG PRIM\n", it->first);
@@ -445,18 +481,20 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				gateType.find("FD") != std::string::npos ||
 				gateType.find("LD") != std::string::npos ||
 				gateType.find("LAT") != std::string::npos){
+
 			if(!sub)
-				if(handleFF(it->first, ckt)){
-					toBeDeleted.push_back(it->first);
-				}
-			continue;
+				ffList.push_back(it);
+		
+			noSub = true;
 		}
 		else if(gateType.find("MUXCY") != std::string::npos)
 			circuitType = s_SourcePrim + "muxcy";
 		else if(gateType.find("VCC") != std::string::npos ||
 				gateType.find("GND") != std::string::npos){
 			ckt->addConstant(it->first);
-			continue;
+
+			outputNode = it->second->getID();
+			noSub = true;
 		}
 		else if(gateType.find("XOR") != std::string::npos)
 			circuitType = xorAIGFile_c;
@@ -466,8 +504,9 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				gateType.find("IN") != std::string::npos){
 			if(it->second->getIVSize() > 2)
 				circuitType = andAIGFile_c;
-			else
-				continue;
+			else{
+				noSub = true;
+			}
 		}
 		else if(gateType.find("NOR") != std::string::npos)
 			circuitType = norAIGFile_c;
@@ -484,7 +523,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else if (gateType.find("RAM") != std::string::npos
 				|| gateType.find("DSP") != std::string::npos){
 			handleFF(it->first, ckt);	
-			continue;
+			noSub = true;
 		}
 		else if(gateType.find("ADD") != std::string::npos)
 			circuitType = addAIGFile_c;
@@ -519,13 +558,23 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				in[0]->addOutput(out[i], outputPortName);
 			}
 
-			continue;
+			noSub = true;
 		}
 		else if(gateType.find("TINV") != std::string::npos)
 			exit(1);
 		else{
 			printf("Unknown Gate Type\tI%sI\n\n", gateType.c_str());
 			exit(1);
+		}
+
+		//If no substitution is needed, check if the node goes to output
+		if(noSub){
+			if(outputSet.find(it->second->getID()) != outputSet.end()){
+				outputNode = it->second->getID();
+				outInput.insert(outputNode);
+			}
+
+			continue;
 		}
 
 
@@ -537,10 +586,18 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 		Graph* primCkt = new Graph(circuitType);
 		primCkt->importPrimitive(circuitType, ckt->getLast() +1);
+		std::vector<int> subout;
+		primCkt->getOutputs(subout);
+		outputNode = subout[0];
 
 		//Substitute the node with the primitive type
 		ckt->substitute(it->first, primCkt);
 		toBeDeleted.push_back(it->first);
+
+		//Check to see if the node substituted goes to the output
+		if(outputSet.find(it->second->getID()) != outputSet.end()){
+			outInput.insert(outputNode);
+		}
 
 		//printf("VERTEXID: %d\n", it->first);
 		//if(ckt->getLast() > 40805){
@@ -553,11 +610,33 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 
 
+
+	//Go through FFs to see the inputs to them
+	std::set<unsigned> ffCKTNodes; 
+	std::set<unsigned>::iterator iSet; 
+	for(unsigned int i = 0; i < ffList.size(); i++){
+		int inID =  ffList[i]->second->getInputPortID("D");
+		assert(inID != -1);
+		ffCKTNodes.insert(inID);
+
+		//If FF goes to output, store the input to the FF
+		if(outInput.erase(ffList[i]->second->getID()) == 1){
+			outInput.insert(inID);
+			std::string outPortName = ckt->isOutput(ffList[i]->second->getID());
+			if(outPortName != "")
+				ckt->setOutput(outPortName, inID);
+		}
+		
+		if(handleFF(ffList[i]->first, ckt))
+			toBeDeleted.push_back(ffList[i]->first);
+	}
+	
+
 	//Delete substituted nodes from the graph
 	for(unsigned int i = 0; i < toBeDeleted.size(); i++)
 		ckt->removeVertex(toBeDeleted[i]);
+	
 	printf(" * NUMBER OF PASSTHROUGH BUFFER: %d\n", ptBuffer);
-
 
 	//printf("CONVERTED CIRCUIT\n");
 	//ckt->print();
@@ -584,7 +663,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	/******************************************************
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
-ckt->setLevels();
+	ckt->setLevels();
 
 	//Order the vertices by level
 	std::map<int, std::vector<Vertex*> > vLevel;
@@ -690,6 +769,28 @@ ckt->setLevels();
 	printf("END\n");
 	print();
 	*/
+
+	
+	//Store the inputs that go into each output
+	//printf("OUTPUT INPUT MAP\n");
+	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++){
+		if(m_GateMap[*iSet] >  1){
+			//printf("CKT: %d \tAIG: %d\n", *iSet, m_GateMap[*iSet]);
+			m_OutInput.push_back(m_GateMap[*iSet]);
+		}
+	}
+	
+	//Store the inputs that go into each FF	
+	//printf("FF INPUT MAP\n");
+	for(iSet = ffCKTNodes.begin(); iSet != ffCKTNodes.end(); iSet++){
+		if(m_GateMap[*iSet] >  1){
+			if(outInput.find(*iSet) == outInput.end()){
+				//printf("CKT: %d \tAIG: %d\n", *iSet, m_GateMap[*iSet]);
+				m_FFInput.push_back(m_GateMap[*iSet]);
+			}
+		}
+	}
+
 }
 
 

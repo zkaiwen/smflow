@@ -761,7 +761,7 @@ namespace SEQUENTIAL{
 
 	//Unsimplified replacement
 	unsigned int replaceLUT2(Graph* ckt){
-		printf("[SEQ] -- Replacing LUTs with combinational Logic\n");
+		printf("[SEQ] -- Replacing LUTs with combinational Logic  [2]\n");
 		std::map<int, Vertex*>::iterator it;
 		std::list<int> tobedeleted;
 		unsigned int numLUTs = 0;
@@ -1033,6 +1033,7 @@ namespace SEQUENTIAL{
 		unsigned int numLUTs = 0;
 		double endIndex = ckt->end()->first;
 		double percentComplete = 0.10;
+		//ckt->printg();
 
 		for(it = ckt->begin(); it != ckt->end(); it++){
 			if(it->second->getType().find("LUT") != std::string::npos){
@@ -1351,13 +1352,18 @@ namespace SEQUENTIAL{
 				}
 
 				lutgraph->addOutput("O", lutgraph->getNumVertex()-1);
+				//lutgraph->print();
 
 				//Remove unused inverted inputs
 				for(unsigned int i = 0; i < lutin.size(); i++){
+
 					if(lutgraph->getVertex(lutin.size() + i)->getNumOutputs() == 0){
+						//printf("HERE V: %d IN: %d RM OV: %d\n", lutgraph->getVertex(lutin.size()+i)->getID(), i, lutin.size() +i );
 						lutgraph->getVertex(i)->removeOutputValue(lutin.size()+i);
 						lutgraph->removeVertex(lutin.size()+i);	
+						//printf("DONE\n");
 					}
+					
 				}
 
 				lutgraph->renumber(ckt->getLast() + 1);
@@ -1367,7 +1373,9 @@ namespace SEQUENTIAL{
 				it->second->getInput(in2);
 				it->second->getOutput(out2);
 
+				//printf("SUBBING %d\n", it->second->getID());
 				ckt->substitute(it->second->getID(), lutgraph);
+				//printf("HERE\n");
 			}
 		}
 
