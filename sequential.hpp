@@ -94,7 +94,7 @@ namespace SEQUENTIAL{
 	 *
 	 * @PARAMS: ffList- List of flip flops 
 	 *****************************************************************************/
-	void findRegisterGroup(std::list<Vertex*>& ffList, std::map<int, int>& sizeCount){
+	void findRegisterGroup(std::list<Vertex*>& ffList, std::map<unsigned, unsigned>& sizeCount){
 		printf("[SEQ] -- Searching for Register groups via enable signal\n");
 		//ckt->print();
 		std::list<Vertex*>::iterator iList;

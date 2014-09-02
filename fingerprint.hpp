@@ -25,11 +25,12 @@
 
 //Counter
 namespace FINGERPRINT{
-	void getMuxFingerprint_naive(std::map<int, std::map<int, int> >& muxes, std::vector<unsigned long>& fingerprint){
+	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2);
+	void getMuxFingerprint_naive(std::map<unsigned, std::map<unsigned, unsigned> >& muxes, std::vector<unsigned long>& fingerprint){
 		printf("[FINGERPRINT] -- Extracting fingerprint for Multiplexors\n");
 
-		std::map<int, std::map<int, int> >::iterator iMapM;
-		std::map<int, int>::iterator iMap;
+		std::map<unsigned, std::map<unsigned, unsigned> >::iterator iMapM;
+		std::map<unsigned, unsigned>::iterator iMap;
 		unsigned int bIndex= 0;
 		unsigned int limit = 64;
 
@@ -58,10 +59,10 @@ namespace FINGERPRINT{
 	}
 
 
-	void getRegFingerprint_naive(std::map<int, int>& regs, std::vector<unsigned long>& fingerprint){
+	void getRegFingerprint_naive(std::map<unsigned, unsigned>& regs, std::vector<unsigned long>& fingerprint){
 		printf("[FINGERPRINT] -- Extracting fingerprint for Register\n");
 
-		std::map<int, int>::iterator iMap;
+		std::map<unsigned, unsigned>::iterator iMap;
 		unsigned int bIndex= 0;
 		unsigned int limit = 64;
 		for(iMap = regs.begin(); iMap != regs.end(); iMap++){
@@ -119,7 +120,76 @@ namespace FINGERPRINT{
 
 		double denom = (N_f1+N_f2-N_f1f2);
 		if(denom == 0.0)	return 0;
+
 		return N_f1f2 / denom;
+	}
+	
+	double cutInputFingerprint(std::map<unsigned, unsigned>& data1, std::map<unsigned, unsigned>& data2){
+		std::map<unsigned, unsigned>::iterator it1;
+		std::map<unsigned, unsigned>::iterator it2;
+
+		if(data1.size() == 0 || data2.size() == 0){
+			return -1.0;
+		}
+
+		//Find the largest size
+		it1 = data1.end(); it1--;
+		it2 = data2.end(); it2--;
+		int lastVal1 = it1->first; 
+		int lastVal2 = it2->first; 
+
+		int vectorSize = (lastVal1 < lastVal2) ? lastVal2 : lastVal1;
+		//form vectors
+		std::vector<unsigned> f1(vectorSize+1, 0);
+		std::vector<unsigned> f2(vectorSize+1, 0);
+
+		//Fill in fingerprint with data
+		for(it1 = data1.begin(); it1 != data1.end(); it1++)
+			f1[it1->first] = it1->second;
+
+		for(it2 = data2.begin(); it2 != data2.end(); it2++)
+			f2[it2->first] = it2->second;
+
+		double similarity = tanimoto2(f1, f2);
+		
+		return similarity;
+	}
+	
+	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2){
+		//Assert the bitlenght of the two fingerprints are the same
+		assert(f1.size() == f2.size());
+		double N_f1 = 0.0;
+		std::set<unsigned int> f1Pos;
+
+		//Count the number of 1's in the first fingerprint
+		for(unsigned int i = 0; i < f1.size(); i++){
+			if(f1[i] > 0){
+				N_f1++;
+				f1Pos.insert(i);
+			}
+		}
+
+		//Count the number of 1's in the second fingerprint
+		double N_f2 = 0.0;
+		double N_f1f2 = 0.0;
+		double N_f1f2_ratio = 0.0;
+		for(unsigned int i = 0; i < f2.size(); i++){
+				if(f2[i] > 0){
+					N_f2++;
+
+					//Check if the first set has the same bit high
+					if(f1Pos.find(i) != f1Pos.end()){
+						double ratio = (f2[i] < f1[i]) ? (f2[i] / f1[i]) : (f1[i] / f2[i]);
+						N_f1f2_ratio += ratio;
+						N_f1f2++;
+					}
+				}
+		}
+
+		double denom = (N_f1+N_f2-N_f1f2_ratio);
+		if(denom == 0.0)	return 0.0;
+
+		return N_f1f2_ratio / denom;
 	}
 	
 	double euclideanDistanceWNorm(std::vector<double>& f1, std::vector<double>&f2){
@@ -163,6 +233,7 @@ namespace FINGERPRINT{
 		return sqrt(distance);
 
 	}
+
 
 
 }

@@ -359,9 +359,9 @@ unsigned CutEnumeration::calculateSignature(std::set<unsigned>& cut){
 
 void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 	printf("[CutEnumeration]--Find Input Based Cut\n");
+	m_Cuts2.clear();
 
 	for(unsigned int i = 0; i < nodes.size(); i++){
-
 		//BFS
 		std::list<unsigned int> queue;
 		std::set<unsigned int> marked;
@@ -411,15 +411,15 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
 	std::set<unsigned>::iterator iList;
 
+		/*
 	for(iMap = m_Cuts2.begin(); iMap != m_Cuts2.end(); iMap++){
 		printf("FFOUT: %5d Size: %3d\t", iMap->first, (int)iMap->second.size());
-		/*
 		for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
 			printf("%d ", *iList);
 		}
-		*/
 		printf("\n");
 	}
+		*/
 }
 
 

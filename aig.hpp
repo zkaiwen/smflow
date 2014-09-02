@@ -49,6 +49,7 @@ class AIG{
 		std::vector<unsigned> m_Outputs;
 		std::vector<unsigned> m_FFInput;
 		std::vector<unsigned> m_OutInput;
+		std::vector<std::string> m_OutInputName;
 		std::map<std::vector<unsigned >, unsigned > m_HashTable;
 		aiger* m_Aiger;
 
