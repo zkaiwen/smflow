@@ -420,7 +420,6 @@ int main( int argc, char *argv[] )
 		
 		std::vector<unsigned int> muxResult1;
 		AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
-		AGGREGATION::muxAggregation(functionCalc, aigraph);
 		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
 		gettimeofday(&mux_e, NULL);//------------------------------------------
 		stat_muxAgg.push_back(muxResult);		
@@ -597,11 +596,14 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 		}
 
+
+/*
 		printf("Special Cut FF Input size Count\n");
-		std::map<unsigned, unsigned>::iterator iCount;
 		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
+		*/
+		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut Out Input size Count\n");
 		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
@@ -718,7 +720,7 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::cutInputFingerprint(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
+			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -743,7 +745,7 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::cutInputFingerprint(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
+			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -768,14 +770,14 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::cutInputFingerprint(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
+			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
 		printf("\n");
 	}
 
-	printf("REGISTER SIMILARITY MATRIX\n");
+	printf("\nREGISTER SIMILARITY MATRIX\n");
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
@@ -788,7 +790,7 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::cutInputFingerprint(stat_reg[i], stat_reg[k]);
+			double sim = FINGERPRINT::tanimotoWindow(stat_reg[i], stat_reg[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
@@ -809,7 +811,7 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::cutInputFingerprint(stat_spCutCountOut[i], stat_spCutCountOut[k]);
+			double sim = FINGERPRINT::tanimotoWindow(stat_spCutCountOut[i], stat_spCutCountOut[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
@@ -854,7 +856,7 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::cutInputFingerprint(stat_spCutCountFF[i], stat_spCutCountFF[k]);
+			double sim = FINGERPRINT::tanimotoWindow(stat_spCutCountFF[i], stat_spCutCountFF[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
@@ -884,6 +886,31 @@ int main( int argc, char *argv[] )
 			}
 			
 			printf("%10.3f", (sum/simTable[i][k].size())*100.0);
+
+		}
+		printf("\n");
+	}
+		printf("\n");
+	
+	printf("Excel Format\n");
+	printf("Circuits\t");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%s\t", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+	}
+	printf("\n");
+
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%s\t", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sum = 0.0;
+			for(unsigned int q = 0; q < simTable[i][k].size(); q++){
+				sum += simTable[i][k][q];
+			}
+			
+			printf("%f\t", (sum/simTable[i][k].size())*100.0);
 
 		}
 		printf("\n");

@@ -1401,7 +1401,7 @@ namespace AGGREGATION{
 					 for(iSB = iCount->first.begin(); iSB != iCount->first.end(); iSB++)
 					 printf("%d:%d ", *iSB, aigraph->getGNode(*iSB));
 					 printf("\n");
-				 */
+					 */
 
 				if(sizeCountMap[iStats->first].find(iCount->second) == sizeCountMap[iStats->first].end())
 					sizeCountMap[iStats->first][iCount->second] = 1;
@@ -1409,6 +1409,17 @@ namespace AGGREGATION{
 					sizeCountMap[iStats->first][iCount->second]++;
 			}
 		}
+
+		std::map<unsigned,std::map<unsigned, unsigned> >::iterator iMapM;
+		std::map<unsigned,unsigned>::iterator iMap;
+		for(iMapM = sizeCountMap.begin(); iMapM != sizeCountMap.end(); iMapM++){
+
+			printf("\t%d-1 MUX:\n", iMapM->first);
+			for(iMap = iMapM->second.begin(); iMap != iMapM->second.end(); iMap++)
+				printf("\t\t%4d-Bit Mux %7d\n", iMap->first, iMap->second);
+		}
+
+
 	}
 
 
@@ -1514,7 +1525,7 @@ namespace AGGREGATION{
 			muxSet[select].insert(outputNode);
 		}
 
-		printf("skipped mux: %d out of %d\ndone\n", skippedmux, muxlist.size());
+		//printf("skipped mux: %d out of %d\ndone\n", skippedmux, muxlist.size());
 
 
 
@@ -1841,105 +1852,6 @@ namespace AGGREGATION{
 		return false;
 	}
 
-
-/*******************************************************
- *  aggregation
- *   Tries to combine word level structures.
- *   Mainly used for mux and adders
- ********************************************************/
-void muxAggregation(CutFunction* cf, AIG* aigraph){
-	printf("\n\n###########################################\n");
-	printf("\n");
-	printf("\tAGGREGATION\n");
-	printf("\n");
-	printf("###########################################\n");
-		//Functions in hashmap that are mux operations
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
-		std::vector<unsigned long> muxes;
-		cf->getHashMap(hmap);
-		printf(" * Parsing function database for multiplexor blocks...\n");
-		for(it = hmap.begin(); it!=hmap.end(); it++){
-			if(it->second.find("mux") != std::string::npos)
-				muxes.push_back(it->first);
-		}
-
-		printf("Multiplexor Bitslices found in hashmap database: %d\n", (int)muxes.size());
-
-		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
-		cf->getPortMap(pmap);
-
-		//List of inputs of mux components. Last index is the output
-		std::vector<std::vector<unsigned> > muxlist;
-	std::map<int,std::set<int> > muxSelectMap;
-		std::map<unsigned long, std::map<int, std::string> > primportmap;
-		cf->getPrimPortMap(primportmap);
-
-		//Get the Inputs and outputs of all the mux components found in the circuit 
-		for(unsigned int i = 0; i < muxes.size(); i++){
-			if(pmap.find(muxes[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[muxes[i]].size(); j++){
-					std::vector<unsigned> ports;
-					unsigned outNode = pmap[muxes[i]][j]->at(pmap[muxes[i]][j]->size()-1);
-					for(unsigned k = 0; k < pmap[muxes[i]][j]->size()-1; k++){
-						//printf("%d ", pmap[muxes[i]][j]->at(k));
-						ports.push_back(pmap[muxes[i]][j]->at(k));
-						if(primportmap[muxes[i]][j] == "S0"){
-							//printf("SELECT BIT. STORING\n");
-							muxSelectMap[pmap[muxes[i]][j]->at(k)].insert(outNode);
-						}
-
-					}
-					//printf("\nOUTPUT:\t%d\n", pmap[muxes[i]][j]->at(k));
-					ports.push_back(outNode);
-					muxlist.push_back(ports);
-
-				}
-			}
-		}
-		printf("done\n");
-		printf("Number of mux bitslice: %d\n", (int)muxlist.size());
-
-
-
-	//printf("Aggregating possible MUXes\n");
-	std::map<int, std::set<int> >::iterator muxIt;
-	std::vector<unsigned int> nbitmux;
-	std::map<int, int> muxmap;
-	for(muxIt = muxSelectMap.begin(); muxIt != muxSelectMap.end(); muxIt++){
-		//printf("%d-Bit mux\tSelect Bit: %d\n", muxIt->second.size(), muxIt->first);
-		if(muxmap.find(muxIt->second.size()) == muxmap.end())
-			muxmap[muxIt->second.size()] = 1;
-		else
-			muxmap[muxIt->second.size()]++;
-
-		unsigned int i = 0;
-		for(i = 0; i < nbitmux.size(); i++){
-			if(nbitmux[i] > muxIt->second.size())
-				break;
-		}
-
-		nbitmux.insert(nbitmux.begin() + i, muxIt->second.size());
-		//for(unsigned int i = 0; i < muxIt->second.size(); i++){
-		//printf("OutNode: %d\n", muxIt->second[i]);
-		//}
-	}
-
-
-
-
-
-	printf("MULTIPLEXOR AGGREGATION RESULTS:\n");
-	//for(unsigned int i = 0; i < nbitmux.size(); i++){
-	//      printf("%d-Bit MUX\n", nbitmux[i]);
-	//      }
-	std::map<int,int>::iterator muxmapit;
-	for(muxmapit = muxmap.begin(); muxmapit != muxmap.end(); muxmapit++)
-		printf("%d-bit mux:\t%d\n", muxmapit->first, muxmapit->second);
-
-
-}
 
 }
 #endif

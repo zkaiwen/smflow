@@ -163,7 +163,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 			unsigned int negationLimit = 1 << inputSize;
 			for(unsigned int j = 0; j < negationLimit; j++){
 				int count = j;
-				std::map<int, std::string> portOrder;
 
 				//printf("\n\nInputSize: %d\n", inputSize);
 				//Store the inputs
@@ -178,8 +177,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 					//printf("Node %d\tVAL:%lx\n", i*2, input);
 					count = count >> 1;		
 
-					std::string portName = circuit->findInPortName(m_AIG->getGNode(i*2));
-					portOrder[permVal] = portName;
 				}
 
 
@@ -202,7 +199,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 					//Store function with output
 					m_HashTable[m_NodeValue[output[i]]] = file;
-					m_PrimPortMap[m_NodeValue[output[i]]] = portOrder;
 					//printf("OUTPUT: %lx\n", m_NodeValue[output[i]]);
 
 					m_NodeValue.clear();
@@ -865,9 +861,6 @@ void CutFunction::getFunctionCount(std::map<unsigned long, int>& fc){
 	fc = m_FunctionCount;	
 }
 
-void CutFunction::getPrimPortMap(std::map<unsigned long, std::map<int, std::string> >&  primportmap){
-	primportmap = m_PrimPortMap;
-}
 
 void CutFunction::reset(){
 	m_NodeValue.clear();

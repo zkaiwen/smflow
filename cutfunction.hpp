@@ -58,10 +58,6 @@ class CutFunction{
 		std::map<std::set<unsigned long>, std::vector<std::vector<unsigned> > > m_UniqueFunction;
 
 
-		//used to find select bit in mux;
-		std::map<unsigned long, std::map<int, std::string> > m_PrimPortMap;
-
-
 		//AIG Node, Output Tru
 		unsigned long* m_Xval;
 
@@ -100,7 +96,6 @@ class CutFunction{
 		void getHashMap(std::map<unsigned long, std::string>&);
 		void setParams(CutEnumeration*, AIG*);
 		void getFunctionCount(std::map<unsigned long, int>& );
-		void getPrimPortMap(std::map<unsigned long, std::map<int, std::string> >&);
 
 
 		//Print Functions

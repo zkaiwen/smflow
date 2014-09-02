@@ -155,6 +155,61 @@ namespace FINGERPRINT{
 		return similarity;
 	}
 	
+	double tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<unsigned,unsigned>& data2){
+		if(data1.size() == 0 || data2.size() == 0){
+			return -1.0;
+		}
+		//Assert the bitlenght of the two fingerprints are the same
+		double N_f1 = data1.size();
+		double N_f2 = data2.size();
+
+		//Count the number of 1's in the second fingerprint
+		double N_f1f2_ratio = 0.0;
+
+		std::map<unsigned, unsigned>::iterator iMap;
+		std::map<unsigned, unsigned>::iterator iMap2;
+		std::map<unsigned, unsigned>::iterator iTemp;
+		const int windowSize = 5;
+
+		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
+			iTemp = data2.find(iMap->first);	
+			if(iTemp != data2.end()){
+				double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
+				N_f1f2_ratio += ratio;
+			}
+			else{
+				int minDiff= 10000;
+				for(iMap2= data2.begin(); iMap2!= data2.end(); iMap2++){
+					int difference = iMap2->first - iMap->first;
+					if(difference < 0) difference *= -1;
+				
+					if(difference > windowSize) continue;
+
+					if(difference < minDiff){
+						//If the size
+						if(data2.find(iMap->first) != data2.end()) continue;
+
+						iTemp = iMap2;
+						minDiff = difference;
+					}
+					else break;
+				}
+
+
+				//Similar size found within window
+				if(minDiff != 10000){
+					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
+					N_f1f2_ratio += ratio;
+				}
+			}
+		}
+
+		double denom = (N_f1+N_f2-N_f1f2_ratio);
+		if(denom == 0.0)	return 0.0;
+
+		return N_f1f2_ratio / denom;
+	}
+	
 	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2){
 		//Assert the bitlenght of the two fingerprints are the same
 		assert(f1.size() == f2.size());
