@@ -1130,6 +1130,57 @@ namespace SEQUENTIAL{
 
 		return combo;
 	}
+	
+	void DFS_FF(std::set<unsigned>& mark, std::set<unsigned>& ffFound, Vertex* ff){
+		unsigned ID = ff->getID();
+		mark.insert(ID);
+		std::vector<Vertex*> in;
+		ff->getInput(in);
+
+		for(unsigned int i = 0; i < in.size(); i++){
+			std::string type = in[i]->getType();
+
+			if(type == "IN") continue;
+
+			else if(type.find("FD") != std::string::npos)
+				ffFound.insert(in[i]->getID());
+
+			else if(mark.find(in[i]->getID()) == mark.end())
+				DFS_FF(mark, ffFound, in[i]);
+		}
+	}
+	
+	void counterIdentification(Graph* ckt){
+		printf("[SEQ] -- Counter Identification\n");
+
+		//map of <ff id label, vid in the graph>
+		std::map<int, Vertex*>::iterator it;
+		int ffcount= 0;
+
+		//Find all the flip flops in the circuit
+		printf("[SEQ] -- Finding possible counter FF\n");
+		for(it = ckt->begin(); it != ckt->end(); it++){
+			if(it->second->getType().find("FD") != std::string::npos){
+				printf("FFID: %3d FFNAME: %s\n", it->second->getID(), it->second->getName().c_str());
+				ffcount++;
+
+				//Check to see if Q loops back to D (Possible counter)		
+				std::set<unsigned> mark;
+				std::set<unsigned> ffFound;
+				std::set<unsigned>::iterator iSet;
+
+				int dport = it->second->getInputPortID("D");
+				DFS_FF(mark, ffFound, ckt->getVertex(dport));
+				printf(" * ");
+				for(iSet = ffFound.begin(); iSet != ffFound.end(); iSet++){
+					printf("%d ", *iSet);
+				}
+				printf("\n");
+
+
+			}
+		}
+	}
 
 }
 

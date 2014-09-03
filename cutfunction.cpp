@@ -141,7 +141,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 		//Make sure there is no more than 5 inputs(32-bit truth table)
 		unsigned int inputSize = m_AIG->getInputSize();
-		if(inputSize > 4){
+		if(inputSize > 5){
 			printf("AIG of %s has more than 5 inputs...Skipping\n", file.c_str());
 			delete m_AIG;
 			delete circuit;

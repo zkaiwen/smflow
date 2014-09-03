@@ -4,7 +4,7 @@ FILES=../circuits/raw/EDF/*.ndf
 
 for f in $FILES
 do
-	echo "Converting EDF file $f to dot..."
+	echo "\n\nConverting EDF file $f to cnl..."
 	../circuits/raw/ndf2cnl $f ../circuits/testbench/
 done
 

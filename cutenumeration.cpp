@@ -411,7 +411,6 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
 	std::set<unsigned>::iterator iList;
 
-		/*
 	for(iMap = m_Cuts2.begin(); iMap != m_Cuts2.end(); iMap++){
 		printf("FFOUT: %5d Size: %3d\t", iMap->first, (int)iMap->second.size());
 		for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
@@ -419,7 +418,6 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 		}
 		printf("\n");
 	}
-		*/
 }
 
 

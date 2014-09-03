@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
 	timeval add_b, add_e;
 
 	float elapsedTime;
-	int k = 4;                              //k-Cut enumeration value 
+	int k = 5;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long long> > pDatabase;
@@ -300,6 +300,7 @@ int main( int argc, char *argv[] )
 
 		stat_numCktInput.push_back(ckt->getNumInputs());
 		stat_numCktOutput.push_back(ckt->getNumOutputs());
+		
 
 
 
@@ -418,8 +419,8 @@ int main( int argc, char *argv[] )
 		std::map<unsigned,std::map<unsigned, unsigned> > muxResult;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
 		
-		std::vector<unsigned int> muxResult1;
-		AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
+		//std::vector<unsigned int> muxResult1;
+		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
 		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
 		gettimeofday(&mux_e, NULL);//------------------------------------------
 		stat_muxAgg.push_back(muxResult);		
@@ -436,6 +437,7 @@ int main( int argc, char *argv[] )
 		AGGREGATION::findAdder(functionCalc, aigraph, addResult);
 		stat_addAgg.push_back(addResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
+
 
 
 
@@ -602,12 +604,12 @@ int main( int argc, char *argv[] )
 		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
-		*/
 		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut Out Input size Count\n");
 		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
+		*/
 
 
 
@@ -615,6 +617,7 @@ int main( int argc, char *argv[] )
 		stat_numReg.push_back(totalReg);
 		stat_fingerprintTime.push_back(elapsedTime);
 
+/*
 		printf("\nMux Fingerprint:\t");
 		//for(unsigned int i = fingerprintMux.size() - 1; i >= 0; i--){
 		for(unsigned int i =  0; i < fingerprintMux.size(); i++){
@@ -627,6 +630,7 @@ int main( int argc, char *argv[] )
 			printf("%llx ", fingerprintReg[i]);
 		}
 		printf("\n");
+		*/
 	}
 	printf("\n\n");
 
@@ -910,7 +914,7 @@ int main( int argc, char *argv[] )
 				sum += simTable[i][k][q];
 			}
 			
-			printf("%f\t", (sum/simTable[i][k].size())*100.0);
+			printf("%.2f\t", (sum/simTable[i][k].size())*100.0);
 
 		}
 		printf("\n");
