@@ -33,493 +33,6 @@ namespace AGGREGATION{
 	void findAdder(CutFunction* cf, AIG* aigraph);
 
 
-	void findHA(CutFunction* cf, AIG* aigraph){
-		printf("\n\n\n");
-		printf("[AGG] -- SEARCHING FOR ADDERS-------------------------------");
-		const unsigned long xor1 = 0x6666666666666666;
-		const	unsigned long xor2 = 0x9999999999999999;
-
-		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
-		cf->getPortMap(pmap);
-
-		printf(" * Parsing function database for possible Half Adders...");
-		std::map<std::vector<unsigned>, std::vector<unsigned> > faOutput;
-		if(pmap.find(xor1) != pmap.end()){
-			for(unsigned int i = 0; i < pmap[xor1].size(); i++){
-				unsigned int j = 0;
-				//printf("INPUT: ");
-				//for(j = 0; j < pmap[xor1][i]->size()-1; j++){
-				//	printf("%d ", pmap[xor1][i]->at(j));
-				//}
-				//printf("\nOUTPUT:\t%d\n", pmap[xor1][i]->at(j));
-				unsigned outnode = pmap[xor1][i]->at(j);
-
-				//Is there an and gate that has the same inputs as the XOR gate
-				std::vector<unsigned> andindex;
-				andindex = aigraph->findNode(pmap[xor1][i]->at(0), pmap[xor1][i]->at(1));
-				for(unsigned int j = 0; j < andindex.size(); j++){
-					if(aigraph->hasChild(andindex[j], outnode)){
-						//printf("THIS XOR IS A HA- S:%d  CO:%d\n\n", outnode, andindex[j]);
-						//0- Sum, 1- CO
-						std::vector<unsigned > sumCO;
-						sumCO.push_back(outnode);
-						sumCO.push_back(andindex[j]);
-
-						//Inputs
-						std::vector<unsigned> inputs;
-						for(unsigned int k = 0; k < pmap[xor1][i]->size()-1; k++)
-							inputs.push_back(pmap[xor1][i]->at(k));
-
-						faOutput[inputs] = sumCO;
-					}
-				}
-			}
-		}
-
-
-		if(pmap.find(xor2) != pmap.end()){
-			for(unsigned int i = 0; i < pmap[xor2].size(); i++){
-				unsigned int j = 0;
-				//printf("INPUT: ");
-				//for(j = 0; j < pmap[xor2][i]->size()-1; j++){
-				//	printf("%d ", pmap[xor2][i]->at(j));
-				//	}
-
-				//printf("\nOUTPUT:\t%d\n", pmap[xor2][i]->at(j));
-				unsigned outnode = pmap[xor2][i]->at(j);
-
-				//Is there an and gate that has the same inputs as the XOR gate
-				std::vector<unsigned> andindex;
-				andindex = aigraph->findNode(pmap[xor2][i]->at(0), pmap[xor2][i]->at(1));
-				for(unsigned int j = 0; j < andindex.size(); j++){
-					if(aigraph->hasChild(andindex[j], outnode)){
-						//printf("THIS XOR IS A HA- S:%d  CO:%d\n\n", outnode, andindex[j]);
-
-						//0- Sum, 1- CO
-						std::vector<unsigned> sumCO;
-						sumCO.push_back(outnode);
-						sumCO.push_back(andindex[j]);
-
-						//Inputs
-						std::vector<unsigned> inputs;
-						for(unsigned int k = 0; k < pmap[xor2][i]->size()-1; k++)
-							inputs.push_back(pmap[xor2][i]->at(k));
-
-						faOutput[inputs] = sumCO;
-					}
-				}
-			}
-		}
-		printf("done\n");
-
-
-
-		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator outit;
-		/*
-			 printf("\n\nHALF ADDERS\n");
-			 for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-			 printf("INPUTS: ");
-			 for(unsigned int i = 0; i < outit->first.size(); i++)
-			 printf("%d ", outit->first[i]);
-			 printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
-			 }
-		 */
-
-		printf("\n----------------------------------------------------------------\n");
-		printf("Number of Possible Half Adders\t\t%d\n", (int) faOutput.size());
-		printf("----------------------------------------------------------------\n\n");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		/*
-
-
-
-			 SEARCHING GREY BLOCKS
-
-
-
-		 */
-
-		printf(" * Parsing function database for Grey Blocks...");
-		const	unsigned long grey= 0x8c8c8c8c8c8c8c8c;
-		const	unsigned long grey2= 0x8a8a8a8a8a8a8a8a;
-		const	unsigned long grey3= 0x0e0e0e0e0e0e0e0e;
-
-		//Function, Vector of every set of inputs with that function. Last item is the output node
-		cf->getPortMap(pmap);
-
-		//List of inputs of sum components. Last index is the output
-		std::vector<std::vector<unsigned> > gPorts;
-
-		if(pmap.find(grey) != pmap.end()){
-			for(unsigned int i = 0; i < pmap[grey].size(); i++){
-				unsigned int j = 0;
-				//printf("INPUT: ");
-				std::vector<unsigned> ports;
-				for(j = 0; j < pmap[grey][i]->size()-1; j++){
-					//printf("%d ", pmap[grey][i]->at(j));
-					ports.push_back(pmap[grey][i]->at(j));
-				}
-				//printf("\nOUTPUT:\t%d\n", pmap[grey][i]->at(j));
-				unsigned outnode = pmap[grey][i]->at(j);
-				ports.push_back(outnode);
-				gPorts.push_back(ports);
-			}
-		}
-
-		if(pmap.find(grey2) != pmap.end()){
-			for(unsigned int i = 0; i < pmap[grey2].size(); i++){
-				unsigned int j = 0;
-				//printf("INPUT: ");
-				std::vector<unsigned> ports;
-				for(j = 0; j < pmap[grey2][i]->size()-1; j++){
-					//printf("%d ", pmap[grey2][i]->at(j));
-					ports.push_back(pmap[grey2][i]->at(j));
-				}
-				//printf("\nOUTPUT:\t%d\n", pmap[grey2][i]->at(j));
-				unsigned outnode = pmap[grey2][i]->at(j);
-				ports.push_back(outnode);
-				gPorts.push_back(ports);
-			}
-		}
-
-		if(pmap.find(grey3) != pmap.end()){
-			for(unsigned int i = 0; i < pmap[grey3].size(); i++){
-				unsigned int j = 0;
-				//printf("INPUT: ");
-				std::vector<unsigned> ports;
-				for(j = 0; j < pmap[grey3][i]->size()-1; j++){
-					//printf("%d ", pmap[grey3][i]->at(j));
-					ports.push_back(pmap[grey3][i]->at(j));
-				}
-				//printf("\nOUTPUT:\t%d\n", pmap[grey3][i]->at(j));
-				unsigned outnode = pmap[grey3][i]->at(j);
-				ports.push_back(outnode);
-				gPorts.push_back(ports);
-			}
-		}
-		printf("done\n");
-
-		/*			
-						printf("PRINTING GBLOCKS\n");
-						for(unsigned int j = 0; j < gPorts.size(); j++){
-						printf("INPUT: ");
-						unsigned int k = 0;
-						for(k = 0; k < gPorts[j].size()-1; k++){
-						printf("%d ", gPorts[j][k]);
-
-						}
-						printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
-						}
-		 */
-		printf(" * Aggregating Results...");	
-		//Vector of vector of iterators. (Aggregated adders)
-		std::map<unsigned long, std::string>::iterator it;
-		std::vector<std::set<unsigned> > marked;
-		int numHA = 0;
-		int numGB = 0;
-
-
-		//For each ha, see if there is a connecting gb
-		for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-			//printf("Checking CO: %d\n", outit->second[1]);
-
-			//Check to see which grey the co goes out to. 
-			for(unsigned int z = 0; z < gPorts.size(); z++){
-				for(unsigned int i = 0; i < gPorts[z].size()-1; i++){
-
-					//If carry out is the same as input to grey block, mark
-					bool foundGB = false;
-					//printf("Comparing %d - %d\n", outit->second[1], gPorts[z][i]);
-					if(outit->second[1] == gPorts[z][i]){
-						for(unsigned int j = 0; j < marked.size(); j++){
-							if(marked[j].find(outit->second[1]) != marked[j].end()){
-								//printf("Cout found in set %d...inserting cout\n\n", j);
-								marked[j].insert(gPorts[z][gPorts[z].size()-1]);
-								foundGB = true;
-								numGB++;
-								break;
-							}
-							else if(marked[j].find(gPorts[z][gPorts[z].size()-1]) != marked[j].end()){
-								//printf("GB not found in set %d...inserting gb output\n\n", j);
-								marked[j].insert(outit->second[1]);
-								foundGB = true;
-								numHA++;
-								break;
-							}
-						}
-						if(!foundGB){
-							//printf("No prev set found, creating new set\n\n");
-							std::set<unsigned> n;
-							n.insert(outit->second[1]);
-							n.insert(gPorts[z][gPorts[z].size()-1]);
-							marked.push_back(n);
-							numHA++;
-							numGB++;
-							break;
-						}
-					}
-
-				}
-			}
-		}
-		printf("done\n");
-
-
-		//This is mainly for carry ripple
-		printf(" * Aggregating carry ripple architecture...");
-		std::set<unsigned>::iterator sit;
-		std::set<unsigned>::iterator sit2;
-		for(unsigned int z = 0; z < gPorts.size(); z++){
-			unsigned gout = gPorts[z][gPorts[z].size()-1];
-			for(unsigned int i = 0; i < gPorts.size(); i++){
-				if(z == i) continue;
-
-				for(unsigned int j = 0; j < gPorts[i].size()-1; j++){
-					//printf("Checking %d to %d\n", gPorts[i][j], gout);
-					if(gout == gPorts[i][j])
-					{
-						//printf("FOUND %d to %d\n", gout, gPorts[i][gPorts[i].size()-1]);
-						int index1 = -1;
-						int index2 = -1;
-						for(unsigned int k = 0; k < marked.size(); k++){
-							if(marked[k].find(gout) != marked[k].end())
-								index1 = k;
-							else if(marked[k].find(gPorts[i][gPorts[i].size()-1]) != marked[k].end())
-								index2 = k;
-						}
-
-						//printf("index1 %d, index2 %d\n", index1, index2);
-						if(index1 != -1 && index2 != -1){
-							//printf("ERASING INDEX %d\n", index1);
-							for(sit = marked[index1].begin(); sit != marked[index1].end(); sit++){
-								marked[index2].insert(*sit);
-							}
-							marked.erase(marked.begin() + index1);
-						}
-					}
-				}
-			}
-		}
-		printf("done\n");
-
-
-
-
-
-		printf("\n\n");
-		printf("[AGG] -- SEARCHING FOR ADDERS USING halfadder_gp BLOCKS-------------------------------\n");
-		std::vector<unsigned long> hagp;
-		std::map<unsigned long, std::string> hmap;
-		cf->getHashMap(hmap);
-
-		//find halfadder_gp 
-		printf(" * Parsing function database for possible halfadder_gp Blocks...");
-		for(it = hmap.begin(); it!=hmap.end(); it++){
-			if(it->second.find("halfadder_gp") != std::string::npos)
-				hagp.push_back(it->first);
-		}
-
-		std::vector<std::vector<unsigned> > hagpInSet;
-		for(unsigned int i = 0; i < hagp.size(); i++){
-			if(pmap.find(hagp[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[hagp[i]].size(); j++){
-					unsigned int k = 0;
-					std::vector<unsigned> ports;
-
-					//sort positive inputs (used as key)
-					for(k = 0; k < pmap[hagp[i]][j]->size()-1; k++){
-						unsigned in = pmap[hagp[i]][j]->at(k);
-						ports.push_back(in);
-					}
-					ports.push_back(pmap[hagp[i]][j]->at(k));
-					hagpInSet.push_back(ports);
-				}
-			}
-		}
-		printf("done\n");
-
-
-		std::vector<std::vector<unsigned> > addbitIn;
-		std::vector<std::vector<unsigned> > addbitOut;
-
-		//For each ha, see if there is a halfadder_gp with same input 
-		printf(" * Looking for blocks with similar inputs...");
-		for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-			int inputCount = 0; 
-			for(unsigned int i = 0; i < hagpInSet.size(); i++){
-				//For each input of HAGP, compare INPUT of HA to see if HAGP matches
-				for(unsigned int j = 0; j < hagpInSet[i].size()-1; j++){
-					//for each input of HA
-					for(unsigned int k = 0; k < outit->first.size(); k++){
-						//printf("Comparing %d - %d\n", outit->first[k], hagpInSet[i][j]);
-						if(outit->first[k] == hagpInSet[i][j]){
-							inputCount++;
-							break;
-						}
-					}
-
-					if(inputCount == 2)	break;	
-				}
-
-				if(inputCount == 2){
-					std::vector<unsigned> input;
-					std::vector<unsigned> output;
-					input.push_back(hagpInSet[i][0]);
-					input.push_back(hagpInSet[i][1]);
-					input.push_back(hagpInSet[i][2]);
-
-					output.push_back(outit->second[1]);	
-					output.push_back(hagpInSet[i][3]);
-
-					addbitIn.push_back(input);
-					addbitOut.push_back(output);
-
-					break;	
-				}
-
-			}
-
-			if(inputCount != 2){
-				std::vector<unsigned> input;
-				std::vector<unsigned> output;
-				input.push_back(outit->first[0]);
-				input.push_back(outit->first[1]);
-
-				output.push_back(outit->second[1]);
-				output.push_back(outit->second[0]);
-
-				addbitIn.push_back(input);
-				addbitOut.push_back(output);
-			}
-		}
-		printf("done\n");
-
-		/*
-			 printf("Printing ha and hagp set\n");
-			 for(unsigned int i = 0; i < addbitIn.size(); i++){
-			 printf("Input:\t");
-			 for(unsigned int j = 0; j < addbitIn[i].size(); j++){
-			 printf("%d ", addbitIn[i][j]);
-			 }
-
-			 printf("\nOutput:\t");
-			 for(unsigned int j = 0; j < addbitOut[i].size(); j++){
-			 printf("%d ", addbitOut[i][j]);
-			 }
-			 printf("\n\n");
-
-			 }
-		 */
-		//output index 0
-		std::vector<std::set<unsigned> > marked2; 
-
-		printf(" * Aggregating results...\n");
-		for(unsigned int i = 0; i < addbitOut.size(); i++){
-			for(unsigned int j = 0; j < addbitIn.size(); j++){
-				if(i == j) continue;
-				else if(addbitIn[j].size() == 2) continue;
-
-				for(unsigned int k = 0; k < addbitIn[j].size(); k++){
-					bool found = false;
-					//printf("comparing %d %d\n", addbitOut[i][0], addbitIn[j][k]);
-					if(addbitOut[i][0] == addbitIn[j][k] ||
-							addbitOut[i][1] == addbitIn[j][k]){
-						for(unsigned int a = 0; a < marked2.size(); a++){
-							if(marked2[a].find(addbitOut[i][0]) != marked2[a].end()){
-								//printf("found1\n");
-								marked2[a].insert(addbitOut[j][0]);
-								found = true;
-								break;
-							}
-							else if(marked2[a].find(addbitOut[j][0]) != marked2[a].end()){
-								//printf("found2\n");
-								marked2[a].insert(addbitOut[i][0]);
-								found = true;
-								break;
-							}
-						}
-
-						if(!found){
-							//printf("not found...making new set\n");
-							std::set<unsigned> mset;
-							mset.insert(addbitOut[j][0]);
-							mset.insert(addbitOut[i][0]);
-
-							marked2.push_back(mset);
-							break;
-						}
-
-					}
-				}
-			}
-		}
-		printf("done\n");
-
-
-
-
-		printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-		printf("\n----------------------------------------------------------------\n");
-		printf("Result Search 1:\n");
-		printf("Number of HA: %d, Number of GB: %d\n", numHA, numGB);
-		printf("Number of possible adders:\t %d\n\n", (int) marked.size());
-		for(unsigned int i = 0; i < marked.size(); i++){
-			int nbit = 0; 
-			for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
-				if(marked[i].find(outit->second[1]) != marked[i].end())
-					nbit++;
-			}
-			printf("   %d-bit adder\n", nbit);
-		}
-
-		printf("----------------------------------------------------------------\n");
-		printf("----------------------------------------------------------------\n");
-		printf("Result Search 2:\n");
-		printf("----------------------------------------------------------------\n");
-
-		for(unsigned int i = 0; i < marked2.size(); i++){
-			printf("   %d-bit adder\n", (int) marked2[i].size());
-
-		}
-		printf("----------------------------------------------------------------\n");
-
-
-
-
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/*
 		 0 - Number of FAcarry
 		 1 - Number of FAsum
@@ -530,16 +43,16 @@ namespace AGGREGATION{
 		printf("[AGG] -- SEARCHING FOR ADDERS -------------------------------\n");
 
 		//Get the hashmap of circuit names to function tt
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
+		std::map<unsigned long long, std::string>::iterator it;
+		std::map<unsigned long long, std::string> hmap;
 		cf->getHashMap(hmap);
 
 
 		//Find all or gate function tt
-		std::vector<unsigned long> xorFunction;
-		std::vector<unsigned long> andFunction;
-		std::vector<unsigned long> faCarry;
-		std::vector<unsigned long> faSum;
+		std::vector<unsigned long long> xorFunction;
+		std::vector<unsigned long long> andFunction;
+		std::vector<unsigned long long> faCarry;
+		std::vector<unsigned long long> faSum;
 		printf(" * Parsing function database for half adder components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("xor") != std::string::npos){
@@ -571,8 +84,8 @@ namespace AGGREGATION{
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
 		cf->getPortMap(pmap);
 
 		//printf("XOR FUNCTIONS: \n");
@@ -717,16 +230,16 @@ namespace AGGREGATION{
 		printf("[AGG] -- SEARCHING FOR DECODERS-------------------------------");
 
 		//Get the hashmap of circuit names to function tt
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
+		std::map<unsigned long long, std::string>::iterator it;
+		std::map<unsigned long long, std::string> hmap;
 		cf->getHashMap(hmap);
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
-		std::vector<unsigned long> andInput;
+		std::vector<unsigned long long> andInput;
 		//possible inputs for decoder, possible outputs for decoder 
 		std::map<std::vector<unsigned>, std::vector<unsigned> > agg;
 		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator iAgg;
@@ -979,17 +492,17 @@ namespace AGGREGATION{
 		printf("[AGG] -- SEARCHING MUXES METHOD 2-------------------------------\n");
 
 		//Get the hashmap of circuit names to function tt
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
+		std::map<unsigned long long, std::string>::iterator it;
+		std::map<unsigned long long, std::string> hmap;
 		cf->getHashMap(hmap);
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
 		//Find all or gate function tt
-		std::vector<unsigned long> orFunction;
+		std::vector<unsigned long long> orFunction;
 		printf(" * Parsing function database for mux components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("or") != std::string::npos && it->second.find("xor") == std::string::npos){
@@ -1431,9 +944,9 @@ namespace AGGREGATION{
 		printf("[AGG] -- SEARCHING FOR MUXES original -------------------------------\n");
 
 		//Functions in hashmap that are mux operations
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
-		std::vector<unsigned long> muxes;
+		std::map<unsigned long long, std::string>::iterator it;
+		std::map<unsigned long long, std::string> hmap;
+		std::vector<unsigned long long> muxes;
 		cf->getHashMap(hmap);
 		printf(" * Parsing function database for multiplexor blocks...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
@@ -1444,7 +957,7 @@ namespace AGGREGATION{
 		printf("Multiplexor Bitslices found in hashmap database: %d\n", (int)muxes.size());
 
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
 		//List of inputs of mux components. Last index is the output
@@ -1566,9 +1079,9 @@ namespace AGGREGATION{
 		printf("[AGG] -- SEARCHING FOR MUXES original -------------------------------\n");
 
 		//Functions in hashmap that are mux operations
-		std::map<unsigned long, std::string>::iterator it;
-		std::map<unsigned long, std::string> hmap;
-		std::vector<unsigned long> muxes;
+		std::map<unsigned long long, std::string>::iterator it;
+		std::map<unsigned long long, std::string> hmap;
+		std::vector<unsigned long long> muxes;
 		cf->getHashMap(hmap);
 		printf(" * Parsing function database for multiplexor blocks...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
@@ -1579,7 +1092,7 @@ namespace AGGREGATION{
 		printf("Multiplexor Bitslices found in hashmap database: %d\n", (int)muxes.size());
 
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
 		cf->getPortMap(pmap);
 
 		//List of inputs of mux components. Last index is the output
@@ -1855,3 +1368,457 @@ namespace AGGREGATION{
 
 }
 #endif
+
+
+
+
+/*
+	void findHA(CutFunction* cf, AIG* aigraph){
+		printf("\n\n\n");
+		printf("[AGG] -- SEARCHING FOR ADDERS-------------------------------");
+		const unsigned long long xor1 = 0x6666666666666666;
+		const	unsigned long long xor2 = 0x9999999999999999;
+
+		//Function, Vector of every set of inputs with that function. Last item is the output node
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		cf->getPortMap(pmap);
+
+		printf(" * Parsing function database for possible Half Adders...");
+		std::map<std::vector<unsigned>, std::vector<unsigned> > faOutput;
+		if(pmap.find(xor1) != pmap.end()){
+			for(unsigned int i = 0; i < pmap[xor1].size(); i++){
+				unsigned int j = 0;
+				//printf("INPUT: ");
+				//for(j = 0; j < pmap[xor1][i]->size()-1; j++){
+				//	printf("%d ", pmap[xor1][i]->at(j));
+				//}
+				//printf("\nOUTPUT:\t%d\n", pmap[xor1][i]->at(j));
+				unsigned outnode = pmap[xor1][i]->at(j);
+
+				//Is there an and gate that has the same inputs as the XOR gate
+				std::vector<unsigned> andindex;
+				andindex = aigraph->findNode(pmap[xor1][i]->at(0), pmap[xor1][i]->at(1));
+				for(unsigned int j = 0; j < andindex.size(); j++){
+					if(aigraph->hasChild(andindex[j], outnode)){
+						//printf("THIS XOR IS A HA- S:%d  CO:%d\n\n", outnode, andindex[j]);
+						//0- Sum, 1- CO
+						std::vector<unsigned > sumCO;
+						sumCO.push_back(outnode);
+						sumCO.push_back(andindex[j]);
+
+						//Inputs
+						std::vector<unsigned> inputs;
+						for(unsigned int k = 0; k < pmap[xor1][i]->size()-1; k++)
+							inputs.push_back(pmap[xor1][i]->at(k));
+
+						faOutput[inputs] = sumCO;
+					}
+				}
+			}
+		}
+
+
+		if(pmap.find(xor2) != pmap.end()){
+			for(unsigned int i = 0; i < pmap[xor2].size(); i++){
+				unsigned int j = 0;
+				//printf("INPUT: ");
+				//for(j = 0; j < pmap[xor2][i]->size()-1; j++){
+				//	printf("%d ", pmap[xor2][i]->at(j));
+				//	}
+
+				//printf("\nOUTPUT:\t%d\n", pmap[xor2][i]->at(j));
+				unsigned outnode = pmap[xor2][i]->at(j);
+
+				//Is there an and gate that has the same inputs as the XOR gate
+				std::vector<unsigned> andindex;
+				andindex = aigraph->findNode(pmap[xor2][i]->at(0), pmap[xor2][i]->at(1));
+				for(unsigned int j = 0; j < andindex.size(); j++){
+					if(aigraph->hasChild(andindex[j], outnode)){
+						//printf("THIS XOR IS A HA- S:%d  CO:%d\n\n", outnode, andindex[j]);
+
+						//0- Sum, 1- CO
+						std::vector<unsigned> sumCO;
+						sumCO.push_back(outnode);
+						sumCO.push_back(andindex[j]);
+
+						//Inputs
+						std::vector<unsigned> inputs;
+						for(unsigned int k = 0; k < pmap[xor2][i]->size()-1; k++)
+							inputs.push_back(pmap[xor2][i]->at(k));
+
+						faOutput[inputs] = sumCO;
+					}
+				}
+			}
+		}
+		printf("done\n");
+
+
+
+		std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator outit;
+			 //printf("\n\nHALF ADDERS\n");
+			// for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+			// printf("INPUTS: ");
+			// for(unsigned int i = 0; i < outit->first.size(); i++)
+			// printf("%d ", outit->first[i]);
+			// printf("\nSUM:%d\tCO:%d\n", outit->second[0], outit->second[1]);
+			 //}
+
+		printf("\n----------------------------------------------------------------\n");
+		printf("Number of Possible Half Adders\t\t%d\n", (int) faOutput.size());
+		printf("----------------------------------------------------------------\n\n");
+
+
+
+
+			// SEARCHING GREY BLOCKS
+
+
+
+
+		printf(" * Parsing function database for Grey Blocks...");
+		const	unsigned long long grey= 0x8c8c8c8c8c8c8c8c;
+		const	unsigned long long grey2= 0x8a8a8a8a8a8a8a8a;
+		const	unsigned long long grey3= 0x0e0e0e0e0e0e0e0e;
+
+		//Function, Vector of every set of inputs with that function. Last item is the output node
+		cf->getPortMap(pmap);
+
+		//List of inputs of sum components. Last index is the output
+		std::vector<std::vector<unsigned> > gPorts;
+
+		if(pmap.find(grey) != pmap.end()){
+			for(unsigned int i = 0; i < pmap[grey].size(); i++){
+				unsigned int j = 0;
+				//printf("INPUT: ");
+				std::vector<unsigned> ports;
+				for(j = 0; j < pmap[grey][i]->size()-1; j++){
+					//printf("%d ", pmap[grey][i]->at(j));
+					ports.push_back(pmap[grey][i]->at(j));
+				}
+				//printf("\nOUTPUT:\t%d\n", pmap[grey][i]->at(j));
+				unsigned outnode = pmap[grey][i]->at(j);
+				ports.push_back(outnode);
+				gPorts.push_back(ports);
+			}
+		}
+
+		if(pmap.find(grey2) != pmap.end()){
+			for(unsigned int i = 0; i < pmap[grey2].size(); i++){
+				unsigned int j = 0;
+				//printf("INPUT: ");
+				std::vector<unsigned> ports;
+				for(j = 0; j < pmap[grey2][i]->size()-1; j++){
+					//printf("%d ", pmap[grey2][i]->at(j));
+					ports.push_back(pmap[grey2][i]->at(j));
+				}
+				//printf("\nOUTPUT:\t%d\n", pmap[grey2][i]->at(j));
+				unsigned outnode = pmap[grey2][i]->at(j);
+				ports.push_back(outnode);
+				gPorts.push_back(ports);
+			}
+		}
+
+		if(pmap.find(grey3) != pmap.end()){
+			for(unsigned int i = 0; i < pmap[grey3].size(); i++){
+				unsigned int j = 0;
+				//printf("INPUT: ");
+				std::vector<unsigned> ports;
+				for(j = 0; j < pmap[grey3][i]->size()-1; j++){
+					//printf("%d ", pmap[grey3][i]->at(j));
+					ports.push_back(pmap[grey3][i]->at(j));
+				}
+				//printf("\nOUTPUT:\t%d\n", pmap[grey3][i]->at(j));
+				unsigned outnode = pmap[grey3][i]->at(j);
+				ports.push_back(outnode);
+				gPorts.push_back(ports);
+			}
+		}
+		printf("done\n");
+
+						//printf("PRINTING GBLOCKS\n");
+						//for(unsigned int j = 0; j < gPorts.size(); j++){
+						//printf("INPUT: ");
+						//unsigned int k = 0;
+						//for(k = 0; k < gPorts[j].size()-1; k++){
+						//printf("%d ", gPorts[j][k]);
+
+						//}
+						//printf("\nOUTPUT:\t%d\n", gPorts[j][k]);
+					//	}
+		printf(" * Aggregating Results...");	
+		//Vector of vector of iterators. (Aggregated adders)
+		std::map<unsigned long long, std::string>::iterator it;
+		std::vector<std::set<unsigned> > marked;
+		int numHA = 0;
+		int numGB = 0;
+
+
+		//For each ha, see if there is a connecting gb
+		for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+			//printf("Checking CO: %d\n", outit->second[1]);
+
+			//Check to see which grey the co goes out to. 
+			for(unsigned int z = 0; z < gPorts.size(); z++){
+				for(unsigned int i = 0; i < gPorts[z].size()-1; i++){
+
+					//If carry out is the same as input to grey block, mark
+					bool foundGB = false;
+					//printf("Comparing %d - %d\n", outit->second[1], gPorts[z][i]);
+					if(outit->second[1] == gPorts[z][i]){
+						for(unsigned int j = 0; j < marked.size(); j++){
+							if(marked[j].find(outit->second[1]) != marked[j].end()){
+								//printf("Cout found in set %d...inserting cout\n\n", j);
+								marked[j].insert(gPorts[z][gPorts[z].size()-1]);
+								foundGB = true;
+								numGB++;
+								break;
+							}
+							else if(marked[j].find(gPorts[z][gPorts[z].size()-1]) != marked[j].end()){
+								//printf("GB not found in set %d...inserting gb output\n\n", j);
+								marked[j].insert(outit->second[1]);
+								foundGB = true;
+								numHA++;
+								break;
+							}
+						}
+						if(!foundGB){
+							//printf("No prev set found, creating new set\n\n");
+							std::set<unsigned> n;
+							n.insert(outit->second[1]);
+							n.insert(gPorts[z][gPorts[z].size()-1]);
+							marked.push_back(n);
+							numHA++;
+							numGB++;
+							break;
+						}
+					}
+
+				}
+			}
+		}
+		printf("done\n");
+
+
+		//This is mainly for carry ripple
+		printf(" * Aggregating carry ripple architecture...");
+		std::set<unsigned>::iterator sit;
+		std::set<unsigned>::iterator sit2;
+		for(unsigned int z = 0; z < gPorts.size(); z++){
+			unsigned gout = gPorts[z][gPorts[z].size()-1];
+			for(unsigned int i = 0; i < gPorts.size(); i++){
+				if(z == i) continue;
+
+				for(unsigned int j = 0; j < gPorts[i].size()-1; j++){
+					//printf("Checking %d to %d\n", gPorts[i][j], gout);
+					if(gout == gPorts[i][j])
+					{
+						//printf("FOUND %d to %d\n", gout, gPorts[i][gPorts[i].size()-1]);
+						int index1 = -1;
+						int index2 = -1;
+						for(unsigned int k = 0; k < marked.size(); k++){
+							if(marked[k].find(gout) != marked[k].end())
+								index1 = k;
+							else if(marked[k].find(gPorts[i][gPorts[i].size()-1]) != marked[k].end())
+								index2 = k;
+						}
+
+						//printf("index1 %d, index2 %d\n", index1, index2);
+						if(index1 != -1 && index2 != -1){
+							//printf("ERASING INDEX %d\n", index1);
+							for(sit = marked[index1].begin(); sit != marked[index1].end(); sit++){
+								marked[index2].insert(*sit);
+							}
+							marked.erase(marked.begin() + index1);
+						}
+					}
+				}
+			}
+		}
+		printf("done\n");
+
+
+
+
+
+		printf("\n\n");
+		printf("[AGG] -- SEARCHING FOR ADDERS USING halfadder_gp BLOCKS-------------------------------\n");
+		std::vector<unsigned long long> hagp;
+		std::map<unsigned long long, std::string> hmap;
+		cf->getHashMap(hmap);
+
+		//find halfadder_gp 
+		printf(" * Parsing function database for possible halfadder_gp Blocks...");
+		for(it = hmap.begin(); it!=hmap.end(); it++){
+			if(it->second.find("halfadder_gp") != std::string::npos)
+				hagp.push_back(it->first);
+		}
+
+		std::vector<std::vector<unsigned> > hagpInSet;
+		for(unsigned int i = 0; i < hagp.size(); i++){
+			if(pmap.find(hagp[i]) != pmap.end()){
+				for(unsigned int j = 0; j < pmap[hagp[i]].size(); j++){
+					unsigned int k = 0;
+					std::vector<unsigned> ports;
+
+					//sort positive inputs (used as key)
+					for(k = 0; k < pmap[hagp[i]][j]->size()-1; k++){
+						unsigned in = pmap[hagp[i]][j]->at(k);
+						ports.push_back(in);
+					}
+					ports.push_back(pmap[hagp[i]][j]->at(k));
+					hagpInSet.push_back(ports);
+				}
+			}
+		}
+		printf("done\n");
+
+
+		std::vector<std::vector<unsigned> > addbitIn;
+		std::vector<std::vector<unsigned> > addbitOut;
+
+		//For each ha, see if there is a halfadder_gp with same input 
+		printf(" * Looking for blocks with similar inputs...");
+		for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+			int inputCount = 0; 
+			for(unsigned int i = 0; i < hagpInSet.size(); i++){
+				//For each input of HAGP, compare INPUT of HA to see if HAGP matches
+				for(unsigned int j = 0; j < hagpInSet[i].size()-1; j++){
+					//for each input of HA
+					for(unsigned int k = 0; k < outit->first.size(); k++){
+						//printf("Comparing %d - %d\n", outit->first[k], hagpInSet[i][j]);
+						if(outit->first[k] == hagpInSet[i][j]){
+							inputCount++;
+							break;
+						}
+					}
+
+					if(inputCount == 2)	break;	
+				}
+
+				if(inputCount == 2){
+					std::vector<unsigned> input;
+					std::vector<unsigned> output;
+					input.push_back(hagpInSet[i][0]);
+					input.push_back(hagpInSet[i][1]);
+					input.push_back(hagpInSet[i][2]);
+
+					output.push_back(outit->second[1]);	
+					output.push_back(hagpInSet[i][3]);
+
+					addbitIn.push_back(input);
+					addbitOut.push_back(output);
+
+					break;	
+				}
+
+			}
+
+			if(inputCount != 2){
+				std::vector<unsigned> input;
+				std::vector<unsigned> output;
+				input.push_back(outit->first[0]);
+				input.push_back(outit->first[1]);
+
+				output.push_back(outit->second[1]);
+				output.push_back(outit->second[0]);
+
+				addbitIn.push_back(input);
+				addbitOut.push_back(output);
+			}
+		}
+		printf("done\n");
+
+			 //printf("Printing ha and hagp set\n");
+			 //for(unsigned int i = 0; i < addbitIn.size(); i++){
+			 //printf("Input:\t");
+			 //for(unsigned int j = 0; j < addbitIn[i].size(); j++){
+			 //printf("%d ", addbitIn[i][j]);
+			 //}
+
+			 //printf("\nOutput:\t");
+			 //for(unsigned int j = 0; j < addbitOut[i].size(); j++){
+			 //printf("%d ", addbitOut[i][j]);
+			 //}
+			 //printf("\n\n");
+
+			 //}
+		//output index 0
+		std::vector<std::set<unsigned> > marked2; 
+
+		printf(" * Aggregating results...\n");
+		for(unsigned int i = 0; i < addbitOut.size(); i++){
+			for(unsigned int j = 0; j < addbitIn.size(); j++){
+				if(i == j) continue;
+				else if(addbitIn[j].size() == 2) continue;
+
+				for(unsigned int k = 0; k < addbitIn[j].size(); k++){
+					bool found = false;
+					//printf("comparing %d %d\n", addbitOut[i][0], addbitIn[j][k]);
+					if(addbitOut[i][0] == addbitIn[j][k] ||
+							addbitOut[i][1] == addbitIn[j][k]){
+						for(unsigned int a = 0; a < marked2.size(); a++){
+							if(marked2[a].find(addbitOut[i][0]) != marked2[a].end()){
+								//printf("found1\n");
+								marked2[a].insert(addbitOut[j][0]);
+								found = true;
+								break;
+							}
+							else if(marked2[a].find(addbitOut[j][0]) != marked2[a].end()){
+								//printf("found2\n");
+								marked2[a].insert(addbitOut[i][0]);
+								found = true;
+								break;
+							}
+						}
+
+						if(!found){
+							//printf("not found...making new set\n");
+							std::set<unsigned> mset;
+							mset.insert(addbitOut[j][0]);
+							mset.insert(addbitOut[i][0]);
+
+							marked2.push_back(mset);
+							break;
+						}
+
+					}
+				}
+			}
+		}
+		printf("done\n");
+
+
+
+
+		printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		printf("\n----------------------------------------------------------------\n");
+		printf("Result Search 1:\n");
+		printf("Number of HA: %d, Number of GB: %d\n", numHA, numGB);
+		printf("Number of possible adders:\t %d\n\n", (int) marked.size());
+		for(unsigned int i = 0; i < marked.size(); i++){
+			int nbit = 0; 
+			for(outit = faOutput.begin(); outit != faOutput.end(); outit++){
+				if(marked[i].find(outit->second[1]) != marked[i].end())
+					nbit++;
+			}
+			printf("   %d-bit adder\n", nbit);
+		}
+
+		printf("----------------------------------------------------------------\n");
+		printf("----------------------------------------------------------------\n");
+		printf("Result Search 2:\n");
+		printf("----------------------------------------------------------------\n");
+
+		for(unsigned int i = 0; i < marked2.size(); i++){
+			printf("   %d-bit adder\n", (int) marked2[i].size());
+
+		}
+		printf("----------------------------------------------------------------\n");
+
+
+
+
+	}
+	*/
+

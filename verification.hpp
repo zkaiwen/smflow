@@ -26,7 +26,7 @@
 
 
 namespace VERIFICATION{
-	bool verifyLUT(unsigned long lutFunction, Graph* lutGraph);
+	bool verifyLUT(unsigned long long lutFunction, Graph* lutGraph);
 
 	bool verifyGraph(Graph* graph){
 		printf("[VER] -- Verifying AIG and GRAPH\n");
@@ -36,7 +36,7 @@ namespace VERIFICATION{
 			return false;
 		}
 
-		const unsigned long tt[10] = {
+		const unsigned long long tt[10] = {
 			0xAAAAAAAAAAAAAAAA,
 			0xCCCCCCCCCCCCCCCC,
 			0xF0F0F0F0F0F0F0F0,
@@ -51,8 +51,8 @@ namespace VERIFICATION{
 		};
 
 		//node vid, function
-		std::map<unsigned int, unsigned long> nodeVal;
-		unsigned long result;
+		std::map<unsigned int, unsigned long long> nodeVal;
+		unsigned long long result;
 
 		//LSB->MSB
 		//Calculate Values for graph
@@ -63,7 +63,7 @@ namespace VERIFICATION{
 			//Prepare inputs for calculation
 			for(unsigned int i = 0; i < cktInputs.size(); i++){
 				nodeVal[cktInputs[i]] = tt[i];
-				printf("INPUT: %d\tVAL: %lx\n", cktInputs[i], tt[i]);
+				printf("INPUT: %d\tVAL: %llx\n", cktInputs[i], tt[i]);
 			}
 
 			std::map<int, Vertex*>::iterator it;
@@ -77,7 +77,7 @@ namespace VERIFICATION{
 
 			unsigned int vlevelSize = vLevel.size();
 			unsigned int maxLevel = graph->getMaxLevel();
-			std::vector<unsigned long> outputResults;
+			std::vector<unsigned long long> outputResults;
 			std::vector<unsigned> outputNode;
 
 			//Calculate outputs for graph
@@ -101,13 +101,13 @@ namespace VERIFICATION{
 						//printf("\n");
 
 						nodeVal[vLevel[i][j]->getID()] = result;
-						//printf("AND NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
+						//printf("AND NODE: %d\tRESULT: %llx\n", vLevel[i][j]->getID(), result);
 					}
 					else if(vLevel[i][j]->getType() == "INV"){
 						result = ~nodeVal[input[0]->getID()];
 						nodeVal[vLevel[i][j]->getID()] = result;
 						//printf("IN: %d \n", input[0]->getID());
-						//printf("INV NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
+						//printf("INV NODE: %d\tRESULT: %llx\n", vLevel[i][j]->getID(), result);
 					}
 					else if(vLevel[i][j]->getType().find("OR") != std::string::npos){
 						result = nodeVal[input[0]->getID()];
@@ -119,7 +119,7 @@ namespace VERIFICATION{
 						//printf("\n");
 
 						nodeVal[vLevel[i][j]->getID()] = result;
-						//printf("OR NODE: %d\tRESULT: %lx\n", vLevel[i][j]->getID(), result);
+						//printf("OR NODE: %d\tRESULT: %llx\n", vLevel[i][j]->getID(), result);
 					}
 
 					if(vLevel[i][j]->getOVSize() == 0){
@@ -131,7 +131,7 @@ namespace VERIFICATION{
 			}
 
 			for(unsigned int i = 0; i < outputResults.size(); i++){
-				printf("NODE: %d\tRESULT  G : %lx\n", outputNode[i], outputResults[i]);
+				printf("NODE: %d\tRESULT  G : %llx\n", outputNode[i], outputResults[i]);
 			}
 			
 
@@ -153,7 +153,7 @@ namespace VERIFICATION{
 			return false;
 		}
 
-		const unsigned long tt[10] = {
+		const unsigned long long tt[10] = {
 			0xAAAAAAAAAAAAAAAA,
 			0xCCCCCCCCCCCCCCCC,
 			0xF0F0F0F0F0F0F0F0,
@@ -166,18 +166,18 @@ namespace VERIFICATION{
 			0x0123456789ABCDEF
 		};
 		for(unsigned int i = 1; i <= aig->getInputSize(); i++){
-			printf("INPUT: %d\tVAL: %lx\n", i*2, tt[i-1]);
+			printf("INPUT: %d\tVAL: %llx\n", i*2, tt[i-1]);
 			printf("GRAPH NODE: %d\n", aig->getGNode(i*2));
 		}
 
 		//node vid, function
-		std::map<unsigned int, unsigned long> nodeVal;
-		unsigned long result;
+		std::map<unsigned int, unsigned long long> nodeVal;
+		unsigned long long result;
 
 		//LSB->MSB
 		//Calculate Values for graph
 		try{
-			std::vector<unsigned long> outputResults;
+			std::vector<unsigned long long> outputResults;
 			std::vector<unsigned> outputNodes;
 
 			//AIG CALCULATION
@@ -199,7 +199,7 @@ namespace VERIFICATION{
 			}
 
 			for(unsigned int i = 0; i < outputResults.size(); i++){
-				printf("NODE: %d\tGNODE: %d\tRESULT AIG: %lx\n", outputNodes[i], aig->getGNode(outputNodes[i]), outputResults[i]);
+				printf("NODE: %d\tGNODE: %d\tRESULT AIG: %llx\n", outputNodes[i], aig->getGNode(outputNodes[i]), outputResults[i]);
 			}
 
 
@@ -210,13 +210,13 @@ namespace VERIFICATION{
 		return true;
 	}
 
-	bool verifyLUT(unsigned long lutFunction, Graph* lutGraph){
+	bool verifyLUT(unsigned long long lutFunction, Graph* lutGraph){
 		//printf("[SEQ] -- Verifying LUT Transformation...");
 
 		//node vid, function
-		std::map<unsigned int, unsigned long> nodeVal;
+		std::map<unsigned int, unsigned long long> nodeVal;
 
-		const unsigned long tt[6] = {
+		const unsigned long long tt[6] = {
 			0xAAAAAAAAAAAAAAAA,
 			0xCCCCCCCCCCCCCCCC,
 			0xF0F0F0F0F0F0F0F0,
@@ -226,7 +226,7 @@ namespace VERIFICATION{
 		};
 
 		const int sizeOffset = 2; //Smallest lut is size 2;
-		const unsigned long maskList[5] = {
+		const unsigned long long maskList[5] = {
 			0xF,
 			0xFF,
 			0xFFFF,
@@ -234,8 +234,8 @@ namespace VERIFICATION{
 			0xFFFFFFFFFFFFFFFF
 		};
 
-		unsigned long mask = maskList[lutGraph->getNumInputs() - sizeOffset];
-		unsigned long result;
+		unsigned long long mask = maskList[lutGraph->getNumInputs() - sizeOffset];
+		unsigned long long result;
 
 		//LSB->MSB
 		try{
@@ -248,13 +248,13 @@ namespace VERIFICATION{
 
 				if(it->second->getType() == "IN"){
 					nodeVal[it->first] = tt[inputIndex];	
-					//printf("NODE: %3d\tRESULT: %lx\n", it->first, tt[inputIndex]);
+					//printf("NODE: %3d\tRESULT: %llx\n", it->first, tt[inputIndex]);
 					inputIndex++;
 				}
 				else if(it->second->getType() == "INV"){
 					result = ~nodeVal[input[0]->getID()];
 					nodeVal[it->first] = result;
-					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+					//printf("NODE: %d\tRESULT: %llx\n", it->first, result);
 				}
 				else if(it->second->getType().find("AND") != std::string::npos){
 					result = nodeVal[input[0]->getID()];
@@ -262,7 +262,7 @@ namespace VERIFICATION{
 						result = result & nodeVal[input[i]->getID()];
 
 					nodeVal[it->first] = result;
-					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+					//printf("NODE: %d\tRESULT: %llx\n", it->first, result);
 				}
 				else if(it->second->getType().find("OR") != std::string::npos){
 					result = nodeVal[input[0]->getID()];
@@ -270,13 +270,13 @@ namespace VERIFICATION{
 						result = result | nodeVal[input[i]->getID()];
 
 					nodeVal[it->first] = result;
-					//printf("NODE: %d\tRESULT: %lx\n", it->first, result);
+					//printf("NODE: %d\tRESULT: %llx\n", it->first, result);
 				}
 				//printf("\n");
 			}
 
 			result = result & mask;
-			//printf("RESULT: %lx\tFUNCTION: %lx\n", result, lutFunction);
+			//printf("RESULT: %llx\tFUNCTION: %llx\n", result, lutFunction);
 			assert(result == lutFunction);
 		}
 		catch(...){

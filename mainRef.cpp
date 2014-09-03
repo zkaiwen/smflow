@@ -34,8 +34,8 @@
 using namespace boost;
 
 //Similarity
-double Jaccard(std::vector<unsigned long>& set1, std::vector<unsigned long>& set2, bool overRef);
-double Dice(std::vector<unsigned long>& set1, std::vector<unsigned long>& set2);
+double Jaccard(std::vector<unsigned long long>& set1, std::vector<unsigned long long>& set2, bool overRef);
+double Dice(std::vector<unsigned long long>& set1, std::vector<unsigned long long>& set2);
 
 //Combinational Cloud
 void getCutGraph(AIG* aigraph, unsigned out, std::vector<unsigned>& in);
@@ -104,14 +104,14 @@ int main( int argc, char *argv[] )
 	int k = 3;                              //k-Cut enumeration value 
 
 	std::ifstream indb;                     //Input stream for reading data base file
-	std::map<std::string, std::set<unsigned long> > pDatabase;
+	std::map<std::string, std::set<unsigned long long> > pDatabase;
 	std::map<std::string, double> similarity;
 
 	//database file name, function count
-	std::map<std::string, std::map<unsigned long, int> >functionCountMap;
-	std::map<std::string, std::map<unsigned long, int> >::iterator fcmit;
+	std::map<std::string, std::map<unsigned long long, int> >functionCountMap;
+	std::map<std::string, std::map<unsigned long long, int> >::iterator fcmit;
 
-	std::map<unsigned long, int>::iterator fcit;
+	std::map<unsigned long long, int>::iterator fcit;
 
 
 	//Option flags
@@ -158,7 +158,7 @@ int main( int argc, char *argv[] )
 		if(circuitName == "END")
 			break;
 
-		std::map<unsigned long, int> functionCount;
+		std::map<unsigned long long, int> functionCount;
 
 		unsigned int size;
 		indb >> size;
@@ -169,7 +169,7 @@ int main( int argc, char *argv[] )
 		printf("SIZE: %d\n", size);
 
 		for(unsigned int i = 0; i < size; i++){
-			unsigned long function;
+			unsigned long long function;
 			int count;
 			indb >>function;
 			indb >>count;
@@ -204,7 +204,7 @@ int main( int argc, char *argv[] )
 	//* Processing Reference circuit for comparison 
 	//**************************************************************************
 	//printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-	std::map<std::string, std::set<unsigned long> > rDatabase;
+	std::map<std::string, std::set<unsigned long long> > rDatabase;
 
 	printStatement("Processing Reference Circuit:\t" + referenceCircuit);
 	Graph* ckt2 = new Graph(referenceCircuit);
@@ -214,7 +214,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&cnt_b, NULL);
 		Graph* copy = new Graph("copy");
 		*copy = *ckt2;
-		SEQUENTIAL::counterIdentification(copy);
+		//SEQUENTIAL::counterIdentification(copy);
 		gettimeofday(&cnt_e, NULL);
 		delete copy;
 	}
@@ -273,8 +273,8 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//TODO compare functions to database
 	//Function, number of nodes with that function
-	std::map<unsigned long, int> functionCount;          //Counter of specific function
-	std::map<unsigned long, int>::iterator fcrefit;
+	std::map<unsigned long long, int> functionCount;          //Counter of specific function
+	std::map<unsigned long long, int>::iterator fcrefit;
 
 	//database circuit name, sim
 	std::map<std::string, double> functionSimilarity;    //Keeps track of how similar two functions are
@@ -299,8 +299,8 @@ int main( int argc, char *argv[] )
 		double refTotalCount = (double) functionCount.size();
 		double refTotal = (double) functionCount.size();
 
-		std::vector<unsigned long> dbvector;
-		std::vector<unsigned long> refvector;
+		std::vector<unsigned long long> dbvector;
+		std::vector<unsigned long long> refvector;
 
 		//For each function in the circuit
 		for(fcit = fcmit->second.begin(); fcit != fcmit->second.end(); fcit++){
@@ -436,13 +436,13 @@ functionCalc->printLibrary();
  *
  *
  *********************************************************************************/
-double Jaccard(std::vector<unsigned long>& set1, std::vector<unsigned long>& set2, bool overRef){
+double Jaccard(std::vector<unsigned long long>& set1, std::vector<unsigned long long>& set2, bool overRef){
 	//printStatement("CALCULATING JACCARD");
 	double unionVal = 0.0;
 	double intersectVal = 0.0;
 
-	std::set<unsigned long> s1, s2, tmp; 
-	std::set<unsigned long>::iterator si1, si2; 
+	std::set<unsigned long long> s1, s2, tmp; 
+	std::set<unsigned long long>::iterator si1, si2; 
 
 	//printf("Size s1: %d\n", set2.size());
 	//printf("Size s2: %d\n", set1.size());
@@ -484,13 +484,13 @@ double Jaccard(std::vector<unsigned long>& set1, std::vector<unsigned long>& set
 
 
 
-double Dice(std::vector<unsigned long>& set1, std::vector<unsigned long>& set2){
+double Dice(std::vector<unsigned long long>& set1, std::vector<unsigned long long>& set2){
 	//printStatement("CALCULATING JACCARD");
 	//double unionVal = 0.0;
 	double intersectVal = 0.0;
 
-	std::set<unsigned long> s1, s2, tmp; 
-	std::set<unsigned long>::iterator si1, si2; 
+	std::set<unsigned long long> s1, s2, tmp; 
+	std::set<unsigned long long>::iterator si1, si2; 
 
 	//printf("Size s1: %d\n", set2.size());
 	//printf("Size s2: %d\n", set1.size());
@@ -614,17 +614,17 @@ void getCutGraph(AIG* aigraph, unsigned out, std::vector<unsigned> in){
    void findFA(CutFunction* cf, AIG* aigraph){
    printf("\n\nSEARCHING FULL ADDERS\n");
 
-   std::map<unsigned long, std::string>::iterator it;
-   std::map<unsigned long, std::string> hmap;
+   std::map<unsigned long long, std::string>::iterator it;
+   std::map<unsigned long long, std::string> hmap;
    cf->getHashMap(hmap);
 
 //Function, Vector of every set of inputs with that function. Last item is the output node
-std::map<unsigned long, std::vector<std::vector<int>*> > pmap;
+std::map<unsigned long long, std::vector<std::vector<int>*> > pmap;
 cf->getPortMap(pmap);
 
 //Functions that are carry and sum operations
-std::vector<unsigned long> carryNodes;
-std::vector<unsigned long> sumNodes;
+std::vector<unsigned long long> carryNodes;
+std::vector<unsigned long long> sumNodes;
 
 for(it = hmap.begin(); it!=hmap.end(); it++){
 if(it->second.find("fulladder_carry") != std::string::npos)

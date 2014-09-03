@@ -269,11 +269,11 @@ s,@INSTALL_SCRIPT@,${INSTALL},;t t
 s,@INSTALL_DATA@,${INSTALL} -m 644,;t t
 s,@PACKAGE@,espresso-ab,;t t
 s,@VERSION@,1.0,;t t
-s,@ACLOCAL@,/local/kaiwen/smflow/external_source/espresso_src/missing aclocal,;t t
-s,@AUTOCONF@,/local/kaiwen/smflow/external_source/espresso_src/missing autoconf,;t t
-s,@AUTOMAKE@,/local/kaiwen/smflow/external_source/espresso_src/missing automake,;t t
-s,@AUTOHEADER@,/local/kaiwen/smflow/external_source/espresso_src/missing autoheader,;t t
-s,@MAKEINFO@,/local/kaiwen/smflow/external_source/espresso_src/missing makeinfo,;t t
+s,@ACLOCAL@,/home/okebz/smflow/external_source/espresso_src/missing aclocal,;t t
+s,@AUTOCONF@,/home/okebz/smflow/external_source/espresso_src/missing autoconf,;t t
+s,@AUTOMAKE@,/home/okebz/smflow/external_source/espresso_src/missing automake,;t t
+s,@AUTOHEADER@,/home/okebz/smflow/external_source/espresso_src/missing autoheader,;t t
+s,@MAKEINFO@,/home/okebz/smflow/external_source/espresso_src/missing makeinfo,;t t
 s,@SET_MAKE@,,;t t
 s,@CC@,gcc,;t t
 s,@CFLAGS@,-g -O2,;t t

@@ -5,7 +5,6 @@ CFLAGS = \
 
 OBJ= \
 		graph.o \
-		graph_b.o \
 		aig.o \
 		cutenumeration.o \
 		cutfunction.o \

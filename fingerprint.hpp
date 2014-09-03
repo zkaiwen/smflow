@@ -26,7 +26,7 @@
 //Counter
 namespace FINGERPRINT{
 	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2);
-	void getMuxFingerprint_naive(std::map<unsigned, std::map<unsigned, unsigned> >& muxes, std::vector<unsigned long>& fingerprint){
+	void getMuxFingerprint_naive(std::map<unsigned, std::map<unsigned, unsigned> >& muxes, std::vector<unsigned long long>& fingerprint){
 		printf("[FINGERPRINT] -- Extracting fingerprint for Multiplexors\n");
 
 		std::map<unsigned, std::map<unsigned, unsigned> >::iterator iMapM;
@@ -53,13 +53,13 @@ namespace FINGERPRINT{
 						bIndex++;
 					}
 
-					fingerprint[bIndex] = fingerprint[bIndex] | (((unsigned long)1)<<(muxbit-1));
+					fingerprint[bIndex] = fingerprint[bIndex] | (((unsigned long long)1)<<(muxbit-1));
 				}
 			}
 	}
 
 
-	void getRegFingerprint_naive(std::map<unsigned, unsigned>& regs, std::vector<unsigned long>& fingerprint){
+	void getRegFingerprint_naive(std::map<unsigned, unsigned>& regs, std::vector<unsigned long long>& fingerprint){
 		printf("[FINGERPRINT] -- Extracting fingerprint for Register\n");
 
 		std::map<unsigned, unsigned>::iterator iMap;
@@ -71,17 +71,17 @@ namespace FINGERPRINT{
 				limit*=2;
 				bIndex++;
 			}
-			fingerprint[bIndex] = fingerprint[bIndex] | (((unsigned long)1)<<(regbit-1));
+			fingerprint[bIndex] = fingerprint[bIndex] | (((unsigned long long)1)<<(regbit-1));
 		}
 	}
 	
 	
-	float tanimoto(std::vector<unsigned long>& f1, std::vector<unsigned long>&f2){
+	float tanimoto(std::vector<unsigned long long>& f1, std::vector<unsigned long long>&f2){
 		//Assert the bitlenght of the two fingerprints are the same
 		assert(f1.size() == f2.size());
 		double N_f1 = 0.0;
 		std::set<unsigned int> f1Pos;
-		unsigned long mask = 1;
+		unsigned long long mask = 1;
 
 		//Count the number of 1's in the first fingerprint
 		for(unsigned int i = 0; i < f1.size(); i++){
@@ -155,6 +155,31 @@ namespace FINGERPRINT{
 		return similarity;
 	}
 	
+
+
+
+	int findMinDistance(std::map<unsigned, unsigned>& data, std::set<unsigned>& marked, unsigned value, std::map<unsigned, unsigned>::iterator& minIt){
+				std::map<unsigned, unsigned>::iterator iMap;
+				int minDiff = 10000;
+
+				for(iMap= data.begin(); iMap!= data.end(); iMap++){
+					//If the difference is greater than window size, continue;
+					int difference = iMap->first - value;
+					if(difference < 0) difference *= -1;
+
+
+					if(difference < minDiff){
+						//Check to see if it has been marked before
+						if(marked.find(iMap->first) != marked.end()) continue;
+						minDiff = difference;
+						minIt = iMap;
+					}
+				}
+				return minDiff;
+
+	}
+
+
 	double tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<unsigned,unsigned>& data2){
 		if(data1.size() == 0 || data2.size() == 0){
 			return -1.0;
@@ -188,32 +213,17 @@ namespace FINGERPRINT{
 		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
 
 			if(marked1.find(iMap->first) == marked1.end()){
-				int minDiff= 10000;
-				iMapF = iMap;
-				iMapF++;
+				int minDistance1 = findMinDistance(data2, marked2, iMap->first, iTemp);
+				int minDistance2 = findMinDistance(data1, marked1, iTemp->first, iMapF);
 
-				for(iMap2= data2.begin(); iMap2!= data2.end(); iMap2++){
-					//If the difference is greater than window size, continue;
-					int difference = iMap2->first - iMap->first;
-					if(difference < 0) difference *= -1;
-
-
-					if(difference < minDiff){
-						//Check to see if it has been marked before
-						if(marked2.find(iMap2->first) != marked2.end()) continue;
-					
-						int differenceF = iMap2->first - iMapF->first;
-						if(differenceF < 0) differenceF *= -1;
-						if(differenceF<difference) continue;
-
-						iTemp = iMap2;
-						minDiff = difference;
-					}
+				//There exists a shorter distance
+				if(iMapF->first != iMap->first){
+					continue;
 				}
-
+				else if(minDistance1 != minDistance2) continue;
 
 				//Similar size found within window
-				if(minDiff <= windowSize){
+				if(minDistance1 <= windowSize){
 					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
 					N_f1f2_ratio += ratio;
 					marked1.insert(iMap->first);
@@ -226,6 +236,7 @@ namespace FINGERPRINT{
 
 		return N_f1f2_ratio / denom;
 	}
+
 	
 	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2){
 		//Assert the bitlenght of the two fingerprints are the same

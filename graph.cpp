@@ -92,7 +92,7 @@ Graph::Graph(const Graph& copy){
 		m_Constants.push_back(copy.m_Constants[i]);
 	}
 
-	std::map<unsigned long, int>::const_iterator itlut;
+	std::map<unsigned long long, int>::const_iterator itlut;
 	for(itlut = copy.m_Luts.begin(); itlut != copy.m_Luts.end(); itlut++){
 		m_Luts[itlut->first] = itlut->second;
 	}
@@ -175,7 +175,7 @@ Graph& Graph::operator=(const Graph& copy){
 		m_Constants.push_back(copy.m_Constants[i]);
 	}
 
-	std::map<unsigned long, int>::const_iterator itlut;
+	std::map<unsigned long long, int>::const_iterator itlut;
 	for(itlut = copy.m_Luts.begin(); itlut != copy.m_Luts.end(); itlut++){
 		m_Luts[itlut->first] = itlut->second;
 	}
@@ -561,7 +561,7 @@ bool Graph::exportGraph(std::string filename){
 		}
 
 		if(it->second->getType().find("LUT") != std::string::npos){
-			//printf("%lx", it->second->getLUT());	
+			//printf("%llx", it->second->getLUT());	
 			ofs<<std::hex<<it->second->getLUT()<<std::dec;
 		}
 		ofs<<"\n";
@@ -932,7 +932,7 @@ std::string Graph::getNodeName(unsigned int node){
 
 
 
-void Graph::getLUTs(std::map<unsigned long, int>& lut){
+void Graph::getLUTs(std::map<unsigned long long, int>& lut){
 	lut = m_Luts;
 }
 
@@ -1156,7 +1156,7 @@ void Graph::print(){
 			printf("%d ", out[i]->getID());
 
 		if(it->second->getType().find("LUT") != std::string::npos){
-			printf("FUNC: %lx", it->second->getLUT());	
+			printf("FUNC: %llx", it->second->getLUT());	
 		}
 
 		printf("\n");

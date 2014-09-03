@@ -99,11 +99,11 @@ int main( int argc, char *argv[] )
 	int k = 4;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
-	std::map<std::string, std::set<unsigned long> > pDatabase;
+	std::map<std::string, std::set<unsigned long long> > pDatabase;
 	std::map<std::string, double> similarity;
 
 	//function, count
-	std::map<unsigned long, int>::iterator fcit;
+	std::map<unsigned long long, int>::iterator fcit;
 
 	//Circuit statistic
 	std::vector<std::map<std::string, int> > stat_compCount;  //Component, count
@@ -441,7 +441,7 @@ int main( int argc, char *argv[] )
 
 
 
-		std::map<unsigned long, int> functionCount;
+		std::map<unsigned long long, int> functionCount;
 		functionCalc->getFunctionCount(functionCount);
 		count.push_back(functionCount.size());
 		/*
@@ -525,9 +525,9 @@ int main( int argc, char *argv[] )
 	//Counting aggregated muxes
 	std::map<unsigned, std::map<unsigned, unsigned> >::iterator iMapM;
 	std::map<unsigned, unsigned>::iterator iMap;
-	std::vector<std::vector<unsigned long> >fpRegs;
-	std::vector<std::vector<unsigned long> >fpMuxes;
-	std::vector<std::vector<unsigned long> >fingerprintList;
+	std::vector<std::vector<unsigned long long> >fpRegs;
+	std::vector<std::vector<unsigned long long> >fpMuxes;
+	std::vector<std::vector<unsigned long long> >fingerprintList;
 	fpRegs.reserve(name.size());
 	fpMuxes.reserve(name.size());
 	fingerprintList.reserve(name.size());
@@ -540,7 +540,7 @@ int main( int argc, char *argv[] )
 
 		//Get fingerprint for mux
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
-		std::vector<unsigned long> fingerprintMux;
+		std::vector<unsigned long long> fingerprintMux;
 		fingerprintMux.resize(12);
 		FINGERPRINT::getMuxFingerprint_naive(stat_muxAgg[i], fingerprintMux);
 		/*
@@ -549,7 +549,7 @@ int main( int argc, char *argv[] )
 		 */
 		fpMuxes.push_back(fingerprintMux);
 
-		std::vector<unsigned long> fingerprint;
+		std::vector<unsigned long long> fingerprint;
 		for(unsigned int k = 0; k < fingerprintMux.size(); k++)
 			fingerprint.push_back(fingerprintMux[k]);
 
@@ -571,7 +571,7 @@ int main( int argc, char *argv[] )
 
 		int totalReg = 0;
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
-		std::vector<unsigned long> fingerprintReg;
+		std::vector<unsigned long long> fingerprintReg;
 		fingerprintReg.resize(4);
 		FINGERPRINT::getRegFingerprint_naive(stat_reg[i], fingerprintReg);
 		fpRegs.push_back(fingerprintReg);
@@ -618,13 +618,13 @@ int main( int argc, char *argv[] )
 		printf("\nMux Fingerprint:\t");
 		//for(unsigned int i = fingerprintMux.size() - 1; i >= 0; i--){
 		for(unsigned int i =  0; i < fingerprintMux.size(); i++){
-			printf("%lx ", fingerprintMux[i]);
+			printf("%llx ", fingerprintMux[i]);
 		}
 		printf("\n");
 
 		printf("Register fingerprint:\t");
 		for(unsigned int i =  0; i < fingerprintReg.size(); i++){
-			printf("%lx ", fingerprintReg[i]);
+			printf("%llx ", fingerprintReg[i]);
 		}
 		printf("\n");
 	}

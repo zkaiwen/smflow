@@ -37,7 +37,7 @@ class Graph
 		std::vector<int> m_Constants;                //Constants of circuit
 		
 		//function, node
-		std::map<unsigned long, int> m_Luts;         //LUTs of circuits
+		std::map<unsigned long long, int> m_Luts;         //LUTs of circuits
 
 		//node, name
 		std::map<int, std::string> m_NodeName;       //Name of node
@@ -78,7 +78,7 @@ class Graph
 		int getLast();
 		unsigned int getMaxLevel();
 		std::string getName();
-		void getLUTs(std::map<unsigned long, int>&);
+		void getLUTs(std::map<unsigned long long, int>&);
 		int getNumNets();
 		std::string getNodeName(unsigned int);
 
