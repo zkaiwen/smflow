@@ -169,41 +169,58 @@ namespace FINGERPRINT{
 		std::map<unsigned, unsigned>::iterator iMap;
 		std::map<unsigned, unsigned>::iterator iMap2;
 		std::map<unsigned, unsigned>::iterator iTemp;
+		std::map<unsigned, unsigned>::iterator iMapF;
 		const int windowSize = 5;
+		std::set<unsigned> marked1;
+		std::set<unsigned> marked2;
 
 		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
 			iTemp = data2.find(iMap->first);	
+
 			if(iTemp != data2.end()){
 				double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
 				N_f1f2_ratio += ratio;
+				marked1.insert(iMap->first);
+				marked2.insert(iTemp->first);
 			}
-			else{
+		}
+
+		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
+
+			if(marked1.find(iMap->first) == marked1.end()){
 				int minDiff= 10000;
+				iMapF = iMap;
+				iMapF++;
+
 				for(iMap2= data2.begin(); iMap2!= data2.end(); iMap2++){
+					//If the difference is greater than window size, continue;
 					int difference = iMap2->first - iMap->first;
 					if(difference < 0) difference *= -1;
-				
-					if(difference > windowSize) continue;
+
 
 					if(difference < minDiff){
-						//If the size
-						if(data2.find(iMap->first) != data2.end()) continue;
+						//Check to see if it has been marked before
+						if(marked2.find(iMap2->first) != marked2.end()) continue;
+					
+						int differenceF = iMap2->first - iMapF->first;
+						if(differenceF < 0) differenceF *= -1;
+						if(differenceF<difference) continue;
 
 						iTemp = iMap2;
 						minDiff = difference;
 					}
-					else break;
 				}
 
 
 				//Similar size found within window
-				if(minDiff != 10000){
+				if(minDiff <= windowSize){
 					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
 					N_f1f2_ratio += ratio;
+					marked1.insert(iMap->first);
+					marked2.insert(iTemp->first);
 				}
 			}
 		}
-
 		double denom = (N_f1+N_f2-N_f1f2_ratio);
 		if(denom == 0.0)	return 0.0;
 
