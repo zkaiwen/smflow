@@ -321,6 +321,35 @@ int main( int argc, char *argv[] )
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
 
+		std::list<unsigned> out;
+		std::set<unsigned> in;
+		in.insert(2);
+		in.insert(4);
+		in.insert(6);
+		in.insert(8);
+		in.insert(10);
+		in.insert(12);
+		in.insert(14);
+		in.insert(16);
+		out.push_back(34);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		out.push_back(62);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		out.push_back(74);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		out.push_back(72);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+		out.push_back(80);
+		aigraph->printSubgraph(out, in);
+		out.clear();
+
+
+
+
 
 
 
@@ -328,6 +357,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
+		cut->print();
 
 		//Find input cut for FF nodes----------------------------
 		std::vector<unsigned> nodes;

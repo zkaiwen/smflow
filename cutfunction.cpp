@@ -228,12 +228,14 @@ void CutFunction::preProcessLibrary(std::string fileName){
 void CutFunction::processAIGCuts(bool np){
 	printf("[CutFunction] -- Calculating Function of Cuts\n");
 
+	m_AIG->printMap();
+	m_AIG->print();
 	//Go through each node and process all the cuts
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
 		unsigned node = i * 2; //AIG FORMAT Evens are the nodes, Odds are inv 
-		//printf("################################################################################\n");
-		//printf("--------------------------------\nProcessing node %d\n", node);
+		printf("################################################################################\n");
+		printf("--------------------------------\nProcessing node %d\n", node);
 		std::list<std::set<unsigned> > cutList;
 		std::list<std::set<unsigned> >::iterator cuts;
 
@@ -260,7 +262,7 @@ void CutFunction::processAIGCuts(bool np){
 				unsigned long long input = m_Xval[permVal];
 
 				m_NodeValue[*cutIT] = input;
-				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+				printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 				gateInputs->push_back(*cutIT);
 
 				pIndex++;		
@@ -271,7 +273,7 @@ void CutFunction::processAIGCuts(bool np){
 			calculate(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
-			//printf("FUNCTION: %x\tNEGATE:: %x\n",  functionVal, negateVal);
+			printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
 
 			//Check to see if the function is a primitive/in the library
 			if(m_HashTable.find(functionVal) == m_HashTable.end()){
