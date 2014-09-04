@@ -284,6 +284,7 @@ void CutFunction::processAIGCuts(bool np){
 						continue;
 					}
 
+					printf("FUNCTION FOUND!*******************************\n");
 					m_NodeFunction[negateVal].insert(node);
 					gateInputs->push_back(node);
 					m_PortMap[negateVal].push_back(gateInputs);
@@ -297,6 +298,7 @@ void CutFunction::processAIGCuts(bool np){
 					continue;
 				}
 
+				printf("FUNCTION FOUND!*******************************\n");
 				m_NodeFunction[functionVal].insert(node);
 				gateInputs->push_back(node);
 				m_PortMap[functionVal].push_back(gateInputs);

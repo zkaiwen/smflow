@@ -129,7 +129,7 @@ void CutEnumeration::findKFeasibleCuts(unsigned int k ){
 		unsigned node = 2*i;
 		std::set<unsigned> singleCut;
 		singleCut.insert(node);
-		//	printf("\n\nCURRENT AND NODE: %d\n", node);
+		printf("\n\nCURRENT AND NODE: %d ####################################### %d\n", node, node);
 
 		//Fix Negative edges for cuts
 		int node1, node2;
@@ -254,8 +254,6 @@ void CutEnumeration::merge(std::list<std::set<unsigned> >& cutSet1, std::list<st
 
 
 
-			//printf(";CurrentSet\n");
-			//printSet(currentSet);
 			//Check to make sure the number of cuts is less than k
 			if(kFeasibility <= m_K){
 				//CUT1 OR CUT2
@@ -265,9 +263,18 @@ void CutEnumeration::merge(std::list<std::set<unsigned> >& cutSet1, std::list<st
 				//printf("Verifying Feasibility...");
 				if(currentSet.size() > m_K) continue;
 				//printf("verified\n");
+			
+			printf("\nCUT1:       ");
+			printSet(*cut1);
+			printf("CUT2:       ");
+			printSet(*cut2);
+			printf("CurrentSet: ");
+			printSet(currentSet);
 
 				bool isExists = false;
 				unsigned resultSig = calculateSignature(currentSet);
+			printf("SIG1 : %8x\n", signature1);
+			printf("SIG2 : %8x\n", signature2);
 
 				//See if set is already in result
 				std::map<unsigned, std::list<std::list<std::set<unsigned> >::iterator> >::iterator iMap;
@@ -290,26 +297,69 @@ void CutEnumeration::merge(std::list<std::set<unsigned> >& cutSet1, std::list<st
 					for(iMap = resultSigMap.begin(); iMap != resultSigMap.end(); iMap++){
 						//Check for dominance
 						unsigned sigAnd = resultSig & iMap->first;
+						printf("SIGCS: %8x\n", resultSig);
+						printf("SIGRS: %8x\n", iMap->first);
+						
 						//printf("Checking Dominance\n");
-						if(sigAnd == resultSig){
-							//If contained within sig2 or sig1, check for dominance
-							//printf("Keep currentSet...find dominating\n");
-							unsigned count = 0; 
+						if(sigAnd == resultSig && sigAnd == iMap->first){
+							int foundDom = false;
 							for(iListS = iMap->second.begin(); iListS != iMap->second.end(); iListS++){
+								if((*iListS)->size() < currentSet.size()){
+								unsigned count = 0; 
+								for(iSet = currentSet.begin(); iSet != currentSet.end(); iSet++){
+									if((*iListS)->find(*iSet) != (*iListS)->end())
+										count++;
+								}
+								if(count == (*iListS)->size()){
+									printf("SIG2 DOM SIG1: Not storing cut in result\n");
 
+									isExists = true;
+									foundDom = true;
+									break;
+								}
+
+								}
+								else{
+								unsigned count = 0; 
 								for(iSet = (*iListS)->begin(); iSet != (*iListS)->end(); iSet++){
 									if(currentSet.find(*iSet) != currentSet.end())
 										count++;
 								}
 
 								if(count == (*iListS)->size()){
-									//if(found)printf("SIG1 DOM SIG2\n");
+									printf("SIG1 DOM SIG2\n");
+									printf("REMOVING SET FROM RESULT: ");
+									printSet(*(*iListS));
 									result.erase((*iListS));
 									iMap->second.erase(iListS);
 									break;
 								}
 
+								}
 							}
+							if(foundDom) break;
+
+						}
+						if(sigAnd == resultSig){
+							//If contained within sig2 or sig1, check for dominance
+							//printf("Keep currentSet...find dominating\n");
+							for(iListS = iMap->second.begin(); iListS != iMap->second.end(); iListS++){
+								unsigned count = 0; 
+								for(iSet = (*iListS)->begin(); iSet != (*iListS)->end(); iSet++){
+									if(currentSet.find(*iSet) != currentSet.end())
+										count++;
+								}
+
+								if(count == (*iListS)->size()){
+									printf("SIG1 DOM SIG2\n");
+									printf("REMOVING SET FROM RESULT: ");
+									printSet(*(*iListS));
+									result.erase((*iListS));
+									iMap->second.erase(iListS);
+									break;
+								}
+							}
+
 							if(isExists) break;
 						}
 
@@ -323,7 +373,8 @@ void CutEnumeration::merge(std::list<std::set<unsigned> >& cutSet1, std::list<st
 										count++;
 								}
 								if(count == (*iListS)->size()){
-									//if(found)printf("SIG2 DOM SIG1\n");
+									printf("SIG2 DOM SIG1: Not storing cut in result\n");
+
 									isExists = true;
 									foundDom = true;
 									break;
@@ -336,6 +387,7 @@ void CutEnumeration::merge(std::list<std::set<unsigned> >& cutSet1, std::list<st
 
 				//If set does not exist, put it result
 				if(!isExists){
+					printf("STORING CURRENT SET IN RESULTS\n");
 					result.push_back(currentSet);
 					r = result.end();
 					r--;
@@ -410,7 +462,7 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
 	std::set<unsigned>::iterator iList;
-
+/*
 	for(iMap = m_Cuts2.begin(); iMap != m_Cuts2.end(); iMap++){
 		printf("FFOUT: %5d Size: %3d\t", iMap->first, (int)iMap->second.size());
 		for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
@@ -418,6 +470,7 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 		}
 		printf("\n");
 	}
+	*/
 }
 
 

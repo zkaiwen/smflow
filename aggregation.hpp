@@ -77,11 +77,11 @@ namespace AGGREGATION{
 			else if(it->second.find("faSum") != std::string::npos){
 				faSum.push_back(it->first);
 			}
-			else if(it->second.find("haCarry") != std::string::npos){
-				faCarry.push_back(it->first);
+			else if(it->second.find("haCarry2") != std::string::npos){
+				haCarry2.push_back(it->first);
 			}
-			else if(it->second.find("haSum") != std::string::npos){
-				faSum.push_back(it->first);
+			else if(it->second.find("haSum2") != std::string::npos){
+				haSum2.push_back(it->first);
 			}
 		}
 
