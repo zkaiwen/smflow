@@ -117,7 +117,7 @@ void GraphBoost::print(){
 		printf("SRC: %4d\tDEST: ", i);
 		vertex_t v = vertex(i, circuit);
 		for(boost::tie(it, adj_end) = adjacent_vertices(v, circuit);  it != adj_end; it++){
-			printf("%lu ", *it);
+			printf("%llu ", *it);
 		}
 		
 		printf("\n");
