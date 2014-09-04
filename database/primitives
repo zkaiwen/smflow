@@ -1,1 +1,11 @@
 circuits/g/primitive/haSum2bit.g
+circuits/g/primitive/haCarry2bit.g
+circuits/g/primitive/faSum2bit.g
+circuits/g/primitive/faCarry2bit.g
+circuits/g/primitive/faSum.g
+circuits/g/primitive/faCarry.g
+circuits/g/primitive/or2.g
+circuits/g/primitive/or3.g
+circuits/g/primitive/or4.g
+circuits/g/primitive/xor2.g
+circuits/g/primitive/mux3.g

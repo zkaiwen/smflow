@@ -664,7 +664,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
 	ckt->setLevels();
-	ckt->print();
 
 	//Order the vertices by level
 	std::map<int, std::vector<Vertex*> > vLevel;
@@ -684,7 +683,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else{
 			unsigned int input= create_input();
 			m_GateMap[vLevel[0][i]->getID()] = input; 
-			//printf("INPUT:  %d\tAIG: %u\n", vLevel[0][i]->getID(),input);
+			printf("INPUT:  %d\tAIG: %u NAME: %s\n", vLevel[0][i]->getID(),input, vLevel[0][i]->getName().c_str());
 		}
 	}
 
@@ -731,7 +730,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				if(vertex->getOVSize() == 0 ){
 					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
-					printf("OUTPUTINV : GID: %d AIG: %d\n", vertexID, m_GateMap[vertexID]);
+					printf("OUTPUTINV : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
 				}
 				continue;
 			}

@@ -109,6 +109,7 @@ class AIG{
 
 		//Print	
 		void print();
+		void printOutputs();
 		void printHash();
 		void printMap();
 

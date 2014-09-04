@@ -217,7 +217,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&rlut_e, NULL); //--------------------------------------------
 		printf(" * Replaced %d LUTs\n", numLUTs);
 		stat_numLUTs.push_back(numLUTs);
-
+		
 
 
 		//Count the number of specific components
@@ -321,6 +321,7 @@ int main( int argc, char *argv[] )
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
 
+/*
 		std::list<unsigned> out;
 		std::set<unsigned> in;
 		in.insert(2);
@@ -346,6 +347,7 @@ int main( int argc, char *argv[] )
 		out.push_back(80);
 		aigraph->printSubgraph(out, in);
 		out.clear();
+		*/
 
 
 
@@ -357,7 +359,6 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
-		cut->print();
 
 		//Find input cut for FF nodes----------------------------
 		std::vector<unsigned> nodes;
@@ -462,6 +463,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
 
+		aigraph->printOutputs();
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
 		std::vector<unsigned> addResult;
 		AGGREGATION::findAdder(functionCalc, aigraph, addResult);

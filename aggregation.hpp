@@ -528,12 +528,12 @@ namespace AGGREGATION{
 
 
 
+		/*
 		printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		printf("\n----------------------------------------------------------------\n");
 		printf("Result Search:\n");
 		printf("----------------------------------------------------------------\n");
 		printf("----------------------------------------------------------------\n");
-		/*
 			 std::list<unsigned> queue;
 			 queue.push_back(2496);
 			 queue.push_back(2480);
@@ -602,7 +602,7 @@ namespace AGGREGATION{
 
 		//Find all or gate function tt
 		std::vector<unsigned long long> orFunction;
-		printf(" * Parsing function database for mux components...\n");
+		printf(" * Parsing function database for mux components...");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("or") != std::string::npos && it->second.find("xor") == std::string::npos){
 				orFunction.push_back(it->first);
@@ -644,7 +644,7 @@ namespace AGGREGATION{
 
 
 		//Verify inputs are negated
-		printf("\n\n * Verifying negated inputs of OR...");
+		printf(" * Verifying negated inputs of OR...");
 		orinit = orIn.begin();
 		oroutit = orOut.begin();
 
@@ -1024,12 +1024,14 @@ namespace AGGREGATION{
 
 		std::map<unsigned,std::map<unsigned, unsigned> >::iterator iMapM;
 		std::map<unsigned,unsigned>::iterator iMap;
+		/*
 		for(iMapM = sizeCountMap.begin(); iMapM != sizeCountMap.end(); iMapM++){
 
 			printf("\t%d-1 MUX:\n", iMapM->first);
 			for(iMap = iMapM->second.begin(); iMap != iMapM->second.end(); iMap++)
 				printf("\t\t%4d-Bit Mux %7d\n", iMap->first, iMap->second);
 		}
+		*/
 
 
 	}

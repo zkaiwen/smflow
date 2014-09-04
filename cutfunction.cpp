@@ -228,8 +228,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 void CutFunction::processAIGCuts(bool np){
 	printf("[CutFunction] -- Calculating Function of Cuts\n");
 
-	m_AIG->printMap();
-	m_AIG->print();
 	//Go through each node and process all the cuts
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
@@ -262,15 +260,20 @@ void CutFunction::processAIGCuts(bool np){
 				unsigned long long input = m_Xval[permVal];
 
 				m_NodeValue[*cutIT] = input;
-				printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 				gateInputs->push_back(*cutIT);
 
 				pIndex++;		
 			}
 
+			printf("\nCUT: ");
+			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
+				printf("%d ", *cutIT);
+			printf("\n");
+
 
 			//Calculate the output at each node up to the current node
-			calculate(node);
+			calculate2(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
 			printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
