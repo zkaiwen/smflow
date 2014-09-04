@@ -664,6 +664,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
 	ckt->setLevels();
+	ckt->print();
 
 	//Order the vertices by level
 	std::map<int, std::vector<Vertex*> > vLevel;
@@ -730,6 +731,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				if(vertex->getOVSize() == 0 ){
 					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
+					printf("OUTPUTINV : GID: %d AIG: %d\n", vertexID, m_GateMap[vertexID]);
 				}
 				continue;
 			}
@@ -744,6 +746,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				//printf("NO OUTPUT\n");
 				m_Outputs.push_back(m_GateMap[vertex->getID()]);
 				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
+				printf("OUTPUT: GID: %d AIG: %d\n", vertex->getID(), m_GateMap[vertex->getID()]);
 			}
 			//printf("\n");
 		}
@@ -853,11 +856,11 @@ bool AIG::handleFF(int node, Graph* ckt){
 unsigned AIG::create_and2(unsigned e1, unsigned e2){
 	//Structural Hashing/FOLDING
 	if(e1 == 0){
-		//printf("FOLD e1 = 0\n"); 
+		printf("FOLD e1 = 0\n"); 
 		return 0;
 	}
 	if(e2 == 0){
-		//printf("FOLD e2 = 0\n");
+		printf("FOLD e2 = 0\n");
 		return 0; 
 	}
 	if(e1 == 1){
@@ -868,13 +871,13 @@ unsigned AIG::create_and2(unsigned e1, unsigned e2){
 		//printf("FOLD e2 = 1\n");
 		return e1;
 	}
-	if((e1& 0xFFFFFFFE) == (e2 & 0xFFFFFFFE)){
-		//printf("FOLD e1 = -e2: %d %d \n", e1, e2);
-		return 0;
-	}
 	if(e1 == e2){
 		//printf("FOLD e1 = e2 \n");
 		return e1;
+	}
+	if(((e1& 0xFFFFFFFE) == e2) || ((e2 & 0xFFFFFFFE) == e1)){
+		printf("FOLD e1 = -e2: %d %d \n", e1, e2);
+		return 0;
 	}
 
 	std::vector<unsigned> key;
@@ -965,6 +968,14 @@ void AIG::print(){
 	printf("\nAnd Gates:\n");
 	for(unsigned int i = 0; i < m_Aiger->num_ands; i++)
 		printf("%u - %u %u\n", m_Aiger->ands[i].lhs, m_Aiger->ands[i].rhs0, m_Aiger->ands[i].rhs1);	
+}
+
+
+void AIG::printOutputs(){
+	printf("\nOutputs:\n");
+	for(unsigned int i = 0; i < m_Aiger->num_outputs; i++){
+		printf("%u ", m_Aiger->outputs[i].lit);	
+	}
 }
 		
 		
