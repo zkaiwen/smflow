@@ -1,0 +1,6 @@
+circuits/g/primitive/
+circuits/reverse/ae18_core.g
+circuits/reverse/cpu8080.g
+circuits/reverse/mips_16_core_top.g
+circuits/reverse/oc8051_top.g
+circuits/reverse/Open8_CPU.g
