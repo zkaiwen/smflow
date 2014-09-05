@@ -1124,13 +1124,13 @@ void Graph::print(){
 		printf("\n");
 		}*/
 	std::map<std::string, int>::iterator it2;
-	printf("Inputs:\n");	
+	printf("Inputs:\tSIZE:%d\n", (int)m_Inputs.size());	
 	for(it2 = m_Inputs.begin(); it2 != m_Inputs.end(); it2++){
 		printf("%s:%d   ", it2->first.c_str(), it2->second);
 	}
 
 
-	printf("\nOutputs:\n");	
+	printf("\nOutputs:\tSIZE:%d\n", (int)m_Outputs.size());	
 	for(it2 = m_Outputs.begin(); it2 != m_Outputs.end(); it2++){
 		printf("%s:%d   ", it2->first.c_str(), it2->second);
 	}

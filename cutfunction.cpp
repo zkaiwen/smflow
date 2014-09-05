@@ -232,8 +232,8 @@ void CutFunction::processAIGCuts(bool np){
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
 		unsigned node = i * 2; //AIG FORMAT Evens are the nodes, Odds are inv 
-		printf("################################################################################\n");
-		printf("--------------------------------\nProcessing node %d\n", node);
+		//printf("################################################################################\n");
+		//printf("--------------------------------\nProcessing node %d\n", node);
 		std::list<std::set<unsigned> > cutList;
 		std::list<std::set<unsigned> >::iterator cuts;
 
@@ -265,18 +265,19 @@ void CutFunction::processAIGCuts(bool np){
 
 				pIndex++;		
 			}
-
+/*
 			printf("\nCUT: ");
 			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
 				printf("%d ", *cutIT);
 			printf("\n");
+			*/
 
 
 			//Calculate the output at each node up to the current node
 			calculate2(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
-			printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
+			//printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
 
 			//Check to see if the function is a primitive/in the library
 			if(m_HashTable.find(functionVal) == m_HashTable.end()){
@@ -287,7 +288,7 @@ void CutFunction::processAIGCuts(bool np){
 						continue;
 					}
 
-					printf("FUNCTION FOUND!*******************************\n");
+					//printf("FUNCTION FOUND!*******************************\n");
 					m_NodeFunction[negateVal].insert(node);
 					gateInputs->push_back(node);
 					m_PortMap[negateVal].push_back(gateInputs);
@@ -301,7 +302,7 @@ void CutFunction::processAIGCuts(bool np){
 					continue;
 				}
 
-				printf("FUNCTION FOUND!*******************************\n");
+				//printf("FUNCTION FOUND!*******************************\n");
 				m_NodeFunction[functionVal].insert(node);
 				gateInputs->push_back(node);
 				m_PortMap[functionVal].push_back(gateInputs);

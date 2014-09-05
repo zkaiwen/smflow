@@ -320,7 +320,6 @@ int main( int argc, char *argv[] )
 		stat_aigSize.push_back(aigraph->getSize());
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
-
 /*
 		std::list<unsigned> out;
 		std::set<unsigned> in;
@@ -332,19 +331,7 @@ int main( int argc, char *argv[] )
 		in.insert(12);
 		in.insert(14);
 		in.insert(16);
-		out.push_back(34);
-		aigraph->printSubgraph(out, in);
-		out.clear();
-		out.push_back(62);
-		aigraph->printSubgraph(out, in);
-		out.clear();
-		out.push_back(74);
-		aigraph->printSubgraph(out, in);
-		out.clear();
-		out.push_back(72);
-		aigraph->printSubgraph(out, in);
-		out.clear();
-		out.push_back(80);
+		out.push_back(176);
 		aigraph->printSubgraph(out, in);
 		out.clear();
 		*/

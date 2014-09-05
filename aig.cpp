@@ -659,7 +659,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 
 
-
 	/******************************************************
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
@@ -855,23 +854,23 @@ bool AIG::handleFF(int node, Graph* ckt){
 unsigned AIG::create_and2(unsigned e1, unsigned e2){
 	//Structural Hashing/FOLDING
 	if(e1 == 0){
-		printf("FOLD e1 = 0\n"); 
+		//printf("FOLD e1 = 0\n"); 
 		return 0;
 	}
 	if(e2 == 0){
-		printf("FOLD e2 = 0\n");
+		//printf("FOLD e2 = 0\n");
 		return 0; 
 	}
 	if(e1 == 1){
-		//printf("FOLD e1 = 1\n");
+		printf("FOLD e1 = 1\n");
 		return e2;
 	}
 	if(e2 == 1){
-		//printf("FOLD e2 = 1\n");
+		printf("FOLD e2 = 1\n");
 		return e1;
 	}
 	if(e1 == e2){
-		//printf("FOLD e1 = e2 \n");
+		printf("FOLD e1 = e2 \n");
 		return e1;
 	}
 	if(((e1& 0xFFFFFFFE) == e2) || ((e2 & 0xFFFFFFFE) == e1)){
