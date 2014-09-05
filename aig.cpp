@@ -514,12 +514,14 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			circuitType = orAIGFile_c;
 		else if(gateType.find("MUXF") != std::string::npos)
 			circuitType = s_SourcePrim + "muxf";
+			/*
 		else if(gateType.find("AOI") != std::string::npos)
 			circuitType = aoiAIGFile_c;
 		else if(gateType.find("OAI") != std::string::npos)
 			circuitType = oaiAIGFile_c;
 		else if(gateType.find("MX") != std::string::npos)
 			circuitType = mxAIGFile_c;
+			*/
 		else if (gateType.find("RAM") != std::string::npos
 				|| gateType.find("DSP") != std::string::npos){
 			handleFF(it->first, ckt);	
@@ -560,8 +562,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 			noSub = true;
 		}
-		else if(gateType.find("TINV") != std::string::npos)
-			exit(1);
 		else{
 			printf("Unknown Gate Type\tI%sI\n\n", gateType.c_str());
 			exit(1);
@@ -744,7 +744,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				//printf("NO OUTPUT\n");
 				m_Outputs.push_back(m_GateMap[vertex->getID()]);
 				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
-				printf("OUTPUT: GID: %d AIG: %d\n", vertex->getID(), m_GateMap[vertex->getID()]);
+				printf("OUTPUT : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
 			}
 			//printf("\n");
 		}

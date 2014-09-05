@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
 	timeval add_b, add_e;
 
 	float elapsedTime;
-	int k = 5;                              //k-Cut enumeration value 
+	int k = 6;                              //k-Cut enumeration value 
 
 	std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long long> > pDatabase;
@@ -320,6 +320,9 @@ int main( int argc, char *argv[] )
 		stat_aigSize.push_back(aigraph->getSize());
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
+
+
+
 /*
 		std::list<unsigned> out;
 		std::set<unsigned> in;
@@ -331,7 +334,7 @@ int main( int argc, char *argv[] )
 		in.insert(12);
 		in.insert(14);
 		in.insert(16);
-		out.push_back(176);
+		out.push_back(204);
 		aigraph->printSubgraph(out, in);
 		out.clear();
 		*/

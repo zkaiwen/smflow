@@ -141,8 +141,8 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 		//Make sure there is no more than 5 inputs(32-bit truth table)
 		unsigned int inputSize = m_AIG->getInputSize();
-		if(inputSize > 5){
-			printf("AIG of %s has more than 5 inputs...Skipping\n", file.c_str());
+		if(inputSize > 6){
+			printf("AIG of %s has more than 6 inputs...Skipping\n", file.c_str());
 			delete m_AIG;
 			delete circuit;
 			continue;
@@ -274,7 +274,7 @@ void CutFunction::processAIGCuts(bool np){
 
 
 			//Calculate the output at each node up to the current node
-			calculate2(node);
+			calculate(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
 			//printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
