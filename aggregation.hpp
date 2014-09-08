@@ -116,21 +116,20 @@ namespace AGGREGATION{
 		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
 		cf->getPortMap(pmap);
 
-		//printf("XOR FUNCTIONS: \n");
+		printf("XOR FUNCTIONS: \n");
 		for(unsigned int i = 0; i < xorFunction.size(); i++){
 			iPMAP = pmap.find(xorFunction[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					unsigned int k = 0;
-					//printf("INPUT: ");
+					printf("INPUT: ");
 					std::vector<unsigned> ports;
 					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						//printf("%d ", iPMAP->second[j]->at(k));
+						printf("%d ", iPMAP->second[j]->at(k));
 						ports.push_back(iPMAP->second[j]->at(k));
 					}
-					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
-					//If input is not contained in an already found, store. 
 					unsigned outnode = iPMAP->second[j]->at(k);
 					xorInOut[ports] = outnode;
 				}
@@ -337,6 +336,36 @@ namespace AGGREGATION{
 		}
 		printf("COUNT: %d ************************************************************* %d\n", numhasum3, numhasum3);
 		
+
+		printf("\n\nHACARRY3 FUNCTIONS: \n");
+		int numhacarry3 = 0;
+		for(unsigned int i = 0; i < haCarry3.size(); i++){
+			iPMAP = pmap.find(haCarry3[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+					unsigned int k = 0;
+					printf("INPUT: ");
+					std::vector<unsigned> ports;
+					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
+						printf("%d ", iPMAP->second[j]->at(k));
+						ports.push_back(iPMAP->second[j]->at(k));
+					}
+					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+
+					//If input is not contained in an already found, store. 
+					//unsigned outnode = iPMAP->second[j]->at(k);
+					numhacarry3++;
+				}
+			}
+		}
+		printf("COUNT: %d ************************************************************** %d\n", numhacarry3, numhacarry3);
+
+
+
+
+
+
+		//Aggregate HASUM2
 		printf("\n\nHASUM3 AGG\n");
 		for(unsigned int i = 0; i < haSum3.size(); i++){
 			iPMAP = pmap.find(haSum3[i]);
@@ -479,36 +508,6 @@ namespace AGGREGATION{
 				}
 			}
 		}
-
-		printf("\n\nHACARRY3 FUNCTIONS: \n");
-		int numhacarry3 = 0;
-		for(unsigned int i = 0; i < haCarry3.size(); i++){
-			iPMAP = pmap.find(haCarry3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numhacarry3++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numhacarry3, numhacarry3);
-
-
-
-
-
-
-		//Aggregate HASUM2
 
 
 
