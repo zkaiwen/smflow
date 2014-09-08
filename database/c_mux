@@ -1,14 +1,2 @@
 circuits/g/primitive/
 circuits/testbench/adder4_k_C.cnl
-circuits/testbench/adder4_cr_C.cnl
-circuits/testbench/adder4_74283.cnl
-circuits/testbench/adder4.cnl
-circuits/testbench/adder8.cnl
-circuits/testbench/adder16.cnl
-circuits/testbench/adder8x2.cnl
-circuits/testbench/adder32.cnl
-circuits/testbench/adder64.cnl
-circuits/testbench/adder4_ci.cnl
-circuits/testbench/adder8_ci.cnl
-circuits/testbench/adder16_ci.cnl
-circuits/testbench/adder32_ci.cnl

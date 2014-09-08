@@ -133,6 +133,7 @@ int main( int argc, char *argv[] )
 	std::vector<float> stat_fingerprintTime;
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
+	std::vector<std::map<unsigned, unsigned> > stat_adder;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -354,6 +355,7 @@ int main( int argc, char *argv[] )
 		std::vector<unsigned> nodes;
 		aigraph->getFFInput(nodes);
 		cut->findInputCut(nodes);
+		cut->print();
 
 		//Node, Set of inputs to the node
 		std::map<unsigned, std::set<unsigned> > cutIn;
@@ -454,10 +456,10 @@ int main( int argc, char *argv[] )
 		stat_decAgg.push_back(decoderResult);
 
 		aigraph->printOutputs();
+		std::map<unsigned, unsigned> addResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		std::vector<unsigned> addResult;
 		AGGREGATION::findAdder(functionCalc, aigraph, addResult);
-		stat_addAgg.push_back(addResult);
+		stat_adder.push_back(addResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -619,6 +621,11 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++){
 			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 		}
+		
+		printf("\nAdders\n");
+		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
+			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+		}
 
 
 /*
@@ -677,9 +684,6 @@ int main( int argc, char *argv[] )
 	printf("%8s", "|FF|");
 	printf("%8s", "|MUX|");
 	printf("%8s", "|REG|");
-	printf("%8s", "|FAC|");
-	printf("%8s", "|FAS|");
-	printf("%8s", "|HA|");
 	printf("%8s", "|DSP|");
 	printf("%8s", "|FFL|");
 	printf("%8s", "|MCY|");
@@ -699,9 +703,6 @@ int main( int argc, char *argv[] )
 		printf("%8d", stat_ffSize[i]);
 		printf("%8d", stat_numMux[i]);
 		printf("%8d", stat_numReg[i]);
-		printf("%8d", stat_addAgg[i][0]);
-		printf("%8d", stat_addAgg[i][1]);
-		printf("%8d", stat_addAgg[i][2]);
 		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numFFFeedback[i]);
 		printf("%8d", stat_numMuxcy[i]);
@@ -838,6 +839,27 @@ int main( int argc, char *argv[] )
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			double sim = FINGERPRINT::tanimotoWindow(stat_spCutCountOut[i], stat_spCutCountOut[k]);
+			if(sim >= 0.00)
+				simTable[i][k].push_back(sim);
+			printf("%10.3f", sim*100);
+		}
+		printf("\n");
+	}
+	
+	printf("\nADDER SIMILARITY\n");
+	printf("%-10s", "Circuits");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+	}
+	printf("\n");
+
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim = FINGERPRINT::tanimotoWindow(stat_adder[i], stat_adder[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);

@@ -38,7 +38,7 @@ namespace AGGREGATION{
 		 1 - Number of FAsum
 		 2 - Number of HA
 	 */
-	void findAdder(CutFunction* cf, AIG* aigraph, std::vector<unsigned>& result){
+	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& result){
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING FOR ADDERS -------------------------------\n");
 
@@ -105,6 +105,10 @@ namespace AGGREGATION{
 
 		std::map<std::vector<unsigned>, unsigned> xorInOut;
 		std::set<std::vector<unsigned> > possibleHASet;
+
+		//Aggregation
+		std::vector<std::set<unsigned> > addOutputList;
+		std::vector<std::set<unsigned> > addInputList;
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
@@ -281,8 +285,8 @@ namespace AGGREGATION{
 					}
 					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
+
+
 					numhasum2++;
 				}
 			}
@@ -327,14 +331,155 @@ namespace AGGREGATION{
 					}
 					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
 
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
 					numhasum3++;
 				}
 			}
 		}
 		printf("COUNT: %d ************************************************************* %d\n", numhasum3, numhasum3);
 		
+		printf("\n\nHASUM3 AGG\n");
+		for(unsigned int i = 0; i < haSum3.size(); i++){
+			iPMAP = pmap.find(haSum3[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(unsigned int q = 0; q < addInputList.size(); q++){
+							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									addInputList[q].insert(iPMAP->second[j]->at(w));
+								addOutputList[q].insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(outnode);
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+
+		printf("\n\nHASUM2 AGG\n");
+		for(unsigned int i = 0; i < haSum2.size(); i++){
+			iPMAP = pmap.find(haSum2[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(unsigned int q = 0; q < addInputList.size(); q++){
+							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									addInputList[q].insert(iPMAP->second[j]->at(w));
+								addOutputList[q].insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(outnode);
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+		printf("\n\nFASum AGG\n");
+		for(unsigned int i = 0; i < faSum.size(); i++){
+			iPMAP = pmap.find(faSum[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(unsigned int q = 0; q < addInputList.size(); q++){
+							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									addInputList[q].insert(iPMAP->second[j]->at(w));
+								addOutputList[q].insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(outnode);
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+		
+		printf("\n\nFASum2 AGG\n");
+		for(unsigned int i = 0; i < faSum2.size(); i++){
+			iPMAP = pmap.find(faSum2[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(unsigned int q = 0; q < addInputList.size(); q++){
+							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									addInputList[q].insert(iPMAP->second[j]->at(w));
+								addOutputList[q].insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(outnode);
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+
 		printf("\n\nHACARRY3 FUNCTIONS: \n");
 		int numhacarry3 = 0;
 		for(unsigned int i = 0; i < haCarry3.size(); i++){
@@ -357,6 +502,28 @@ namespace AGGREGATION{
 			}
 		}
 		printf("COUNT: %d ************************************************************** %d\n", numhacarry3, numhacarry3);
+
+
+
+
+
+
+		//Aggregate HASUM2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
 /*
 		printf("\n\nPossible HA: \n");
 		iCout = cout.begin(); 
@@ -373,12 +540,29 @@ namespace AGGREGATION{
 		}
 		*/
 
-		printf("Number of FACarry: %d\n", numFACarry);
-		printf("Number of FASum: %d\n", numFASum);
-		printf("Number of HA     : %d\n", (int)possibleHASet.size());
-		result.push_back(numFACarry);
-		result.push_back(numFASum);
-		result.push_back(possibleHASet.size());
+		
+		printf("%d adders found\n", (int)addInputList.size() + 1);
+		for(unsigned int i = 0; i < addInputList.size(); i++){
+			printf("ADDER SIZE: %d\t\t", (int)addOutputList[i].size());
+
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = addInputList[i].begin(); iSet != addInputList[i].end(); iSet++)
+				printf("%d ", *iSet);
+
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = addOutputList[i].begin(); iSet != addOutputList[i].end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+
+			if(result.find(addOutputList[i].size()) == result.end()){
+				result[addOutputList[i].size()] = 1;
+			}
+			else
+				result[addOutputList[i].size()]++;
+
+		}
 	}
 
 
