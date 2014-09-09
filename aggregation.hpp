@@ -55,6 +55,7 @@ namespace AGGREGATION{
 		std::vector<unsigned long long> faSum;
 		std::vector<unsigned long long> faCarry2;
 		std::vector<unsigned long long> faSum2;
+		std::vector<unsigned long long> faSum3;
 		std::vector<unsigned long long> haCarry2;
 		std::vector<unsigned long long> haSum2;
 		std::vector<unsigned long long> haCarry3;
@@ -67,29 +68,34 @@ namespace AGGREGATION{
 			else if(it->second.find("or2") != std::string::npos){
 				andFunction.push_back(it->first);
 			}
-			else if(it->second.find("faCarry2bit") != std::string::npos){
-				faCarry2.push_back(it->first);
+			else if(it->second.find("faSum3bit") != std::string::npos){
+				faSum3.push_back(it->first);
+				//TODO: May need to check if the A3XORB3 input function is 
+				//      actually an XOR function
 			}
 			else if(it->second.find("faSum2bit") != std::string::npos){
 				faSum2.push_back(it->first);
 			}
-			else if(it->second.find("faCarry") != std::string::npos){
-				faCarry.push_back(it->first);
-			}
 			else if(it->second.find("faSum") != std::string::npos){
 				faSum.push_back(it->first);
 			}
-			else if(it->second.find("haCarry2") != std::string::npos){
-				haCarry2.push_back(it->first);
+			else if(it->second.find("faCarry2bit") != std::string::npos){
+				faCarry2.push_back(it->first);
 			}
-			else if(it->second.find("haSum2") != std::string::npos){
-				haSum2.push_back(it->first);
+			else if(it->second.find("faCarry") != std::string::npos){
+				faCarry.push_back(it->first);
 			}
 			else if(it->second.find("haSum3") != std::string::npos){
 				haSum3.push_back(it->first);
 			}
+			else if(it->second.find("haSum2") != std::string::npos){
+				haSum2.push_back(it->first);
+			}
 			else if(it->second.find("haCarry3") != std::string::npos){
 				haCarry3.push_back(it->first);
+			}
+			else if(it->second.find("haCarry2") != std::string::npos){
+				haCarry2.push_back(it->first);
 			}
 		}
 
@@ -247,6 +253,29 @@ namespace AGGREGATION{
 			}
 		}
 		printf("COUNT: %d ************************************************************** %d\n", numfasum2, numfasum2);
+
+		printf("\n\nFASUM3 FUNCTIONS: \n");
+		int numfasum3 = 0;
+		for(unsigned int i = 0; i < faSum3.size(); i++){
+			iPMAP = pmap.find(faSum3[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+					unsigned int k = 0;
+					printf("INPUT: ");
+					std::vector<unsigned> ports;
+					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
+						printf("%d ", iPMAP->second[j]->at(k));
+						ports.push_back(iPMAP->second[j]->at(k));
+					}
+					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+
+					//If input is not contained in an already found, store. 
+					//unsigned outnode = iPMAP->second[j]->at(k);
+					numfasum3++;
+				}
+			}
+		}
+		printf("COUNT: %d ************************************************************** %d\n", numfasum3, numfasum3);
 
 		printf("\n\nFACARRY2 FUNCTIONS: \n");
 		int numfacarry2 = 0;
@@ -615,10 +644,10 @@ namespace AGGREGATION{
 				}
 			}
 		}
-		/*
-		printf("\n\nFASum AGG\n");
-		for(unsigned int i = 0; i < faSum.size(); i++){
-			iPMAP = pmap.find(faSum[i]);
+		
+		printf("\n\nFASum3 AGG\n");
+		for(unsigned int i = 0; i < faSum3.size(); i++){
+			iPMAP = pmap.find(faSum3[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 
@@ -628,15 +657,17 @@ namespace AGGREGATION{
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
 						inSet.insert(iPMAP->second[j]->at(k));
 
-						for(unsigned int q = 0; q < addInputList.size(); q++){
-							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+						iList2 = addOutputList.begin();
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
 								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									addInputList[q].insert(iPMAP->second[j]->at(w));
-								addOutputList[q].insert(outnode);
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList2->insert(outnode);
 
 								break;
 							}
+							iList2++;
 						}
 
 						if(isAgg) break;
@@ -651,7 +682,6 @@ namespace AGGREGATION{
 				}
 			}
 		}
-		*/
 		
 		printf("\n\nFASum2 AGG\n");
 		for(unsigned int i = 0; i < faSum2.size(); i++){

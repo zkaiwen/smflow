@@ -3,6 +3,7 @@ circuits/g/primitive/haCarry2bit.g
 circuits/g/primitive/haSum3bit.g
 circuits/g/primitive/haCarry3bit.g
 circuits/g/primitive/faSum2bit.g
+circuits/g/primitive/faSum3bit_mod.g
 circuits/g/primitive/faCarry2bit.g
 circuits/g/primitive/faSum.g
 circuits/g/primitive/faCarry.g

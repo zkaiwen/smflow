@@ -317,6 +317,19 @@ namespace FINGERPRINT{
 
 	}
 
+	unsigned hammingDistance(unsigned long func1, unsigned long func2){
+		unsigned hamming = 0;
+		unsigned long xnor = func1 ^ func2;
+		xnor = ~xnor;
+
+		unsigned long mask = 0x1;
+		for(unsigned int i = 0; i < 64; i++)
+			if((mask & xnor) > 0)
+				hamming++;
+
+		return hamming;
+	}
+
 
 
 }
