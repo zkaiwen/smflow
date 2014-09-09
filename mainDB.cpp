@@ -355,7 +355,6 @@ int main( int argc, char *argv[] )
 		std::vector<unsigned> nodes;
 		aigraph->getFFInput(nodes);
 		cut->findInputCut(nodes);
-		cut->print();
 
 		//Node, Set of inputs to the node
 		std::map<unsigned, std::set<unsigned> > cutIn;

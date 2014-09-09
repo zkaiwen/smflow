@@ -107,8 +107,10 @@ namespace AGGREGATION{
 		std::set<std::vector<unsigned> > possibleHASet;
 
 		//Aggregation
-		std::vector<std::set<unsigned> > addOutputList;
-		std::vector<std::set<unsigned> > addInputList;
+		std::list<std::set<unsigned> > addOutputList;
+		std::list<std::set<unsigned> > addInputList;
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::list<std::set<unsigned> >::iterator iList2;
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
@@ -366,6 +368,178 @@ namespace AGGREGATION{
 
 
 		//Aggregate HASUM2
+		printf("\n\nHAcarry3 AGG\n");
+		for(unsigned int i = 0; i < haCarry3.size(); i++){
+			iPMAP = pmap.find(haCarry3[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList1->insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						inSet.insert(outnode);
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+
+		printf("\n\nHAcarry2 AGG\n");
+		for(unsigned int i = 0; i < haCarry2.size(); i++){
+			iPMAP = pmap.find(haCarry2[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList1->insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						inSet.insert(outnode);
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+		
+		printf("\n\nFAcarry2 AGG\n");
+		for(unsigned int i = 0; i < faCarry2.size(); i++){
+			iPMAP = pmap.find(faCarry2[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList1->insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						inSet.insert(outnode);
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+
+		printf("\n\nFAcarry AGG\n");
+		for(unsigned int i = 0; i < faCarry.size(); i++){
+			iPMAP = pmap.find(faCarry[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList1->insert(outnode);
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						inSet.insert(outnode);
+						addInputList.push_back(inSet);
+						std::set<unsigned> outSet;
+						addOutputList.push_back(outSet);
+					}
+				}
+			}
+		}
+
+		//Chcek to see if any of the sets are contained within each other
+		iList1 = addInputList.begin();
+
+		while(iList1 != addInputList.end()){
+			iList2 = iList1;
+			iList2++;
+			while(iList2 != addInputList.end()){
+				std::set<unsigned>::iterator iSet;
+				bool similarSet = false;
+				for(iSet = iList2->begin(); iSet != iList2->end(); iSet++){
+					if(iList1->find(*iSet) != iList1->end()){
+						similarSet = true;
+						break;
+					}
+				}
+				
+				if(similarSet){
+					for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+						iList1->insert(*iSet);
+
+					iList2 = addInputList.erase(iList2);
+				}
+				else iList2++;
+			}
+			iList1++;
+		}
+
+
 		printf("\n\nHASUM3 AGG\n");
 		for(unsigned int i = 0; i < haSum3.size(); i++){
 			iPMAP = pmap.find(haSum3[i]);
@@ -378,15 +552,17 @@ namespace AGGREGATION{
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
 						inSet.insert(iPMAP->second[j]->at(k));
 
-						for(unsigned int q = 0; q < addInputList.size(); q++){
-							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+						iList2 = addOutputList.begin();
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
 								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									addInputList[q].insert(iPMAP->second[j]->at(w));
-								addOutputList[q].insert(outnode);
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList2->insert(outnode);
 
 								break;
 							}
+							iList2++;
 						}
 
 						if(isAgg) break;
@@ -414,15 +590,17 @@ namespace AGGREGATION{
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
 						inSet.insert(iPMAP->second[j]->at(k));
 
-						for(unsigned int q = 0; q < addInputList.size(); q++){
-							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+						iList2 = addOutputList.begin();
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
 								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									addInputList[q].insert(iPMAP->second[j]->at(w));
-								addOutputList[q].insert(outnode);
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList2->insert(outnode);
 
 								break;
 							}
+							iList2++;
 						}
 
 						if(isAgg) break;
@@ -437,6 +615,7 @@ namespace AGGREGATION{
 				}
 			}
 		}
+		/*
 		printf("\n\nFASum AGG\n");
 		for(unsigned int i = 0; i < faSum.size(); i++){
 			iPMAP = pmap.find(faSum[i]);
@@ -472,6 +651,7 @@ namespace AGGREGATION{
 				}
 			}
 		}
+		*/
 		
 		printf("\n\nFASum2 AGG\n");
 		for(unsigned int i = 0; i < faSum2.size(); i++){
@@ -485,15 +665,17 @@ namespace AGGREGATION{
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
 						inSet.insert(iPMAP->second[j]->at(k));
 
-						for(unsigned int q = 0; q < addInputList.size(); q++){
-							if(addInputList[q].find(iPMAP->second[j]->at(k)) !=  addInputList[q].end()){
+						iList2 = addOutputList.begin();
+						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
 								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									addInputList[q].insert(iPMAP->second[j]->at(w));
-								addOutputList[q].insert(outnode);
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList2->insert(outnode);
 
 								break;
 							}
+							iList2++;
 						}
 
 						if(isAgg) break;
@@ -541,25 +723,27 @@ namespace AGGREGATION{
 
 		
 		printf("%d adders found\n", (int)addInputList.size() + 1);
-		for(unsigned int i = 0; i < addInputList.size(); i++){
-			printf("ADDER SIZE: %d\t\t", (int)addOutputList[i].size());
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+
+			printf("ADDER SIZE: %d\t\t", (int)iList2->size());
 
 			std::set<unsigned>::iterator iSet;
 			printf("INPUT: ");
-			for(iSet = addInputList[i].begin(); iSet != addInputList[i].end(); iSet++)
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
 				printf("%d ", *iSet);
 
 
 			printf("\t\tOUTPUT: ");
-			for(iSet = addOutputList[i].begin(); iSet != addOutputList[i].end(); iSet++)
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
 				printf("%d ", *iSet);
 			printf("\n");
 
-			if(result.find(addOutputList[i].size()) == result.end()){
-				result[addOutputList[i].size()] = 1;
+			if(result.find(iList2->size()) == result.end()){
+				result[iList2->size()] = 1;
 			}
 			else
-				result[addOutputList[i].size()]++;
+				result[iList2->size()]++;
 
 		}
 	}
