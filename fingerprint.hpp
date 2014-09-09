@@ -9,7 +9,7 @@
 	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef FIN_GUARD 
-#define SEQ_GUARD
+#define FIN_GUARD
 
 #include <fstream>
 #include <stdlib.h>

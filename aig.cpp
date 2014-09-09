@@ -663,7 +663,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	 ********        PERFORM AIG CALCULATION      **********
 	 *******************************************************/
 	ckt->setLevels();
-	ckt->print();
 
 	//Order the vertices by level
 	std::map<int, std::vector<Vertex*> > vLevel;
@@ -792,7 +791,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			}
 		}
 	}
-	print();
 
 }
 

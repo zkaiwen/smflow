@@ -117,6 +117,8 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> > addInputList;
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::list<std::set<unsigned> >::iterator iList2;
+		std::list<std::set<unsigned> >::iterator iList3;
+		std::list<std::set<unsigned> >::iterator iList4;
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
@@ -427,6 +429,7 @@ namespace AGGREGATION{
 						inSet.insert(outnode);
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						addOutputList.push_back(outSet);
 					}
 				}
@@ -463,6 +466,7 @@ namespace AGGREGATION{
 						inSet.insert(outnode);
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						addOutputList.push_back(outSet);
 					}
 				}
@@ -499,6 +503,7 @@ namespace AGGREGATION{
 						inSet.insert(outnode);
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						addOutputList.push_back(outSet);
 					}
 				}
@@ -535,6 +540,7 @@ namespace AGGREGATION{
 						inSet.insert(outnode);
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						addOutputList.push_back(outSet);
 					}
 				}
@@ -562,10 +568,28 @@ namespace AGGREGATION{
 						iList1->insert(*iSet);
 
 					iList2 = addInputList.erase(iList2);
+					addOutputList.pop_back();
 				}
 				else iList2++;
 			}
 			iList1++;
+		}
+		
+
+		printf("LIST STATUS\n");
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\t\tOUTPUT: ");
+
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			iList2++;
+
 		}
 
 
@@ -600,12 +624,31 @@ namespace AGGREGATION{
 					if(!isAgg){
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						outSet.insert(outnode);
 						addOutputList.push_back(outSet);
 					}
 				}
 			}
 		}
+		
+		printf("LIST STATUS CHECK\n");
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			iList2++;
+
+		}
+
 
 		printf("\n\nHASUM2 AGG\n");
 		for(unsigned int i = 0; i < haSum2.size(); i++){
@@ -638,12 +681,70 @@ namespace AGGREGATION{
 					if(!isAgg){
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						outSet.insert(outnode);
 						addOutputList.push_back(outSet);
 					}
 				}
 			}
 		}
+
+		//Chcek to see if any of the sets are contained within each other
+		iList1 = addInputList.begin();
+		iList3 = addOutputList.begin();
+
+		while(iList1 != addInputList.end()){
+			iList2 = iList1;
+			iList2++;
+			iList4 = iList3;
+			iList4++;
+			while(iList2 != addInputList.end()){
+				std::set<unsigned>::iterator iSet;
+				bool similarSet = false;
+				for(iSet = iList2->begin(); iSet != iList2->end(); iSet++){
+					if(iList1->find(*iSet) != iList1->end()){
+						similarSet = true;
+						break;
+					}
+				}
+				
+				if(similarSet){
+					for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+						iList1->insert(*iSet);
+					
+					for(iSet = iList4->begin(); iSet != iList4->end(); iSet++)
+						iList3->insert(*iSet);
+
+					iList2 = addInputList.erase(iList2);
+					iList4 = addOutputList.erase(iList4);
+				}
+				else {
+					iList2++;
+					iList4++;
+				}
+			}
+			iList1++;
+			iList3++;
+		}
+
+		printf("LIST STATUS CHECK\n");
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			iList2++;
+
+		}
+
+
 		
 		printf("\n\nFASum3 AGG\n");
 		for(unsigned int i = 0; i < faSum3.size(); i++){
@@ -676,12 +777,31 @@ namespace AGGREGATION{
 					if(!isAgg){
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						outSet.insert(outnode);
 						addOutputList.push_back(outSet);
 					}
 				}
 			}
 		}
+		printf("LIST STATUS CHECK\n");
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			iList2++;
+
+		}
+
+
 		
 		printf("\n\nFASum2 AGG\n");
 		for(unsigned int i = 0; i < faSum2.size(); i++){
@@ -714,6 +834,7 @@ namespace AGGREGATION{
 					if(!isAgg){
 						addInputList.push_back(inSet);
 						std::set<unsigned> outSet;
+						outSet.insert(-1);
 						outSet.insert(outnode);
 						addOutputList.push_back(outSet);
 					}
@@ -774,6 +895,8 @@ namespace AGGREGATION{
 			}
 			else
 				result[iList2->size()]++;
+
+			iList2++;
 
 		}
 	}

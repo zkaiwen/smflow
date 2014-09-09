@@ -957,7 +957,7 @@ int main( int argc, char *argv[] )
 				sum += simTable[i][k][q];
 			}
 			
-			printf("%.2f\t", (sum/simTable[i][k].size())*100.0);
+			printf("%.3f\t", (sum/simTable[i][k].size())*100.0);
 
 		}
 		printf("\n");
