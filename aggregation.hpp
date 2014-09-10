@@ -38,6 +38,54 @@ namespace AGGREGATION{
 		 1 - Number of FAsum
 		 2 - Number of HA
 	 */
+	void simplifySet(std::list<std::set<unsigned> >& in, std::list<std::set<unsigned> >& out){
+		//Chcek to see if any of the sets are contained within each other
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::list<std::set<unsigned> >::iterator iList2;
+		std::list<std::set<unsigned> >::iterator iList3;
+		std::list<std::set<unsigned> >::iterator iList4;
+
+		iList1 = in.begin();
+		iList3 = out.begin();
+
+		while(iList1 != in.end()){
+			iList2 = iList1;
+			iList2++;
+			iList4 = iList3;
+			iList4++;
+			while(iList2 != in.end()){
+				std::set<unsigned>::iterator iSet;
+				bool similarSet = false;
+				for(iSet = iList2->begin(); iSet != iList2->end(); iSet++){
+					if(iList1->find(*iSet) != iList1->end()){
+						similarSet = true;
+						break;
+					}
+				}
+				
+				if(similarSet){
+					for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+						iList1->insert(*iSet);
+					
+					for(iSet = iList4->begin(); iSet != iList4->end(); iSet++)
+						iList3->insert(*iSet);
+
+					iList2 = in.erase(iList2);
+					iList4 = out.erase(iList4);
+				}
+				else {
+					iList2++;
+					iList4++;
+				}
+			}
+			iList1++;
+			iList3++;
+		}
+
+	}
+
+
+
 	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& result){
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING FOR ADDERS -------------------------------\n");
@@ -690,42 +738,6 @@ namespace AGGREGATION{
 		}
 
 		//Chcek to see if any of the sets are contained within each other
-		iList1 = addInputList.begin();
-		iList3 = addOutputList.begin();
-
-		while(iList1 != addInputList.end()){
-			iList2 = iList1;
-			iList2++;
-			iList4 = iList3;
-			iList4++;
-			while(iList2 != addInputList.end()){
-				std::set<unsigned>::iterator iSet;
-				bool similarSet = false;
-				for(iSet = iList2->begin(); iSet != iList2->end(); iSet++){
-					if(iList1->find(*iSet) != iList1->end()){
-						similarSet = true;
-						break;
-					}
-				}
-				
-				if(similarSet){
-					for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-						iList1->insert(*iSet);
-					
-					for(iSet = iList4->begin(); iSet != iList4->end(); iSet++)
-						iList3->insert(*iSet);
-
-					iList2 = addInputList.erase(iList2);
-					iList4 = addOutputList.erase(iList4);
-				}
-				else {
-					iList2++;
-					iList4++;
-				}
-			}
-			iList1++;
-			iList3++;
-		}
 
 		printf("LIST STATUS CHECK\n");
 		iList2 = addOutputList.begin();
@@ -784,22 +796,7 @@ namespace AGGREGATION{
 				}
 			}
 		}
-		printf("LIST STATUS CHECK\n");
-		iList2 = addOutputList.begin();
-		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-			std::set<unsigned>::iterator iSet;
-			printf("INPUT: ");
-			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
-				printf("%d ", *iSet);
-
-
-			printf("\t\tOUTPUT: ");
-			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-			iList2++;
-
-		}
+		
 
 
 		
@@ -843,8 +840,25 @@ namespace AGGREGATION{
 		}
 
 
+		simplifySet(addInputList, addOutputList);
 
 
+		printf("LIST STATUS CHECK\n");
+		iList2 = addOutputList.begin();
+		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			iList2++;
+
+		}
 
 
 

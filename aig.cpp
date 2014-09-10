@@ -563,7 +563,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			noSub = true;
 		}
 		else{
-			printf("Unknown Gate Type\tI%sI\n\n", gateType.c_str());
+			printf("Unknown Gate Type\tI%sI\n", gateType.c_str());
+			ckt->print();
 			exit(1);
 		}
 

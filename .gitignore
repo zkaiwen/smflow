@@ -1,4 +1,6 @@
 #ignore the files that are greater than 50 megs
 
-circuits/
+circuits/raw
+circuits/temp
+circuits/netlist
 aiger/
