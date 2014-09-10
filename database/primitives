@@ -1,3 +1,4 @@
+circuits/g/primitive/cla_gp3.g
 circuits/g/primitive/haSum2bit.g
 circuits/g/primitive/haCarry2bit.g
 circuits/g/primitive/haSum3bit.g

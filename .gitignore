@@ -2,5 +2,6 @@
 
 circuits/raw
 circuits/temp
+circuits/g/*.g
 circuits/netlist
 aiger/

@@ -33,11 +33,30 @@ namespace AGGREGATION{
 	void findAdder(CutFunction* cf, AIG* aigraph);
 
 
-	/*
-		 0 - Number of FAcarry
-		 1 - Number of FAsum
-		 2 - Number of HA
-	 */
+	void printIO(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+											std::vector<unsigned long long>& inOut){
+		
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		int count= 0;
+		for(unsigned int i = 0; i < inOut.size(); i++){
+			iPMAP = pmap.find(inOut[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+					unsigned int k = 0;
+					printf("INPUT: ");
+					for(k = 0; k < iPMAP->second[j]->size()-1; k++)
+						printf("%d ", iPMAP->second[j]->at(k));
+
+					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+
+					count++;
+				}
+			}
+		}
+		printf("COUNT: %d ************************************************************** %d\n", count, count);
+	}
+
+
 	void simplifySet(std::list<std::set<unsigned> >& in, std::list<std::set<unsigned> >& out){
 		//Chcek to see if any of the sets are contained within each other
 		std::list<std::set<unsigned> >::iterator iList1;
@@ -84,9 +103,122 @@ namespace AGGREGATION{
 
 	}
 
+	void adderAggregation(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+											std::vector<unsigned long long>& inOut, 
+											std::list<std::set<unsigned> >& addIn,
+											std::list<std::set<unsigned> >& addOut){
+
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::list<std::set<unsigned> >::iterator iList2;
+
+		for(unsigned int i = 0; i < inOut.size(); i++){
+			iPMAP = pmap.find(inOut[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						iList2 = addOut.begin();
+						for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+								iList2->insert(outnode);
+
+								break;
+							}
+							iList2++;
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addIn.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(-1);
+						outSet.insert(outnode);
+						addOut.push_back(outSet);
+					}
+				}
+			}
+		}
+
+	}
+
+	void carryAggregation(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+											std::vector<unsigned long long>& inOut, 
+											std::list<std::set<unsigned> >& addIn,
+											std::list<std::set<unsigned> >& addOut){
+
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::list<std::set<unsigned> >::iterator iList1;
+
+		for(unsigned int i = 0; i < inOut.size(); i++){
+			iPMAP = pmap.find(inOut[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+
+					std::set<unsigned> inSet;
+					bool isAgg = false;
+					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						inSet.insert(iPMAP->second[j]->at(k));
+
+						for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
+							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
+								isAgg = true;
+								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+									iList1->insert(iPMAP->second[j]->at(w));
+
+								break;
+							}
+						}
+
+						if(isAgg) break;
+					}
+
+					if(!isAgg){
+						addIn.push_back(inSet);
+						std::set<unsigned> outSet;
+						outSet.insert(-1);
+						addOut.push_back(outSet);
+					}
+				}
+			}
+		}
+
+	}
+
+	void printAddList(std::list<std::set<unsigned> >& addIn,
+						std::list<std::set<unsigned> >& addOut){
+		printf("LIST STATUS CHECK\n");
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::list<std::set<unsigned> >::iterator iList2;
+		iList2 = addOut.begin();
+		for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
 
 
-	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& result){
+			printf("\nOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n\n");
+			iList2++;
+
+		}
+
+	}
+
+	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& resultA, std::map<unsigned, unsigned>& resultC){
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING FOR ADDERS -------------------------------\n");
 
@@ -108,6 +240,7 @@ namespace AGGREGATION{
 		std::vector<unsigned long long> haSum2;
 		std::vector<unsigned long long> haCarry3;
 		std::vector<unsigned long long> haSum3;
+		std::vector<unsigned long long> cla3;
 		printf(" * Parsing function database for half adder components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("xor") != std::string::npos){
@@ -145,24 +278,17 @@ namespace AGGREGATION{
 			else if(it->second.find("haCarry2") != std::string::npos){
 				haCarry2.push_back(it->first);
 			}
+			else if(it->second.find("cla_gp3") != std::string::npos){
+				cla3.push_back(it->first);
+			}
 		}
 
-
-
-		//Store input and output of orgate functions found
-		std::list<std::vector<unsigned> > possibleHAIn;
-		std::list<std::vector<unsigned> >::iterator iPHA;
-		std::list<unsigned> cout;
-		std::list<unsigned> sum;
-		std::list<unsigned>::iterator  iCout;
-		std::list<unsigned>::iterator  iSum;
-
-		std::map<std::vector<unsigned>, unsigned> xorInOut;
-		std::set<std::vector<unsigned> > possibleHASet;
 
 		//Aggregation
 		std::list<std::set<unsigned> > addOutputList;
 		std::list<std::set<unsigned> > addInputList;
+		std::list<std::set<unsigned> > carryOutputList;
+		std::list<std::set<unsigned> > carryInputList;
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::list<std::set<unsigned> >::iterator iList2;
 		std::list<std::set<unsigned> >::iterator iList3;
@@ -175,425 +301,60 @@ namespace AGGREGATION{
 		cf->getPortMap(pmap);
 
 		printf("XOR FUNCTIONS: \n");
-		for(unsigned int i = 0; i < xorFunction.size(); i++){
-			iPMAP = pmap.find(xorFunction[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					unsigned outnode = iPMAP->second[j]->at(k);
-					xorInOut[ports] = outnode;
-				}
-			}
-		}
-
-		//printf("\nAND FUNCTIONS: \n");
-		for(unsigned int i = 0; i < andFunction.size(); i++){
-			iPMAP = pmap.find(andFunction[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					//printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						//printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					//printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					unsigned outnode = iPMAP->second[j]->at(k);
-
-
-					//Store possible gates where it shares same inputs as xor
-					if(xorInOut.find(ports) != xorInOut.end()){
-						//printf("FOUND HERE------\n");
-						possibleHAIn.push_back(ports);
-						sum.push_back(xorInOut[ports]);
-						cout.push_back(outnode);
-					}
-				}
-			}
-		}
-
+		printIO(pmap, xorFunction);
 
 		printf("FACARRY FUNCTIONS: \n");
-		int numFACarry = 0;
-		for(unsigned int i = 0; i < faCarry.size(); i++){
-			iPMAP = pmap.find(faCarry[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					std::set<unsigned> in;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-						in.insert(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-/*
-					std::list<unsigned> out;
-					out.push_back(iPMAP->second[j]->at(k));
-					aigraph->printSubgraph(out, in);
-					*/
-
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numFACarry++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numFACarry, numFACarry);
-
-
+		printIO(pmap, faCarry);
 
 		printf("\n\nFASUM FUNCTIONS: \n");
-		int numFASum= 0;
-		for(unsigned int i = 0; i < faSum.size(); i++){
-			iPMAP = pmap.find(faSum[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numFASum++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numFASum, numFASum);
+		printIO(pmap, faSum);
 		
 		printf("\n\nFASUM2 FUNCTIONS: \n");
-		int numfasum2 = 0;
-		for(unsigned int i = 0; i < faSum2.size(); i++){
-			iPMAP = pmap.find(faSum2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numfasum2++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numfasum2, numfasum2);
+		printIO(pmap, faSum2);
 
 		printf("\n\nFASUM3 FUNCTIONS: \n");
-		int numfasum3 = 0;
-		for(unsigned int i = 0; i < faSum3.size(); i++){
-			iPMAP = pmap.find(faSum3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numfasum3++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numfasum3, numfasum3);
+		printIO(pmap, faSum3);
 
 		printf("\n\nFACARRY2 FUNCTIONS: \n");
-		int numfacarry2 = 0;
-		for(unsigned int i = 0; i < faCarry2.size(); i++){
-			iPMAP = pmap.find(faCarry2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numfacarry2++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numfacarry2, numfacarry2);
+		printIO(pmap, faCarry2);
 
 		printf("\n\nHASUM2 FUNCTIONS: \n");
-		int numhasum2 = 0;
-		for(unsigned int i = 0; i < haSum2.size(); i++){
-			iPMAP = pmap.find(haSum2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-
-
-					numhasum2++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numhasum2, numhasum2);
+		printIO(pmap, haSum2);
 		
 		printf("\n\nHACARRY2 FUNCTIONS: \n");
-		int numhacarry2= 0;
-		for(unsigned int i = 0; i < haCarry2.size(); i++){
-			iPMAP = pmap.find(haCarry2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numhacarry2++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numhacarry2, numhacarry2);
+		printIO(pmap, haCarry2);
 		
 		printf("\n\nHASUM3 FUNCTIONS: \n");
-		int numhasum3 = 0;
-		for(unsigned int i = 0; i < haSum3.size(); i++){
-			iPMAP = pmap.find(haSum3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
-
-					numhasum3++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************* %d\n", numhasum3, numhasum3);
+		printIO(pmap, haSum3);
 		
 
 		printf("\n\nHACARRY3 FUNCTIONS: \n");
-		int numhacarry3 = 0;
-		for(unsigned int i = 0; i < haCarry3.size(); i++){
-			iPMAP = pmap.find(haCarry3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
-					printf("INPUT: ");
-					std::vector<unsigned> ports;
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++){
-						printf("%d ", iPMAP->second[j]->at(k));
-						ports.push_back(iPMAP->second[j]->at(k));
-					}
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+		printIO(pmap, haCarry3);
 
-					//If input is not contained in an already found, store. 
-					//unsigned outnode = iPMAP->second[j]->at(k);
-					numhacarry3++;
-				}
-			}
-		}
-		printf("COUNT: %d ************************************************************** %d\n", numhacarry3, numhacarry3);
-
-
-
-
+		printf("\n\nCLA3 FUNCTIONS: \n");
+		printIO(pmap, cla3);
 
 
 		//Aggregate HASUM2
+		printf("\n\nCLA3 AGG\n");
+
+		//Aggregate HASUM2
 		printf("\n\nHAcarry3 AGG\n");
-		for(unsigned int i = 0; i < haCarry3.size(); i++){
-			iPMAP = pmap.find(haCarry3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList1->insert(outnode);
-
-								break;
-							}
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						inSet.insert(outnode);
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
+		carryAggregation(pmap, haCarry2, addInputList, addOutputList);
+		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
+		
 
 		printf("\n\nHAcarry2 AGG\n");
-		for(unsigned int i = 0; i < haCarry2.size(); i++){
-			iPMAP = pmap.find(haCarry2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList1->insert(outnode);
-
-								break;
-							}
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						inSet.insert(outnode);
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
+		carryAggregation(pmap, haCarry2, addInputList, addOutputList);
+		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
 		
 		printf("\n\nFAcarry2 AGG\n");
-		for(unsigned int i = 0; i < faCarry2.size(); i++){
-			iPMAP = pmap.find(faCarry2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList1->insert(outnode);
-
-								break;
-							}
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						inSet.insert(outnode);
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
+		carryAggregation(pmap, faCarry2, addInputList, addOutputList);
+		adderAggregation(pmap, faCarry2, carryInputList, carryOutputList);
 
 		printf("\n\nFAcarry AGG\n");
-		for(unsigned int i = 0; i < faCarry.size(); i++){
-			iPMAP = pmap.find(faCarry[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList1->insert(outnode);
-
-								break;
-							}
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						inSet.insert(outnode);
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
+		carryAggregation(pmap, faCarry, addInputList, addOutputList);
+		adderAggregation(pmap, faCarry, carryInputList, carryOutputList);
 
 		//Chcek to see if any of the sets are contained within each other
 		iList1 = addInputList.begin();
@@ -623,242 +384,32 @@ namespace AGGREGATION{
 			iList1++;
 		}
 		
-
-		printf("LIST STATUS\n");
-		iList2 = addOutputList.begin();
-		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-			std::set<unsigned>::iterator iSet;
-			printf("INPUT: ");
-			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\t\tOUTPUT: ");
-
-			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-			iList2++;
-
-		}
-
+		printf("ADD CARRY Aggregation\n");
+		printAddList(addInputList, addOutputList);
+		
+		printf("Carry Aggregation\n");
+		printAddList(carryInputList, carryOutputList);
 
 		printf("\n\nHASUM3 AGG\n");
-		for(unsigned int i = 0; i < haSum3.size(); i++){
-			iPMAP = pmap.find(haSum3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						iList2 = addOutputList.begin();
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList2->insert(outnode);
-
-								break;
-							}
-							iList2++;
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						outSet.insert(outnode);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
-		
-		printf("LIST STATUS CHECK\n");
-		iList2 = addOutputList.begin();
-		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-			std::set<unsigned>::iterator iSet;
-			printf("INPUT: ");
-			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
-				printf("%d ", *iSet);
-
-
-			printf("\t\tOUTPUT: ");
-			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-			iList2++;
-
-		}
-
+		adderAggregation(pmap, haSum3, addInputList, addOutputList);
 
 		printf("\n\nHASUM2 AGG\n");
-		for(unsigned int i = 0; i < haSum2.size(); i++){
-			iPMAP = pmap.find(haSum2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						iList2 = addOutputList.begin();
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList2->insert(outnode);
-
-								break;
-							}
-							iList2++;
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						outSet.insert(outnode);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
-
-		//Chcek to see if any of the sets are contained within each other
-
-		printf("LIST STATUS CHECK\n");
-		iList2 = addOutputList.begin();
-		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-			std::set<unsigned>::iterator iSet;
-			printf("INPUT: ");
-			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
-				printf("%d ", *iSet);
-
-
-			printf("\t\tOUTPUT: ");
-			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-			iList2++;
-
-		}
-
+		adderAggregation(pmap, haSum2, addInputList, addOutputList);
 
 		
 		printf("\n\nFASum3 AGG\n");
-		for(unsigned int i = 0; i < faSum3.size(); i++){
-			iPMAP = pmap.find(faSum3[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						iList2 = addOutputList.begin();
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList2->insert(outnode);
-
-								break;
-							}
-							iList2++;
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						outSet.insert(outnode);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
-		
-
+		adderAggregation(pmap, faSum3, addInputList, addOutputList);
 
 		
 		printf("\n\nFASum2 AGG\n");
-		for(unsigned int i = 0; i < faSum2.size(); i++){
-			iPMAP = pmap.find(faSum2[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-
-					std::set<unsigned> inSet;
-					bool isAgg = false;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-
-						iList2 = addOutputList.begin();
-						for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
-								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-								iList2->insert(outnode);
-
-								break;
-							}
-							iList2++;
-						}
-
-						if(isAgg) break;
-					}
-
-					if(!isAgg){
-						addInputList.push_back(inSet);
-						std::set<unsigned> outSet;
-						outSet.insert(-1);
-						outSet.insert(outnode);
-						addOutputList.push_back(outSet);
-					}
-				}
-			}
-		}
+		adderAggregation(pmap, faSum2, addInputList, addOutputList);
+		
+		printAddList(addInputList, addOutputList);
 
 
 		simplifySet(addInputList, addOutputList);
 
 
-		printf("LIST STATUS CHECK\n");
-		iList2 = addOutputList.begin();
-		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-			std::set<unsigned>::iterator iSet;
-			printf("INPUT: ");
-			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
-				printf("%d ", *iSet);
-
-
-			printf("\t\tOUTPUT: ");
-			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-			iList2++;
-
-		}
 
 
 
@@ -890,8 +441,39 @@ namespace AGGREGATION{
 		printf("%d adders found\n", (int)addInputList.size() + 1);
 		iList2 = addOutputList.begin();
 		for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
-
 			printf("ADDER SIZE: %d\t\t", (int)iList2->size());
+			if(iList2->size() <= 1){
+				iList2++;
+				continue;
+			}
+
+			std::set<unsigned>::iterator iSet;
+			printf("INPUT: ");
+			for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+				printf("%d ", *iSet);
+
+			printf("\t\tOUTPUT: ");
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+
+			if(resultA.find(iList2->size()) == resultA.end())
+				resultA[iList2->size()] = 1;
+			else
+				resultA[iList2->size()]++;
+
+			iList2++;
+		}
+		
+		printf("%d adders found\n", (int)carryInputList.size() + 1);
+		iList2 = carryOutputList.begin();
+		for(iList1 = carryInputList.begin(); iList1 != carryInputList.end(); iList1++){
+
+			printf("carry SIZE: %d\t\t", (int)iList2->size());
+			if(iList2->size() <= 1){
+				iList2++;
+				continue;
+			}
 
 			std::set<unsigned>::iterator iSet;
 			printf("INPUT: ");
@@ -904,11 +486,11 @@ namespace AGGREGATION{
 				printf("%d ", *iSet);
 			printf("\n");
 
-			if(result.find(iList2->size()) == result.end()){
-				result[iList2->size()] = 1;
+			if(resultC.find(iList2->size()) == resultC.end()){
+				resultC[iList2->size()] = 1;
 			}
 			else
-				result[iList2->size()]++;
+				resultC[iList2->size()]++;
 
 			iList2++;
 

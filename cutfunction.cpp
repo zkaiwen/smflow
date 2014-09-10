@@ -117,8 +117,14 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 		Graph* circuit = new Graph(file);
 		circuit->importPrimitive(file, 0);
-
 		m_AIG->convertGraph2AIG(circuit, false);
+
+
+		CutEnumeration* cut = NULL;
+		if(file.find("cut") != std::string::npos){
+			cut = new CutEnumeration (aigraph);
+			cut->findKFeasibleCuts(6);
+		}
 
 		//Get the Inputs to the primitive
 		std::vector<int> inputs;
@@ -213,6 +219,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 
 	infile.close();
+	if(cut != NULL) delete cut;
 }
 
 

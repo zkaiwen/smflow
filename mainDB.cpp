@@ -134,6 +134,7 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
 	std::vector<std::map<unsigned, unsigned> > stat_adder;
+	std::vector<std::map<unsigned, unsigned> > stat_carry;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -157,15 +158,6 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//*  Preprocess library for boolean matching 
-	//**************************************************************************
-	printStatement("Performing Library preprocessing");
-	CutFunction* functionCalc = new CutFunction();
-	functionCalc->preProcessLibrary(primBase);
-	functionCalc->printLibrary();
-
-
 
 	//**************************************************************************
 	//* MKR-  Preprocess the circuits in the database 
@@ -182,6 +174,16 @@ int main( int argc, char *argv[] )
 	std::string aigComponentDefinition;
 	getline(infile, aigComponentDefinition);
 	AIG::s_SourcePrim = aigComponentDefinition;
+	
+	//*************************************************************************
+	//*  Preprocess library for boolean matching 
+	//**************************************************************************
+	printStatement("Performing Library preprocessing");
+	CutFunction* functionCalc = new CutFunction();
+	functionCalc->preProcessLibrary(primBase);
+	functionCalc->printLibrary();
+
+
 
 	outdb.open(outDatabase.c_str());
 	outdb<<aigComponentDefinition<<"\n";
@@ -456,9 +458,11 @@ int main( int argc, char *argv[] )
 
 		aigraph->printOutputs();
 		std::map<unsigned, unsigned> addResult;
+		std::map<unsigned, unsigned> carryResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		AGGREGATION::findAdder(functionCalc, aigraph, addResult);
+		AGGREGATION::findAdder(functionCalc, aigraph, addResult, carryResult);
 		stat_adder.push_back(addResult);
+		stat_carry.push_back(carryResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -623,6 +627,11 @@ int main( int argc, char *argv[] )
 		
 		printf("\nAdders\n");
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
+			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+		}
+		
+		printf("\nCarry\n");
+		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
 
