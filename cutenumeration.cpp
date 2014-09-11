@@ -499,6 +499,7 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
 /*******************************************************
  *  getCuts
  *    Gets the list of cuts for a given node
+ *    Node is the Node ID/2
  *    
  *    @PARAMS
  *       node: The node to get the cuts from

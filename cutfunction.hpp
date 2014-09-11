@@ -78,6 +78,7 @@ class CutFunction{
 
 		//Boolean Matching
 		void preProcessLibrary(std::string);
+		void preProcessCut(std::string);
 		void processAIGCuts(bool);
 		void processAIGCuts_Perm(bool);
 		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long long> >&);

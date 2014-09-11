@@ -2,7 +2,3 @@ circuits/g/primitive/
 circuits/temp/c2670.cnl
 circuits/temp/c2670_c.cnl
 circuits/temp/c2670_re.cnl
-circuits/testbench/CLA12_XY.cnl
-circuits/testbench/CLACarry3_Cin0.cnl
-circuits/testbench/CLACarry4_Cin0.cnl
-circuits/testbench/CLACarry5_Cin0.cnl
