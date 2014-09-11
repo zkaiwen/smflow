@@ -170,17 +170,24 @@ namespace AGGREGATION{
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
 						inSet.insert(iPMAP->second[j]->at(k));
 
+						unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
 						for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
 							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
-								for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
-									iList1->insert(iPMAP->second[j]->at(w));
-
+								break;
+							}
+							else if(iList1->find(outnode) != iList1->end()){
+								isAgg = true;
 								break;
 							}
 						}
 
-						if(isAgg) break;
+						if(isAgg) {
+							for(unsigned int w = 0; w < iPMAP->second[j]->size()-1; w++)
+								iList1->insert(iPMAP->second[j]->at(w));
+							iList1->insert(outnode);
+							break;
+						}
 					}
 
 					if(!isAgg){
@@ -340,8 +347,8 @@ namespace AGGREGATION{
 
 		//Aggregate HASUM2
 		printf("\n\nHAcarry3 AGG\n");
-		carryAggregation(pmap, haCarry2, addInputList, addOutputList);
-		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
+		carryAggregation(pmap, haCarry3, addInputList, addOutputList);
+		adderAggregation(pmap, haCarry3, carryInputList, carryOutputList);
 		
 
 		printf("\n\nHAcarry2 AGG\n");
@@ -355,6 +362,7 @@ namespace AGGREGATION{
 		printf("\n\nFAcarry AGG\n");
 		carryAggregation(pmap, faCarry, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry, carryInputList, carryOutputList);
+		printAddList(addInputList, addOutputList);
 
 		//Chcek to see if any of the sets are contained within each other
 		iList1 = addInputList.begin();

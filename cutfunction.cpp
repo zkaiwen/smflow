@@ -134,7 +134,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 		//Make sure there is only one output in the library gate
 		if(m_AIG->getOutputSize() != 1){
-			//printf("AIG of %s does not have an output of 1...Skipping...\n", file.c_str());
+			printf("AIG of %s does not have an output of 1...Skipping...\n", file.c_str());
 			delete m_AIG;
 			delete circuit;
 			continue;
@@ -150,69 +150,67 @@ void CutFunction::preProcessLibrary(std::string fileName){
 		}
 
 		if(file.find("CuT") != std::string::npos){
-			printf("HERE\n");
 			preProcessCut(file);
 		}
+		else{
+			//Permutation of indexes
+			unsigned int* permutation = setPermutation(inputSize);
+			unsigned entriesAdded = 0;
+			std::vector<unsigned>output;
+			m_AIG->getOutputs(output);
+			m_PrimInputSize[file] = inputSize;
+
+			do{
+				/*printf("Permutation:\n");
+					for(unsigned int i = 0; i < inputSize; i++){
+					printf("%d ", permutation[i]);
+					}
+					printf("\n");*/
+
+				unsigned int negationLimit = 1 << inputSize;
+				for(unsigned int j = 0; j < negationLimit; j++){
+					int count = j;
+
+					//Store the inputs
+					for(unsigned int i = 1; i < inputSize+1; i++){
+						unsigned int permVal = permutation[i-1];
+						unsigned long long input = m_Xval[permVal];
+
+						if((count & 0x1) != 0)
+							input = ~input;
+
+						m_NodeValue[i*2] = input;
+						//printf("Node %d\tVAL:%llx\n", i*2, input);
+						count = count >> 1;		
+					}
 
 
-		//Permutation of indexes
-		unsigned int* permutation = setPermutation(inputSize);
-
-
-		do{
-			/*printf("Permutation:\n");
-				for(unsigned int i = 0; i < inputSize; i++){
-				printf("%d ", permutation[i]);
-				}
-				printf("\n");*/
-
-			unsigned int negationLimit = 1 << inputSize;
-			for(unsigned int j = 0; j < negationLimit; j++){
-				int count = j;
-
-				//printf("\n\nInputSize: %d\n", inputSize);
-				//Store the inputs
-				for(unsigned int i = 1; i < inputSize+1; i++){
-					unsigned int permVal = permutation[i-1];
-					unsigned long long input = m_Xval[permVal];
-
-					if((count & 0x1) != 0)
-						input = ~input;
-
-					m_NodeValue[i*2] = input;
-					//printf("Node %d\tVAL:%llx\n", i*2, input);
-					count = count >> 1;		
-
-				}
-
-
-				std::vector<unsigned>output;
-				m_AIG->getOutputs(output);
-
-				//calculate value for output
-				for(unsigned int i = 0; i < output.size(); i++){
-					//printf("OUTPUT: %d\n", output[i]);
-					calculate(output[i]);
+					calculate(output[0]);
+					unsigned long long result = m_NodeValue[output[0]];
+					std::map<unsigned long long, std::string>::iterator iHash = m_HashTable.find(result);
 
 					//Make sure function is unique
-					if(m_HashTable.find(m_NodeValue[output[i]]) != m_HashTable.end()){
-						if(m_HashTable[m_NodeValue[output[i]]] != file){
+					if(iHash != m_HashTable.end()){
+						if(iHash->second != file){
 							printf("Output currently already has a function assigned\n");
-							printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  m_HashTable[m_NodeValue[output[i]]].c_str());
-							exit(1);
+							printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  iHash->second.c_str());
+							continue;
+							//exit(1);
 						}
 					}
 
 					//Store function with output
-					m_HashTable[m_NodeValue[output[i]]] = file;
+					m_HashTable[result] = file;
+					entriesAdded++;
 					//printf("OUTPUT: %llx\n", m_NodeValue[output[i]]);
-
 					m_NodeValue.clear();
 				}
-			}
-		}while(std::next_permutation(permutation, permutation+inputSize));
+			}while(std::next_permutation(permutation, permutation+inputSize));
+			printf(" * %d functions added to Hashtable\n", entriesAdded);
 
-		delete [] permutation;
+			delete [] permutation;
+		}
+
 		delete m_AIG;
 		delete circuit;
 	}
@@ -222,93 +220,92 @@ void CutFunction::preProcessLibrary(std::string fileName){
 }
 
 void CutFunction::preProcessCut(std::string file){
-		std::vector<unsigned> aigOut;
-		m_AIG->getOutputs(aigOut);
+	std::vector<unsigned> aigOut;
+	m_AIG->getOutputs(aigOut);
 
-		CutEnumeration* cut = new CutEnumeration (m_AIG);
-		cut->findKFeasibleCuts(6);
-		cut->print();
+	CutEnumeration* cut = new CutEnumeration (m_AIG);
+	cut->findKFeasibleCuts(6);
+	//cut->print();
 
-		unsigned node = aigOut[0]; //AIG FORMAT Evens are the nodes, Odds are inv 
-		//printf("################################################################################\n");
-		//printf("--------------------------------\nProcessing node %d\n", node);
-		std::list<std::set<unsigned> > cutList;
-		std::list<std::set<unsigned> >::iterator cuts;
+	unsigned node = aigOut[0]; //AIG FORMAT Evens are the nodes, Odds are inv 
+	//printf("################################################################################\n");
+	//printf("--------------------------------\nProcessing node %d\n", node);
+	std::list<std::set<unsigned> > cutList;
+	std::list<std::set<unsigned> >::iterator cuts;
 
-		cut->getCuts(node/2, cutList);	
+	cut->getCuts(node/2, cutList);	
 
 
-		//Go through each cut of the node
-		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
-			//Skip trivial cut
-			unsigned int inputSize = cuts->size();
-			if(inputSize < 5)		continue;
+	//Go through each cut of the node
+	unsigned entriesAdded = 0;
+	unsigned cutNumber = 0;
+	for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
+		std::stringstream ss;
+		ss<<file<<"_"<<cutNumber;
 
-			//Permutation of indexes
-			unsigned int* permutation = setPermutation(inputSize);
-			std::set<unsigned>::iterator cutIT;
+		//Skip trivial cut
+		unsigned int inputSize = cuts->size();
+		if(inputSize < m_AIG->getInputSize()-1)		continue;
+		m_PrimInputSize[ss.str()] = inputSize;
 
-			printf("\nCUT: ");
-			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-				printf("%d ", *cutIT);
-			printf("\n");
+		//Permutation of indexes
+		unsigned int* permutation = setPermutation(inputSize);
+		std::set<unsigned>::iterator cutIT;
+
+		printf("\nCUT: ");
+		for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
+			printf("%d ", *cutIT);
+		printf("\n");
 
 
 		do{
-			/*printf("Permutation:\n");
-				for(unsigned int i = 0; i < inputSize; i++){
-				printf("%d ", permutation[i]);
-				}
-				printf("\n");*/
-
 			unsigned int negationLimit = 1 << inputSize;
 			for(unsigned int j = 0; j < negationLimit; j++){
 
-			//Set the assignments for the inputs
-			int pIndex= 0;	//Index for permutation
-			int count = j;
-			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
-				unsigned int permVal = permutation[pIndex];
-				unsigned long long input = m_Xval[permVal];
+				//Set the assignments for the inputs
+				int pIndex= 0;	//Index for permutation
+				int count = j;
+				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
+					unsigned int permVal = permutation[pIndex];
+					unsigned long long input = m_Xval[permVal];
 
-				if((count & 0x1) != 0)
-					input = ~input;
+					if((count & 0x1) != 0)
+						input = ~input;
 
-				m_NodeValue[*cutIT] = input;
+					m_NodeValue[*cutIT] = input;
 
-				pIndex++;		
-				count = count >> 1;		
-			}
-/*
-			printf("\nCUT: ");
-			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-				printf("%d ", *cutIT);
-			printf("\n");
-			*/
+					pIndex++;		
+					count = count >> 1;		
+				}
 
 
-			//Calculate the output at each node up to the current node
-			calculate(node);
-			unsigned long long functionVal = m_NodeValue[node];
+				//Calculate the output at each node up to the current node
+				calculate(node);
+				unsigned long long functionVal = m_NodeValue[node];
 
-					//Make sure function is unique
-					if(m_HashTable.find(functionVal) != m_HashTable.end()){
-						if(m_HashTable[functionVal] != file){
-							printf("Output currently already has a function assigned\n");
-							printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  m_HashTable[functionVal].c_str());
-							exit(1);
-						}
+				//Make sure function is unique
+				if(m_HashTable.find(functionVal) != m_HashTable.end()){
+					if(m_HashTable[functionVal] != ss.str()){
+						//printf("Output currently already has a function assigned\n");
+						//printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  m_HashTable[functionVal].c_str());
+						break;
+						//exit(1);
 					}
+				}
 
-					//Store function with output
-					m_HashTable[functionVal] = file;
-					//printf("OUTPUT: %llx\n", m_NodeValue[output[i]]);
-
-			m_NodeValue.clear();
-		}
+				//Store function with output
+				m_HashTable[functionVal] = ss.str();
+				entriesAdded++;
+				m_NodeValue.clear();
+			}
 		}while(std::next_permutation(permutation, permutation+inputSize));
-		}
-		delete cut;
+		cutNumber++;
+		delete [] permutation;
+	}
+
+	printf(" * %d functions added to Hashtable\n", entriesAdded);
+
+	delete cut;
 
 }
 
@@ -335,7 +332,6 @@ void CutFunction::processAIGCuts(bool np){
 
 		m_CutEnumeration->getCuts(i, cutList);	
 
-
 		//Go through each cut of the node
 		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
 			//Skip trivial cut
@@ -347,26 +343,21 @@ void CutFunction::processAIGCuts(bool np){
 			std::set<unsigned>::iterator cutIT;
 			int pIndex= 0;	//Index for permutation
 
-			std::vector <unsigned>* gateInputs = new std::vector<unsigned>();
-			gateInputs->reserve(inputSize+1);
-
 			//Set the assignments for the inputs
 			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 				unsigned int permVal = permutation[pIndex];
 				unsigned long long input = m_Xval[permVal];
 
 				m_NodeValue[*cutIT] = input;
-				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
-				gateInputs->push_back(*cutIT);
-
 				pIndex++;		
+				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 			}
-/*
-			printf("\nCUT: ");
-			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-				printf("%d ", *cutIT);
-			printf("\n");
-			*/
+			/*
+				 printf("\nCUT: ");
+				 for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
+				 printf("%d ", *cutIT);
+				 printf("\n");
+			 */
 
 
 			//Calculate the output at each node up to the current node
@@ -376,40 +367,37 @@ void CutFunction::processAIGCuts(bool np){
 			//printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
 
 			//Check to see if the function is a primitive/in the library
-			if(m_HashTable.find(functionVal) == m_HashTable.end()){
-				if(m_HashTable.find(negateVal) != m_HashTable.end()){
+			unsigned long long function;
+			bool functionFound = false;
 
-/*
-					if(m_PrimInputSize[m_HashTable[negateVal]] != gateInputs->size()){
-						printf("PRIM INPUT\n");
-						exit(1);
-						delete gateInputs;
-						continue;
-					}
-					*/
-
-					//printf("FUNCTION FOUND!*******************************\n");
-					m_NodeFunction[negateVal].insert(node);
-					gateInputs->push_back(node);
-					m_PortMap[negateVal].push_back(gateInputs);
+			std::map<unsigned long long, std::string>::iterator iHash;
+			iHash = m_HashTable.find(functionVal);
+			
+			if(iHash == m_HashTable.end()){
+				//Check the negated functionvalue
+				iHash = m_HashTable.find(negateVal);
+				if(iHash != m_HashTable.end()){
+					functionFound = true;
+					function = negateVal;
 				}
-				else
-					delete gateInputs;
 			}
 			else{
-				/*
-				if(m_PrimInputSize[m_HashTable[functionVal]] != gateInputs->size()){
-						printf("PRIM INPUT\n");
-						exit(1);
-					delete gateInputs;
-					continue;
-				}
-				*/
+				functionFound = true;
+				function = functionVal;
+			}
 
-				//printf("FUNCTION FOUND!*******************************\n");
-				m_NodeFunction[functionVal].insert(node);
+			if(functionFound){
+				if(m_PrimInputSize[iHash->second] != cuts->size())
+					continue;
+
+				//Create gateInputs
+				std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
+				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
+					gateInputs->push_back(*cutIT);
+
+				m_NodeFunction[function].insert(node);
 				gateInputs->push_back(node);
-				m_PortMap[functionVal].push_back(gateInputs);
+				m_PortMap[function].push_back(gateInputs);
 			}
 
 			m_NodeValue.clear();
@@ -459,10 +447,10 @@ void CutFunction::processAIGCuts_Perm(bool np){
 			std::vector<unsigned> gateInput;
 			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
 			{
-			  //printf("%d ", *cutIT);
+				//printf("%d ", *cutIT);
 				gateInput.push_back(*cutIT);
 			}
-			
+
 			gateInput.push_back(node);
 			//printf("\n");
 
@@ -477,73 +465,73 @@ void CutFunction::processAIGCuts_Perm(bool np){
 					printf("%d ", permutation[i]);
 					}
 					printf("\n");
-					*/
+				 */
 
-					int pIndex= 0;  //Index for permutation
+				int pIndex= 0;  //Index for permutation
 
-					//printf("\n\nInputSize: %d\n", inputSize);
-					//Set the assignments for the inputs
-					for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
-						unsigned int permVal = permutation[pIndex];
-						unsigned long long input = m_Xval[permVal];
+				//printf("\n\nInputSize: %d\n", inputSize);
+				//Set the assignments for the inputs
+				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
+					unsigned int permVal = permutation[pIndex];
+					unsigned long long input = m_Xval[permVal];
 
-						m_NodeValue[*cutIT] = input;
-						m_NodeValueIn[*cutIT] = input;
-						//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+					m_NodeValue[*cutIT] = input;
+					m_NodeValueIn[*cutIT] = input;
+					//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 
-						pIndex++;      
-					}
+					pIndex++;      
+				}
 
-					//Calculate the output at each node up to the current node
-					calculate2(node);
-					unsigned long long functionVal = m_NodeValue[node];
-					unsigned long long negateVal = ~(functionVal);
-					//printf("OUTPUT: %x\n", negate);
+				//Calculate the output at each node up to the current node
+				calculate2(node);
+				unsigned long long functionVal = m_NodeValue[node];
+				unsigned long long negateVal = ~(functionVal);
+				//printf("OUTPUT: %x\n", negate);
 
-					//N-Equivalence Check the negation of the output
-					//Count the number of occurances for each unique function
-					//Store the function that's smaller, whether negate or nodevalue
-					unsigned long long functionKey = functionVal;
-					if(negateVal < functionVal)
-						functionKey = negateVal;
+				//N-Equivalence Check the negation of the output
+				//Count the number of occurances for each unique function
+				//Store the function that's smaller, whether negate or nodevalue
+				unsigned long long functionKey = functionVal;
+				if(negateVal < functionVal)
+					functionKey = negateVal;
 
-					//printf("KEY CHOSEN: %llx\n", functionKey);
-					keyVals.insert(functionKey);
-					//  printf("FUNCTION: %llx\n", functionVal);
-					//  printf("NEGATED:  %llx\n\n", negateVal);
+				//printf("KEY CHOSEN: %llx\n", functionKey);
+				keyVals.insert(functionKey);
+				//  printf("FUNCTION: %llx\n", functionVal);
+				//  printf("NEGATED:  %llx\n\n", negateVal);
 
-					std::map<unsigned long long, int>::iterator fcit;
-					fcit = m_FunctionCount.find(functionKey);
-					if(fcit == m_FunctionCount.end())
-						m_FunctionCount[functionKey] = 1;                      
-					else
-						fcit->second++; 
+				std::map<unsigned long long, int>::iterator fcit;
+				fcit = m_FunctionCount.find(functionKey);
+				if(fcit == m_FunctionCount.end())
+					m_FunctionCount[functionKey] = 1;                      
+				else
+					fcit->second++; 
 
-					m_NodeValue.clear();
-					m_NodeValueIn.clear();
+				m_NodeValue.clear();
+				m_NodeValueIn.clear();
 
 			}while(std::next_permutation(permutation, permutation+inputSize));
 			delete [] permutation;
-			
+
 			m_UniqueFunction[keyVals].push_back(gateInput);
 		}
 
 	}
 	//printf("***************************************\n\n\n\n");
-//std::map<unsigned int, std::string>::iterator it;
-//for(it = m_HashTable.begin(); it != m_HashTable.end(); it++){
-//printf("KEY: %x\t VAL: %s\n", it->first, it->second.c_str());
-//}
+	//std::map<unsigned int, std::string>::iterator it;
+	//for(it = m_HashTable.begin(); it != m_HashTable.end(); it++){
+	//printf("KEY: %x\t VAL: %s\n", it->first, it->second.c_str());
+	//}
 
-/*
-	 std::vector<int>output;
-	 m_AIG->getOutputs(output);
-	 printf("OUTPUT NODES:\t");
-	 for(unsigned int i = 0; i < output.size(); i++){
-	 printf("%d ", output[i]);
-	 }
-	 printf("\n\n");
- */
+	/*
+		 std::vector<int>output;
+		 m_AIG->getOutputs(output);
+		 printf("OUTPUT NODES:\t");
+		 for(unsigned int i = 0; i < output.size(); i++){
+		 printf("%d ", output[i]);
+		 }
+		 printf("\n\n");
+	 */
 }
 
 
@@ -643,7 +631,7 @@ unsigned long long CutFunction::calculate2(unsigned node){
 	//Recurse until primary input;
 	unsigned long long result1 = calculate2(node1);
 	unsigned long long result2 = calculate2(node2);
-	
+
 	//Handle Inverters only at points not at the input
 	//printf("CHILDREG %u %u\n", child1, child2);
 	if(child1 & 0x1){
@@ -888,8 +876,8 @@ void CutFunction::printUniqueFunction(){
 	printf("-------------------------------------\n");
 	printf(" * Printing Unique Functions\n");
 	printf("-------------------------------------\n");
-		std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator iMap;
-		std::set<unsigned long long>::iterator iSet;
+	std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator iMap;
+	std::set<unsigned long long>::iterator iSet;
 
 	for(iMap = m_UniqueFunction.begin(); iMap != m_UniqueFunction.end(); iMap++){
 		printf("FUNCTION KEY: \n");
@@ -920,11 +908,11 @@ void CutFunction::printUniqueFunctionStat(){
 	printf("-------------------------------------\n");
 	printf(" * Printing Unique Functions Statistics\n");
 	printf("-------------------------------------\n");
-		std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator iMap;
-		std::set<unsigned long long>::iterator iSet;
-		std::vector< std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator > mostUnique;
+	std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator iMap;
+	std::set<unsigned long long>::iterator iSet;
+	std::vector< std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator > mostUnique;
 
-		unsigned int min = 0xFFFFFFFF;
+	unsigned int min = 0xFFFFFFFF;
 
 	for(iMap = m_UniqueFunction.begin(); iMap != m_UniqueFunction.end(); iMap++){
 		if(iMap->second.size() < min){
@@ -937,7 +925,7 @@ void CutFunction::printUniqueFunctionStat(){
 			mostUnique.push_back(iMap);
 	}
 
-	
+
 	for(unsigned int a = 0; a < mostUnique.size(); a++){
 		printf("FUNCTION KEY: \n");
 		for(iSet = mostUnique[a]->first.begin(); iSet != mostUnique[a]->first.end(); iSet++){
@@ -955,7 +943,7 @@ void CutFunction::printUniqueFunctionStat(){
 		printf("\n");
 
 	}
-	
+
 }
 
 
@@ -981,7 +969,7 @@ void CutFunction::reset(){
 	m_NodeFunction.clear();
 	m_PortMap.clear();
 	m_UniqueFunction.clear();
-	
+
 
 }
 
