@@ -253,7 +253,7 @@ namespace AGGREGATION{
 			if(it->second.find("xor") != std::string::npos){
 				xorFunction.push_back(it->first);
 			}
-			else if(it->second.find("or2") != std::string::npos){
+			else if(it->second.find("or4") != std::string::npos){
 				andFunction.push_back(it->first);
 			}
 			else if(it->second.find("faSum3bit") != std::string::npos){
@@ -309,6 +309,9 @@ namespace AGGREGATION{
 
 		printf("XOR FUNCTIONS: \n");
 		printIO(pmap, xorFunction);
+		
+		printf("and FUNCTIONS: \n");
+		printIO(pmap, andFunction);
 
 		printf("FACARRY FUNCTIONS: \n");
 		printIO(pmap, faCarry);

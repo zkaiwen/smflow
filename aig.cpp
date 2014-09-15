@@ -435,10 +435,10 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::string orAIGFile_c = s_SourcePrim + "or";
 	std::string norAIGFile_c = s_SourcePrim + "nor";
 	std::string nandAIGFile_c = s_SourcePrim + "nand";
+	std::string mxAIGFile_c = s_SourcePrim + "mux";
 	std::string andAIGFile_c = s_SourcePrim + "and";
 	std::string aoiAIGFile_c = s_SourcePrim + "aoi";
 	std::string oaiAIGFile_c = s_SourcePrim + "oai";
-	std::string mxAIGFile_c = s_SourcePrim + "mux";
 	std::string addAIGFile_c = s_SourcePrim + "add";
 
 	std::map<int, Vertex*>::iterator it;
@@ -458,10 +458,13 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 	//Prepare datastructure for easy output search
 	std::set<unsigned int> outputSet; 
-	std::vector<int> cktout;
+	std::map<std::string, int> cktout;
+	std::map<std::string, int>::iterator iOut;
 	ckt->getOutputs(cktout);
-	for(unsigned int i = 0; i < cktout.size(); i++)
-			outputSet.insert(cktout[i]);
+	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++){
+			outputSet.insert(iOut->second);
+			printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
+	}
 
 
 	int outputNode;
@@ -573,6 +576,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			if(outputSet.find(it->second->getID()) != outputSet.end()){
 				outputNode = it->second->getID();
 				outInput.insert(outputNode);
+				printf("NO SUB: Input that goes to output: %d TYPE: %s\n", outputNode, gateType.c_str());
 			}
 
 			continue;
@@ -598,6 +602,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//Check to see if the node substituted goes to the output
 		if(outputSet.find(it->second->getID()) != outputSet.end()){
 			outInput.insert(outputNode);
+			printf("SUB: Input that goes to output: %d ORIG: %d TYPE: %s\n", outputNode, it->second->getID(),  gateType.c_str());
 		}
 
 		//printf("VERTEXID: %d\n", it->first);
@@ -615,13 +620,21 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//Go through FFs to see the inputs to them
 	std::set<unsigned> ffCKTNodes; 
 	std::set<unsigned>::iterator iSet; 
+	printf("OUTINPUTSET: ");
+	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++)
+		printf("%d ", *iSet);
+	printf("\n");
+
+	printf("Checking FF List to see if FF goes to output\n");
 	for(unsigned int i = 0; i < ffList.size(); i++){
 		int inID =  ffList[i]->second->getInputPortID("D");
 		assert(inID != -1);
 		ffCKTNodes.insert(inID);
+		printf("FFID: %d\tINPUTID: %d\n", ffList[i]->second->getID(), inID);
 
 		//If FF goes to output, store the input to the FF
 		if(outInput.erase(ffList[i]->second->getID()) == 1){
+			printf("FF GOES TO OUTPUT!\n");
 			outInput.insert(inID);
 			std::string outPortName = ckt->isOutput(ffList[i]->second->getID());
 			if(outPortName != "")
@@ -632,16 +645,23 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			toBeDeleted.push_back(ffList[i]->first);
 	}
 	
+	printf("OUTINPUTSET: ");
+	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++)
+		printf("%d ", *iSet);
+	printf("\n");
+	
 
 	//Delete substituted nodes from the graph
 	for(unsigned int i = 0; i < toBeDeleted.size(); i++)
 		ckt->removeVertex(toBeDeleted[i]);
 	
+	/*
 	printf(" * NUMBER OF PASSTHROUGH BUFFER: %d\n", ptBuffer);
 
-	//printf("CONVERTED CIRCUIT\n");
-	//ckt->print();
-	//printf("\n\n");
+	printf("CONVERTED CIRCUIT\n");
+	ckt->print();
+	printf("\n\n");
+	*/
 
 	if(sub)
 		return;
@@ -700,6 +720,9 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
 			Vertex* vertex = vLevel[i][j];
 			int vertexID = vertex->getID();
+			bool isOutput = false;
+			if(outInput.find(vertexID) != outInput.end())
+				isOutput = true;
 
 			if(vertex->getType().find("AND") != std::string::npos){
 				std::vector<Vertex*> in;
@@ -727,10 +750,15 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				}
 				
 
-				if(vertex->getOVSize() == 0 ){
+				if(isOutput){
 					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
-					printf("OUTPUTINV : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
+					std::string outname = ckt->isOutput(vertexID).c_str();
+					if(outname != "")
+					printf("OUTPUT: GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
+					else
+					printf("OUTPUT,FF : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->getVertex(vertexID)->getName().c_str());
+
 				}
 				continue;
 			}
@@ -741,7 +769,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			}
 
 			//CHeck to see if node has an output
-			if(vertex->getOVSize() == 0){
+			if(isOutput){
 				//printf("NO OUTPUT\n");
 				m_Outputs.push_back(m_GateMap[vertex->getID()]);
 				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
@@ -1071,6 +1099,7 @@ void AIG::printMap(){
 		printf("AIG NODE: %d\tCKT NODE: %d\n", it->second, it->first);
 	}
 }
+
 
 
 

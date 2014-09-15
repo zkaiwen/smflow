@@ -105,6 +105,7 @@ class AIG{
 		unsigned create_and2(unsigned, unsigned);
 		unsigned create_input();
 		void DFS(Vertex*, std::set<int>&);
+		void aig2V();
 
 
 		//Print	

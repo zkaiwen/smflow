@@ -1,12 +1,12 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-  @
-  @  VERIFICATION.cpp
-  @  
-  @  @AUTHOR:Kevin Zeng
-  @  Copyright 2012 – 2013 
-  @  Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@  VERIFICATION.cpp
+	@  
+	@  @AUTHOR:Kevin Zeng
+	@  Copyright 2012 – 2013 
+	@  Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef VER_GUARD
 #define VER_GUARD
@@ -133,7 +133,7 @@ namespace VERIFICATION{
 			for(unsigned int i = 0; i < outputResults.size(); i++){
 				printf("NODE: %d\tRESULT  G : %llx\n", outputNode[i], outputResults[i]);
 			}
-			
+
 
 
 
@@ -191,7 +191,7 @@ namespace VERIFICATION{
 			assert(aigOut.size() == aig->getOutputSize());
 			for(unsigned int i = 1; i <= aig->getInputSize(); i++)
 				cf.m_NodeValue[i*2] = tt[i-1];
-			
+
 			for(unsigned int k = 0; k < aig->getOutputSize(); k++){
 				result = cf.calculate(aigOut[k]);		
 				outputResults.push_back(result);
@@ -285,8 +285,6 @@ namespace VERIFICATION{
 		}
 		return true;
 	}
-
-
 
 }
 

@@ -71,6 +71,7 @@ class Graph
 		void getNumType(std::map<std::string, std::vector<Vertex*> >&);
 		void getInputs(std::vector<int>&);
 		void getOutputs(std::vector<int>&);
+		void getOutputs(std::map<std::string, int>&);
 		unsigned int getNumVertex();
 		unsigned int getNumInputs();
 		unsigned int getNumOutputs();
@@ -116,6 +117,7 @@ class Graph
 		unsigned substitute(int, Graph*);  //returns output node
 		void subLUT(int, Graph*);
 		void renumber(int);
+		void renameNodes(std::string);
 
 
 		//Search 

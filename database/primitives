@@ -5,3 +5,5 @@ circuits/g/primitive/faCarry.g
 circuits/g/primitive/haCarry2bit.g
 circuits/g/primitive/faSum.g
 circuits/g/primitive/haSum2bit.g
+circuits/g/primitive/xor2.g
+circuits/g/primitive/or4.g

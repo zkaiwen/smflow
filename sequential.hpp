@@ -10,8 +10,8 @@
 
 #ifndef SEQ_GUARD
 #define SEQ_GUARD
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/vf2_sub_graph_iso.hpp>
+//#include <boost/graph/adjacency_list.hpp>
+//#include <boost/graph/vf2_sub_graph_iso.hpp>
 
 #include <fstream>
 #include <stdlib.h>
@@ -22,10 +22,9 @@
 #include "graph.hpp"
 #include "vertex.hpp"
 #include "aig.hpp"
-#include "graph_b.hpp"
+//#include "graph_b.hpp"
 #include "verification.hpp"
 
-using namespace boost;
 
 //Counter
 namespace SEQUENTIAL{

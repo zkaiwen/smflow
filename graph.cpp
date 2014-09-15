@@ -865,6 +865,9 @@ void Graph::getOutputs(std::vector<int>& output){
 	}
 }
 
+void Graph::getOutputs(std::map<std::string, int>& output){
+	output = m_Outputs;
+}
 
 
 /***************************************************************************
@@ -1527,6 +1530,13 @@ void Graph::addConstant( int node){
 }
 
 
+void Graph::renameNodes(std::string name){
+	std::map<int, Vertex*>::iterator it;
+	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++)
+		it->second->setName(name);
+}
+
+
 
 /***************************************************************************
  *  substitute 
@@ -1538,6 +1548,8 @@ void Graph::addConstant( int node){
  ****************************************************************************/
 unsigned Graph::substitute(int node, Graph* sub){
 	//printf("SUBSTITUTION! NODE: %d\n", node);
+	Vertex* nodeV = m_GraphV[node];
+	sub->renameNodes(nodeV->getName());
 	std::map<int, Vertex*>::iterator it; 
 
 
@@ -1555,9 +1567,9 @@ unsigned Graph::substitute(int node, Graph* sub){
 	std::vector<Vertex*> nodeOutputs;
 	std::vector<std::string> nodeInputPorts;
 
-	m_GraphV[node]->getInput(nodeInputs);
-	m_GraphV[node]->getInPorts(nodeInputPorts);
-	m_GraphV[node]->getOutput(nodeOutputs);
+	nodeV->getInput(nodeInputs);
+	nodeV->getInPorts(nodeInputPorts);
+	nodeV->getOutput(nodeOutputs);
 
 
 
@@ -1621,12 +1633,12 @@ unsigned Graph::substitute(int node, Graph* sub){
 
 
 	std::vector<std::string> outPortNames;
-	m_GraphV[node]->getOutputPorts(outPortNames);
+	nodeV->getOutputPorts(outPortNames);
 
 	for(unsigned int i = 0; i < outPortNames.size(); i++){
 		//printf("Outport of node: %s\n", outPortNames[i].c_str());
 		std::vector<Vertex*> outputs;
-		m_GraphV[node]->getPortOutput(outPortNames[i], outputs);
+		nodeV->getPortOutput(outPortNames[i], outputs);
 
 		int subOutputIndex = sub->findOutPort(outPortNames[i]);
 		//printf("Index of output of prim %d\n", subOutputIndex);

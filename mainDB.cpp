@@ -318,6 +318,8 @@ int main( int argc, char *argv[] )
 
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
 		aigraph->convertGraph2AIG(ckt, false);
+		aigraph->printMap();
+		aigraph->print();
 		gettimeofday(&iaig_e, NULL);
 
 		stat_aigSize.push_back(aigraph->getSize());

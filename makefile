@@ -51,6 +51,9 @@ cutfunction.o: cutfunction.cpp cutfunction.hpp aig.o
 test: 
 	g++ -o testProgram $(OBJ) test.cpp -lboost_graph
 
+testckt: testckt.cpp $(OBJ)
+	g++ -o testckt $(OBJ) testckt.cpp 
+
 clean:
 	rm -f *.o *fpgenius* *.out* *.in*  cnf testProgram cDatabase
 
