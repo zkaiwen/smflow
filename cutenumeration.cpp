@@ -533,6 +533,9 @@ void CutEnumeration::getCut2(std::map<unsigned, std::set<unsigned> >& cut){
 }
 
 
+unsigned int CutEnumeration::getK(){
+	return m_K;
+}
 
 
 

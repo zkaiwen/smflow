@@ -48,6 +48,7 @@ class CutEnumeration{
 		void getCuts(unsigned, std::list<std::set<unsigned> >& );
 		void getCuts_In(unsigned, std::list<std::set<unsigned> >& );
 		void getCut2(std::map<unsigned, std::set<unsigned> >&);
+		unsigned int getK();
 
 
 

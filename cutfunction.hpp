@@ -51,6 +51,7 @@ class CutFunction{
 		//Function, List of inputs that have that specific output
 		//Output node is stored as the last node in inner vector
 		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >m_PortMap; 
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >m_PortMap_DC; 
 		std::map<std::string, unsigned int> m_PrimInputSize;
 
 
@@ -81,6 +82,7 @@ class CutFunction{
 		void preProcessCut(std::string);
 		void processAIGCuts(bool);
 		void processAIGCuts_Perm(bool);
+		void processAIGCutsX(bool np);  //Process cut with don't cares possibilities
 		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long long> >&);
 		unsigned long long calculate(unsigned);
 		unsigned long long calculate2(unsigned);

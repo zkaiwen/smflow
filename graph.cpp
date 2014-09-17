@@ -1175,6 +1175,19 @@ void Graph::print(){
  *    Prints contents of the Graph in G format
  ****************************************************************************/
 void Graph::printg(){
+	std::map<std::string, int>::iterator it2;
+	printf("Inputs:\tSIZE:%d\n", (int)m_Inputs.size());	
+	for(it2 = m_Inputs.begin(); it2 != m_Inputs.end(); it2++){
+		printf("%s:%d   ", it2->first.c_str(), it2->second);
+	}
+
+
+	printf("\nOutputs:\tSIZE:%d\n", (int)m_Outputs.size());	
+	for(it2 = m_Outputs.begin(); it2 != m_Outputs.end(); it2++){
+		printf("%s:%d   ", it2->first.c_str(), it2->second);
+	}
+	printf("\n");
+
 	std::map<int, Vertex*>::iterator it;
 	for(it = m_GraphV.begin(); it != m_GraphV.end(); it++){
 		printf("%d %s %s", it->first, it->second->getType().c_str(), it->second->getName().c_str());

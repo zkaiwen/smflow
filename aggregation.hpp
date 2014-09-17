@@ -253,7 +253,7 @@ namespace AGGREGATION{
 			if(it->second.find("xor") != std::string::npos){
 				xorFunction.push_back(it->first);
 			}
-			else if(it->second.find("or4") != std::string::npos){
+			else if(it->second.find("or2") != std::string::npos){
 				andFunction.push_back(it->first);
 			}
 			else if(it->second.find("faSum3bit") != std::string::npos){
@@ -309,9 +309,6 @@ namespace AGGREGATION{
 
 		printf("XOR FUNCTIONS: \n");
 		printIO(pmap, xorFunction);
-		
-		printf("and FUNCTIONS: \n");
-		printIO(pmap, andFunction);
 
 		printf("FACARRY FUNCTIONS: \n");
 		printIO(pmap, faCarry);
@@ -1557,7 +1554,6 @@ namespace AGGREGATION{
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in){
 		std::list<unsigned> queue;
 		std::set<unsigned> mark;
-		std::vector<unsigned> nodes;
 		std::vector<unsigned*> nChilds;
 
 
@@ -1565,6 +1561,12 @@ namespace AGGREGATION{
 		queue.push_back(out);
 		mark.insert(out);
 		int numNegative = 0;
+
+		printf("NEG: OUT:%d IN: ", out);
+		for(unsigned int i = 0; i < in.size(); i++){
+			printf("%d ", in[i]);
+		}
+		printf("\n");
 
 		while(queue.size() != 0){
 			unsigned qitem = queue.front();
@@ -1594,9 +1596,6 @@ namespace AGGREGATION{
 			}
 
 			if(foundInput) continue;
-
-			nodes.push_back(qitem);
-
 
 			//Enqueue childs
 			unsigned c1node = aigraph->getChild1(qitem);

@@ -752,6 +752,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 				if(isOutput){
 					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
+					//m_Outputs.push_back(m_GateMap[vertexID]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
 					std::string outname = ckt->isOutput(vertexID).c_str();
 					if(outname != "")
