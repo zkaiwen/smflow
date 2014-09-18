@@ -181,7 +181,7 @@ int main( int argc, char *argv[] )
 	printStatement("Performing Library preprocessing");
 	CutFunction* functionCalc = new CutFunction();
 	functionCalc->preProcessLibrary(primBase);
-	functionCalc->printLibrary();
+	//functionCalc->printLibrary();
 
 
 

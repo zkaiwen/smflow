@@ -51,6 +51,12 @@ CutFunction::~CutFunction(){
 			delete it->second[i];
 		}
 	}
+	
+	for(it = m_PortMap_DC.begin(); it != m_PortMap_DC.end(); it++){
+		for(unsigned int i = 0; i < it->second.size(); i++){
+			delete it->second[i];
+		}
+	}
 	delete [] m_Xval;
 }
 
@@ -83,6 +89,7 @@ void CutFunction::setParams(CutEnumeration* ce, AIG* aig){
 	m_NodeValue.clear();
 	m_NodeFunction.clear();
 	m_PortMap.clear();
+	m_PortMap_DC.clear();
 
 
 }
@@ -238,10 +245,9 @@ void CutFunction::preProcessCut(std::string file){
 
 	//Go through each cut of the node
 	unsigned entriesAdded = 0;
-	unsigned cutNumber = 0;
 	for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
 		std::stringstream ss;
-		ss<<file<<"_"<<cutNumber;
+		ss<<file<<"_"<<cuts->size();
 
 		//Skip trivial cut
 		unsigned int inputSize = cuts->size();
@@ -299,7 +305,6 @@ void CutFunction::preProcessCut(std::string file){
 				m_NodeValue.clear();
 			}
 		}while(std::next_permutation(permutation, permutation+inputSize));
-		cutNumber++;
 		delete [] permutation;
 	}
 
@@ -401,6 +406,7 @@ void CutFunction::processAIGCuts(bool np){
 			}
 
 			m_NodeValue.clear();
+			delete permutation;
 		}
 	}
 }
@@ -419,8 +425,9 @@ void CutFunction::processAIGCutsX(bool np){
 	unsigned size = m_AIG->getSize() + m_AIG->getInputSize() + 1;
 	for(unsigned int i = m_AIG->getInputSize()+1; i < size; i++){
 		unsigned node = i * 2; //AIG FORMAT Evens are the nodes, Odds are inv 
-		printf("################################################################################\n");
-		printf("--------------------------------\nProcessing node %d\n", node);
+		//printf("#########################################################################################################\n");
+		//printf("#########################################################################################################\n");
+		//printf("--------------------------------\nProcessing node %d\n", node);
 		std::list<std::set<unsigned> > cutList;
 		std::list<std::set<unsigned> >::iterator cuts;
 
@@ -428,6 +435,7 @@ void CutFunction::processAIGCutsX(bool np){
 
 		//Go through each cut of the node
 		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
+			
 			//Skip trivial cut
 			unsigned int inputSize = cuts->size();
 			if(inputSize == 1)		continue;
@@ -438,28 +446,26 @@ void CutFunction::processAIGCutsX(bool np){
 			unsigned int pIndex= 0;	//Index for permutation
 
 			//Set the assignments for the inputs
+			m_NodeValue.clear();
 			for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 				unsigned int permVal = permutation[pIndex];
 				unsigned long long input = m_Xval[permVal];
 
 				m_NodeValue[*cutIT] = input;
 				pIndex++;		
-				printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 			}
-			/*
-				 printf("\nCUT: ");
-				 for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-				 printf("%d ", *cutIT);
-				 printf("\n");
-			 */
-
 
 			//Calculate the output at each node up to the current node
 			calculate(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
-			
-			printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
+			//printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
+
+			std::set<unsigned long long> existingFunctionFound; 
+			existingFunctionFound.insert(functionVal);
+			existingFunctionFound.insert(negateVal);
+			std::set<std::string> existingFunctionName;
 
 			//Check to see if the function is a primitive/in the library
 			unsigned long long function;
@@ -484,6 +490,7 @@ void CutFunction::processAIGCutsX(bool np){
 			if(functionFound){
 				if(m_PrimInputSize[iHash->second] != cuts->size())
 					continue;
+				existingFunctionName.insert(iHash->second);
 
 				//Create gateInputs
 				std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
@@ -495,8 +502,6 @@ void CutFunction::processAIGCutsX(bool np){
 				m_PortMap[function].push_back(gateInputs);
 			}
 
-			m_NodeValue.clear();
-
 			delete permutation;
 
 
@@ -506,23 +511,23 @@ void CutFunction::processAIGCutsX(bool np){
 			//Permutation of indexes
 			inputSize = cuts->size() - 1;
 			if(inputSize == 1)		continue;
+
 			permutation = setPermutation(inputSize);
 			unsigned long long dc[2] = {
 				0x0000000000000000, 
 				0xFFFFFFFFFFFFFFFF
 			};
-			std::set<unsigned long long> existingFunctionFound; 
 
-			printf("\nDONT CARE!-------------------------------------------------\n");
+			//printf("\nDONT CARE!-------------------------------------------------\n");
 			for(unsigned dcIndex = 0; dcIndex < cuts->size(); dcIndex++){
-				printf("DC INDEX: %d\n", dcIndex);
+				//printf("DC INDEX: %d\n", dcIndex);
 				for(unsigned w = 0; w < 2; w++){
 					pIndex= 0;	//Index for permutation
 					unsigned int index = 0; 
 
-					m_NodeValue.clear();
 
 					//Set the assignments for the inputs
+					m_NodeValue.clear();
 					for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 						unsigned long long input; 
 						if(index == dcIndex)
@@ -535,28 +540,21 @@ void CutFunction::processAIGCutsX(bool np){
 
 						index++;
 						m_NodeValue[*cutIT] = input;
-						printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+						//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 					}
-					/*
-						 printf("\nCUT: ");
-						 for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-						 printf("%d ", *cutIT);
-						 printf("\n");
-					 */
-
 
 					//Calculate the output at each node up to the current node
 					calculate(node);
 					unsigned long long functionVal = m_NodeValue[node];
 					unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
-					printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
+					//printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
 
 					if(existingFunctionFound.find(functionVal) != existingFunctionFound.end()){
-						printf("SKIPPED-----------\n");
+						//printf("SKIPPED-----------\n");
 						continue;
 					}
-					else if(existingFunctionFound.find(negateVal) != existingFunctionFound.end()){
-						printf("SKIPPED-----------\n");
+					if(existingFunctionFound.find(negateVal) != existingFunctionFound.end()){
+						//printf("SKIPPED-----------\n");
 						continue;
 					}
 
@@ -570,6 +568,7 @@ void CutFunction::processAIGCutsX(bool np){
 
 					std::map<unsigned long long, std::string>::iterator iHash;
 					iHash = m_HashTable.find(functionVal);
+
 
 					if(iHash == m_HashTable.end()){
 						//Check the negated functionvalue
@@ -585,6 +584,14 @@ void CutFunction::processAIGCutsX(bool np){
 					}
 
 					if(functionFound){
+						//printf("EXISTING FUNCTION FOUND: %s\n", iHash->second.c_str());
+						if(existingFunctionName.find(iHash->second) != existingFunctionName.end())
+							continue;
+
+						if(m_PrimInputSize[iHash->second] != cuts->size()-1)
+							continue;
+
+						existingFunctionName.insert(iHash->second);
 
 						//Create gateInputs
 						std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
@@ -597,13 +604,15 @@ void CutFunction::processAIGCutsX(bool np){
 
 						m_NodeFunction[function].insert(node);
 						gateInputs->push_back(node);
-						m_PortMap[function].push_back(gateInputs);
+						m_PortMap_DC[function].push_back(gateInputs);
+						//printf("PORT MAP STORED****************************\n");
 					}
 
 				}
 
 			}
-			printf("END DONT CARE COMPUTATION\n\n");
+			//printf("END DONT CARE COMPUTATION\n\n");
+			delete permutation;
 		}
 	}
 
@@ -1140,6 +1149,10 @@ void CutFunction::getPortMap(std::map<unsigned long long, std::vector<std::vecto
 	pmap =	m_PortMap;
 }
 
+void CutFunction::getPortMap_DC(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap){
+	pmap =	m_PortMap_DC;
+}
+
 
 void CutFunction::getHashMap(std::map<unsigned long long, std::string>& hmap){
 	hmap = m_HashTable;
@@ -1156,6 +1169,7 @@ void CutFunction::reset(){
 	m_FunctionCount.clear();
 	m_NodeFunction.clear();
 	m_PortMap.clear();
+	m_PortMap_DC.clear();
 	m_UniqueFunction.clear();
 
 

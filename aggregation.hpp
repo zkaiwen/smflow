@@ -31,6 +31,7 @@ namespace AGGREGATION{
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in);
 	bool isInputNeg(AIG* aigraph, unsigned out, unsigned in);
 	void findAdder(CutFunction* cf, AIG* aigraph);
+	bool DFS(AIG* aig, unsigned start, unsigned end, std::set<unsigned>& input);
 
 
 	void printIO(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
@@ -225,6 +226,38 @@ namespace AGGREGATION{
 
 	}
 
+
+
+
+	bool DFS(AIG* aig, unsigned start, unsigned end, std::set<unsigned>& input, std::set<unsigned>& marked){
+		start = start& 0xFFFFFFFE;
+
+		if(start == end) return true;
+		if(input.find(start) != input.end()) return false;
+
+		marked.insert(start);
+		
+		unsigned node1, node2, child1, child2;
+		child1 = aig->getChild1(start);
+		child2 = aig->getChild2(start);
+
+		node1 = child1 & 0xFFFFFFFE;
+		node2 = child2 & 0xFFFFFFFE;
+
+		if(marked.find(node1) != marked.end()) return false;
+		else if(marked.find(node2) != marked.end()) return false;
+
+		bool result1 = DFS(aig, node1, end, input, marked);
+		if(result1 == true) return true;
+
+		bool result2 = DFS(aig, node2, end, input, marked);
+		if(result2 == true) return true;
+		else return false;
+	}
+	
+
+
+
 	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& resultA, std::map<unsigned, unsigned>& resultC){
 		printf("\n\n\n");
 		printf("[AGG] -- SEARCHING FOR ADDERS -------------------------------\n");
@@ -291,24 +324,17 @@ namespace AGGREGATION{
 		}
 
 
-		//Aggregation
-		std::list<std::set<unsigned> > addOutputList;
-		std::list<std::set<unsigned> > addInputList;
-		std::list<std::set<unsigned> > carryOutputList;
-		std::list<std::set<unsigned> > carryInputList;
-		std::list<std::set<unsigned> >::iterator iList1;
-		std::list<std::set<unsigned> >::iterator iList2;
-		std::list<std::set<unsigned> >::iterator iList3;
-		std::list<std::set<unsigned> >::iterator iList4;
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
 		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap_dc;
 		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
 		cf->getPortMap(pmap);
+		cf->getPortMap_DC(pmap_dc);
 
-		printf("XOR FUNCTIONS: \n");
-		printIO(pmap, xorFunction);
+		//printf("XOR FUNCTIONS: \n");
+		//printIO(pmap, xorFunction);
 
 		printf("FACARRY FUNCTIONS: \n");
 		printIO(pmap, faCarry);
@@ -338,30 +364,78 @@ namespace AGGREGATION{
 		printf("\n\nHACARRY3 FUNCTIONS: \n");
 		printIO(pmap, haCarry3);
 
-		printf("\n\nCLA3 FUNCTIONS: \n");
-		printIO(pmap, cla3);
+		//printf("\n\nCLA3 FUNCTIONS: \n");
+		//printIO(pmap, cla3);
 
 
-		//Aggregate HASUM2
-		printf("\n\nCLA3 AGG\n");
+		//printf("XOR FUNCTIONS___DC: \n");
+		//printIO(pmap_dc, xorFunction);
 
-		//Aggregate HASUM2
+		printf("FACARRY FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faCarry);
+
+		printf("\n\nFASUM FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faSum);
+		
+		printf("\n\nFASUM2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faSum2);
+
+		printf("\n\nFASUM3 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faSum3);
+
+		printf("\n\nFACARRY2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faCarry2);
+
+		printf("\n\nHASUM2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haSum2);
+		
+		printf("\n\nHACARRY2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haCarry2);
+		
+		printf("\n\nHASUM3 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haSum3);
+		
+
+		printf("\n\nHACARRY3 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haCarry3);
+
+		//printf("\n\nCLA3 FUNCTIONS___DC: \n");
+		//printIO(pmap_dc, cla3);
+
+
+		//Aggregation
+		std::list<std::set<unsigned> > addOutputList;
+		std::list<std::set<unsigned> > addInputList;
+		std::list<std::set<unsigned> > carryOutputList;
+		std::list<std::set<unsigned> > carryInputList;
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::list<std::set<unsigned> >::iterator iList2;
+		std::list<std::set<unsigned> >::iterator iList3;
+		std::list<std::set<unsigned> >::iterator iList4;
+
 		printf("\n\nHAcarry3 AGG\n");
 		carryAggregation(pmap, haCarry3, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry3, carryInputList, carryOutputList);
-		
+		carryAggregation(pmap_dc, haCarry3, addInputList, addOutputList);
+		adderAggregation(pmap_dc, haCarry3, carryInputList, carryOutputList);
 
 		printf("\n\nHAcarry2 AGG\n");
 		carryAggregation(pmap, haCarry2, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, haCarry2, addInputList, addOutputList);
+		adderAggregation(pmap_dc, haCarry2, carryInputList, carryOutputList);
 		
 		printf("\n\nFAcarry2 AGG\n");
 		carryAggregation(pmap, faCarry2, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry2, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, faCarry2, addInputList, addOutputList);
+		adderAggregation(pmap_dc, faCarry2, carryInputList, carryOutputList);
 
 		printf("\n\nFAcarry AGG\n");
 		carryAggregation(pmap, faCarry, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, faCarry, addInputList, addOutputList);
+		adderAggregation(pmap_dc, faCarry, carryInputList, carryOutputList);
 		printAddList(addInputList, addOutputList);
 
 		//Chcek to see if any of the sets are contained within each other
@@ -392,11 +466,13 @@ namespace AGGREGATION{
 			iList1++;
 		}
 		
+
 		printf("ADD CARRY Aggregation\n");
 		printAddList(addInputList, addOutputList);
-		
 		printf("Carry Aggregation\n");
 		printAddList(carryInputList, carryOutputList);
+
+
 
 		printf("\n\nHASUM3 AGG\n");
 		adderAggregation(pmap, haSum3, addInputList, addOutputList);
@@ -404,13 +480,23 @@ namespace AGGREGATION{
 		printf("\n\nHASUM2 AGG\n");
 		adderAggregation(pmap, haSum2, addInputList, addOutputList);
 
-		
 		printf("\n\nFASum3 AGG\n");
 		adderAggregation(pmap, faSum3, addInputList, addOutputList);
 
-		
 		printf("\n\nFASum2 AGG\n");
 		adderAggregation(pmap, faSum2, addInputList, addOutputList);
+		
+		printf("\n\nHASUM3 AGG____DC\n");
+		adderAggregation(pmap_dc, haSum3, addInputList, addOutputList);
+
+		printf("\n\nHASUM2 AGG____DC\n");
+		adderAggregation(pmap_dc, haSum2, addInputList, addOutputList);
+
+		printf("\n\nFASum3 AGG____DC\n");
+		adderAggregation(pmap_dc, faSum3, addInputList, addOutputList);
+
+		printf("\n\nFASum2 AGG____DC\n");
+		adderAggregation(pmap_dc, faSum2, addInputList, addOutputList);
 		
 		printAddList(addInputList, addOutputList);
 
@@ -1562,11 +1648,13 @@ namespace AGGREGATION{
 		mark.insert(out);
 		int numNegative = 0;
 
+/*
 		printf("NEG: OUT:%d IN: ", out);
 		for(unsigned int i = 0; i < in.size(); i++){
 			printf("%d ", in[i]);
 		}
 		printf("\n");
+		*/
 
 		while(queue.size() != 0){
 			unsigned qitem = queue.front();
@@ -1575,20 +1663,20 @@ namespace AGGREGATION{
 
 			//If reached an input, return
 			bool foundInput = false;
-			bool isNegative = false;
-			for(unsigned int i = 0; i < in.size(); i++){
-				if(qitem & 0x1){
-					qitem = qitem & 0xFFFFFFFE;
-					isNegative = true;
-				}
+			bool isNeg = false;
+			if(qitem & 0x1){
+				qitem = qitem & 0xFFFFFFFE;
+				isNeg = true;
+			}
 
+			//Check to see if node is at the input
+			for(unsigned int i = 0; i < in.size(); i++){
 				unsigned input = in[i];
 				input = input & 0xFFFFFFFE;
 
 				if(qitem == in[i]){
-					if(isNegative){
+					if(isNeg)
 						numNegative++;
-					}
 
 					foundInput = true;
 					break;

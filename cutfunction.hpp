@@ -96,6 +96,7 @@ class CutFunction{
 
 		//Getters
 		void getPortMap(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& );
+		void getPortMap_DC(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& );
 		void getHashMap(std::map<unsigned long long, std::string>&);
 		void setParams(CutEnumeration*, AIG*);
 		void getFunctionCount(std::map<unsigned long long, int>& );
