@@ -1,0 +1,44 @@
+41
+17 25 A_0  26 A_1  27 A_2  28 A_3  29 A_4  30 A_5  31 A_6  32 A_7  33 B_0  34 B_1  35 B_2  36 B_3  37 B_4  38 B_5  39 B_6  40 B_7  0 CI  
+9 23 CO  24 SUM_0  21 SUM_1  18 SUM_2  15 SUM_3  12 SUM_4  9 SUM_5  6 SUM_6  3 SUM_7  
+0 IN CI 0 2 2 O 3 O 
+1 LUT2 Madd_n0004_Madd_lut_0__ 2 32 I0 40 I1 2 2 O 3 O 6
+2 MUXCY Madd_n0004_Madd_cy_0__ 3 32 DI 0 CI 1 S 2 5 O 6 O 
+3 XORCY Madd_n0004_Madd_xor_0__ 2 0 CI 1 LI 0 
+4 LUT2 Madd_n0004_Madd_lut_1__ 2 31 I0 39 I1 2 5 O 6 O 6
+5 MUXCY Madd_n0004_Madd_cy_1__ 3 31 DI 2 CI 4 S 2 8 O 9 O 
+6 XORCY Madd_n0004_Madd_xor_1__ 2 2 CI 4 LI 0 
+7 LUT2 Madd_n0004_Madd_lut_2__ 2 30 I0 38 I1 2 8 O 9 O 6
+8 MUXCY Madd_n0004_Madd_cy_2__ 3 30 DI 5 CI 7 S 2 11 O 12 O 
+9 XORCY Madd_n0004_Madd_xor_2__ 2 5 CI 7 LI 0 
+10 LUT2 Madd_n0004_Madd_lut_3__ 2 29 I0 37 I1 2 11 O 12 O 6
+11 MUXCY Madd_n0004_Madd_cy_3__ 3 29 DI 8 CI 10 S 2 14 O 15 O 
+12 XORCY Madd_n0004_Madd_xor_3__ 2 8 CI 10 LI 0 
+13 LUT2 Madd_n0004_Madd_lut_4__ 2 28 I0 36 I1 2 14 O 15 O 6
+14 MUXCY Madd_n0004_Madd_cy_4__ 3 28 DI 11 CI 13 S 2 17 O 18 O 
+15 XORCY Madd_n0004_Madd_xor_4__ 2 11 CI 13 LI 0 
+16 LUT2 Madd_n0004_Madd_lut_5__ 2 27 I0 35 I1 2 17 O 18 O 6
+17 MUXCY Madd_n0004_Madd_cy_5__ 3 27 DI 14 CI 16 S 2 20 O 21 O 
+18 XORCY Madd_n0004_Madd_xor_5__ 2 14 CI 16 LI 0 
+19 LUT2 Madd_n0004_Madd_lut_6__ 2 26 I0 34 I1 2 20 O 21 O 6
+20 MUXCY Madd_n0004_Madd_cy_6__ 3 26 DI 17 CI 19 S 2 23 O 24 O 
+21 XORCY Madd_n0004_Madd_xor_6__ 2 17 CI 19 LI 0 
+22 LUT2 Madd_n0004_Madd_lut_7__ 2 25 I0 33 I1 2 23 O 24 O 6
+23 MUXCY Madd_n0004_Madd_cy_7__ 3 25 DI 20 CI 22 S 0 
+24 XORCY Madd_n0004_Madd_xor_7__ 2 20 CI 22 LI 0 
+25 IN A_0 0 2 22 O 23 O 
+26 IN A_1 0 2 19 O 20 O 
+27 IN A_2 0 2 16 O 17 O 
+28 IN A_3 0 2 13 O 14 O 
+29 IN A_4 0 2 10 O 11 O 
+30 IN A_5 0 2 7 O 8 O 
+31 IN A_6 0 2 4 O 5 O 
+32 IN A_7 0 2 1 O 2 O 
+33 IN B_0 0 1 22 O 
+34 IN B_1 0 1 19 O 
+35 IN B_2 0 1 16 O 
+36 IN B_3 0 1 13 O 
+37 IN B_4 0 1 10 O 
+38 IN B_5 0 1 7 O 
+39 IN B_6 0 1 4 O 
+40 IN B_7 0 1 1 O 

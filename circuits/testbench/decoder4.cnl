@@ -1,0 +1,10 @@
+7
+3 5 binary_in_0  6 binary_in_1  0 enable  
+4 1 decoder_out_0  2 decoder_out_1  3 decoder_out_2  4 decoder_out_3  
+0 IN enable 0 4 1 O 2 O 3 O 4 O 
+1 LUT3 Mmux_decoder_out41 3 5 I1 6 I2 0 I0 0 80
+2 LUT3 Mmux_decoder_out31 3 5 I1 6 I2 0 I0 0 8
+3 LUT3 Mmux_decoder_out21 3 5 I2 6 I0 0 I1 0 8
+4 LUT3 Mmux_decoder_out11 3 5 I1 6 I2 0 I0 0 2
+5 IN binary_in_0 0 4 1 O 2 O 3 O 4 O 
+6 IN binary_in_1 0 4 1 O 2 O 3 O 4 O 

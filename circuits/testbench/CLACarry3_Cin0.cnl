@@ -1,0 +1,11 @@
+8
+5 3 Gbus_0  4 Gbus_1  5 Gbus_2  6 Pbus_0  7 Pbus_1  
+1 2 OutCarry  
+0 AND2 Cla3_0__i000001 2 3 I1 6 I0 1 2 O 
+1 AND3 Cla3_1__i000001 3 4 I2 6 I0 7 I1 1 2 O 
+2 OR3 Cla3_2__i000001 3 5 I0 0 I1 1 I2 0 
+3 IN Gbus_0 0 1 0 O 
+4 IN Gbus_1 0 1 1 O 
+5 IN Gbus_2 0 1 2 O 
+6 IN Pbus_0 0 2 0 O 1 O 
+7 IN Pbus_1 0 1 1 O 

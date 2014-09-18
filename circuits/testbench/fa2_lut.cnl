@@ -1,0 +1,11 @@
+8
+5 4 A_0  5 A_1  6 B_0  7 B_1  0 CI  
+3 2 CO  3 S_0  1 S_1  
+0 IN CI 0 3 1 O 2 O 3 O 
+1 LUT3 Madd_n0004_Madd_xor_0_11 3 5 I0 7 I1 0 I2 0 96
+2 LUT5 Madd_n0004_Madd_cy_1_11 5 4 I0 5 I2 6 I1 7 I3 0 I4 0 eee8e888
+3 LUT5 Madd_n0004_Madd_xor_1_11 5 4 I0 5 I2 6 I1 7 I3 0 I4 0 99969666
+4 IN A_0 0 2 2 O 3 O 
+5 IN A_1 0 3 1 O 2 O 3 O 
+6 IN B_0 0 2 2 O 3 O 
+7 IN B_1 0 3 1 O 2 O 3 O 

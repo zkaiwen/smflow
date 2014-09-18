@@ -1,0 +1,38 @@
+35
+3 1 clk  2 reset  0 up_down  
+8 10 out_0  9 out_1  8 out_2  7 out_3  6 out_4  5 out_5  4 out_6  3 out_7  
+0 IN up_down 0 9 33 O 34 O 26 O 27 O 28 O 29 O 30 O 31 O 32 O 
+1 IN clk 0 8 3 O 4 O 5 O 6 O 7 O 8 O 9 O 10 O 
+2 IN reset 0 8 3 O 4 O 5 O 6 O 7 O 8 O 9 O 10 O 
+3 FDR out_0 3 1 C 2 R 12 D 2 11 Q 26 Q 
+4 FDR out_1 3 1 C 2 R 14 D 2 13 Q 27 Q 
+5 FDR out_2 3 1 C 2 R 16 D 2 15 Q 28 Q 
+6 FDR out_3 3 1 C 2 R 18 D 2 17 Q 29 Q 
+7 FDR out_4 3 1 C 2 R 20 D 2 19 Q 30 Q 
+8 FDR out_5 3 1 C 2 R 22 D 2 21 Q 31 Q 
+9 FDR out_6 3 1 C 2 R 24 D 2 23 Q 32 Q 
+10 FDR out_7 3 1 C 2 R 25 D 1 33 Q 
+11 MUXCY Mcount_out_cy_0__ 3 3 DI 34 CI 26 S 2 13 O 14 O 
+12 XORCY Mcount_out_xor_0__ 2 34 CI 26 LI 1 3 O 
+13 MUXCY Mcount_out_cy_1__ 3 4 DI 11 CI 27 S 2 15 O 16 O 
+14 XORCY Mcount_out_xor_1__ 2 11 CI 27 LI 1 4 O 
+15 MUXCY Mcount_out_cy_2__ 3 5 DI 13 CI 28 S 2 17 O 18 O 
+16 XORCY Mcount_out_xor_2__ 2 13 CI 28 LI 1 5 O 
+17 MUXCY Mcount_out_cy_3__ 3 6 DI 15 CI 29 S 2 19 O 20 O 
+18 XORCY Mcount_out_xor_3__ 2 15 CI 29 LI 1 6 O 
+19 MUXCY Mcount_out_cy_4__ 3 7 DI 17 CI 30 S 2 21 O 22 O 
+20 XORCY Mcount_out_xor_4__ 2 17 CI 30 LI 1 7 O 
+21 MUXCY Mcount_out_cy_5__ 3 8 DI 19 CI 31 S 2 23 O 24 O 
+22 XORCY Mcount_out_xor_5__ 2 19 CI 31 LI 1 8 O 
+23 MUXCY Mcount_out_cy_6__ 3 9 DI 21 CI 32 S 1 25 O 
+24 XORCY Mcount_out_xor_6__ 2 21 CI 32 LI 1 9 O 
+25 XORCY Mcount_out_xor_7__ 2 23 CI 33 LI 1 10 O 
+26 LUT2 Mcount_out_lut_0__ 2 0 I0 3 I1 2 11 O 12 O 6
+27 LUT2 Mcount_out_lut_1__ 2 0 I0 4 I1 2 13 O 14 O 9
+28 LUT2 Mcount_out_lut_2__ 2 0 I0 5 I1 2 15 O 16 O 9
+29 LUT2 Mcount_out_lut_3__ 2 0 I0 6 I1 2 17 O 18 O 9
+30 LUT2 Mcount_out_lut_4__ 2 0 I0 7 I1 2 19 O 20 O 9
+31 LUT2 Mcount_out_lut_5__ 2 0 I0 8 I1 2 21 O 22 O 9
+32 LUT2 Mcount_out_lut_6__ 2 0 I0 9 I1 2 23 O 24 O 9
+33 LUT2 Mcount_out_lut_7__ 2 0 I1 10 I0 1 25 O 9
+34 INV up_down_inv2_INV_0 1 0 I 2 11 O 12 O 

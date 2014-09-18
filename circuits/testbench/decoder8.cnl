@@ -1,0 +1,15 @@
+12
+4 9 binary_in_0  10 binary_in_1  11 binary_in_2  0 enable  
+8 7 decoder_out_0  8 decoder_out_1  5 decoder_out_2  6 decoder_out_3  3 decoder_out_4  4 decoder_out_5  1 decoder_out_6  2 decoder_out_7  
+0 IN enable 0 8 1 O 2 O 3 O 4 O 5 O 6 O 7 O 8 O 
+1 LUT4 Mmux_decoder_out21 4 9 I1 10 I2 11 I0 0 I3 0 200
+2 LUT4 Mmux_decoder_out11 4 9 I1 10 I2 11 I0 0 I3 0 100
+3 LUT4 Mmux_decoder_out41 4 9 I1 10 I2 11 I0 0 I3 0 2000
+4 LUT4 Mmux_decoder_out31 4 9 I2 10 I0 11 I1 0 I3 0 200
+5 LUT4 Mmux_decoder_out61 4 9 I0 10 I1 11 I2 0 I3 0 2000
+6 LUT4 Mmux_decoder_out51 4 9 I0 10 I2 11 I1 0 I3 0 200
+7 LUT4 Mmux_decoder_out81 4 9 I1 10 I2 11 I0 0 I3 0 8000
+8 LUT4 Mmux_decoder_out71 4 9 I0 10 I2 11 I1 0 I3 0 2000
+9 IN binary_in_0 0 8 1 O 2 O 3 O 4 O 5 O 6 O 7 O 8 O 
+10 IN binary_in_1 0 8 1 O 2 O 3 O 4 O 5 O 6 O 7 O 8 O 
+11 IN binary_in_2 0 8 1 O 2 O 3 O 4 O 5 O 6 O 7 O 8 O 

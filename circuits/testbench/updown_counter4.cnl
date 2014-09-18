@@ -1,0 +1,14 @@
+11
+3 1 clk  2 reset  0 up_down  
+4 6 out_0  5 out_1  4 out_2  3 out_3  
+0 IN up_down 0 3 8 O 9 O 7 O 
+1 IN clk 0 4 3 O 4 O 5 O 6 O 
+2 IN reset 0 4 3 O 4 O 5 O 6 O 
+3 FDR out_0 3 1 C 2 R 10 D 4 8 Q 9 Q 10 Q 7 Q 
+4 FDR out_1 3 1 C 2 R 9 D 3 7 Q 8 Q 9 Q 
+5 FDR out_2 3 1 C 2 R 8 D 2 8 Q 7 Q 
+6 FDR out_3 3 1 C 2 R 7 D 1 7 Q 
+7 LUT5 Result_3_1 5 0 I0 6 I1 5 I2 4 I3 3 I4 1 6 O 6cccccc9
+8 LUT4 Result_2_1 4 0 I0 5 I3 4 I2 3 I1 1 5 O 7e81
+9 LUT3 Result_1_1 3 0 I0 4 I2 3 I1 1 4 O 69
+10 INV Result_0_1_INV_0 1 3 I 1 3 O 

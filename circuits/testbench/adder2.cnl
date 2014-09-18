@@ -1,0 +1,10 @@
+7
+4 3 A_0  4 A_1  5 B_0  6 B_1  
+3 2 CO  1 SUM_0  0 SUM_1  
+0 LUT2 Madd_n0006_lut_0_1 2 4 I0 6 I1 0 6
+1 LUT4 Madd_n0006_xor_1_11 4 3 I0 4 I2 5 I1 6 I3 0 9666
+2 LUT4 Madd_n0006_cy_1_11 4 3 I0 4 I1 5 I3 6 I2 0 ea80
+3 IN A_0 0 2 1 O 2 O 
+4 IN A_1 0 3 0 O 1 O 2 O 
+5 IN B_0 0 2 1 O 2 O 
+6 IN B_1 0 3 0 O 1 O 2 O 

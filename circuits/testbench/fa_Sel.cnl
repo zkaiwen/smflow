@@ -1,0 +1,9 @@
+6
+4 0 A  1 B  3 Cin  2 sel  
+2 5 CO  4 S  
+0 IN A 0 2 4 O 5 O 
+1 IN B 0 2 4 O 5 O 
+2 IN sel 0 2 4 O 5 O 
+3 IN Cin 0 2 4 O 5 O 
+4 LUT4 S1 4 0 I1 1 I3 2 I0 3 I2 0 8228
+5 LUT4 CO1 4 0 I1 1 I3 2 I0 3 I2 0 a880

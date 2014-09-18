@@ -1,0 +1,13 @@
+10
+7 3 din_0  4 din_1  5 din_2  6 din_3  7 sel_0  8 sel_1  9 sel_2  
+1 0 mux_out  
+0 LD mux_out_renamed_0 2 1 D 2 G 0 
+1 LUT6 Mmux__n001911 6 3 I4 4 I3 5 I5 6 I1 7 I2 8 I0 1 0 O dfd5dad08f858a80
+2 INV out1_INV_0 1 9 I 1 0 O 
+3 IN din_0 0 1 1 O 
+4 IN din_1 0 1 1 O 
+5 IN din_2 0 1 1 O 
+6 IN din_3 0 1 1 O 
+7 IN sel_0 0 1 1 O 
+8 IN sel_1 0 1 1 O 
+9 IN sel_2 0 1 2 O 

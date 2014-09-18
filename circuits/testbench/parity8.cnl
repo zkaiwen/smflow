@@ -1,0 +1,13 @@
+10
+8 2 data_in_0  3 data_in_1  4 data_in_2  5 data_in_3  6 data_in_4  7 data_in_5  8 data_in_6  9 data_in_7  
+1 1 parity_out  
+0 LUT3 Mxor_parity_out_xo_0__SW0 3 2 I2 3 I1 4 I0 1 1 O 69
+1 LUT6 Mxor_parity_out_xo_0__ 6 5 I4 6 I3 7 I2 8 I1 9 I0 0 I5 0 9669699669969669
+2 IN data_in_0 0 1 0 O 
+3 IN data_in_1 0 1 0 O 
+4 IN data_in_2 0 1 0 O 
+5 IN data_in_3 0 1 1 O 
+6 IN data_in_4 0 1 1 O 
+7 IN data_in_5 0 1 1 O 
+8 IN data_in_6 0 1 1 O 
+9 IN data_in_7 0 1 1 O 

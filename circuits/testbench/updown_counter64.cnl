@@ -1,0 +1,262 @@
+259
+3 1 clk  2 reset  0 up_down  
+64 66 out_0  65 out_1  56 out_10  55 out_11  54 out_12  53 out_13  52 out_14  51 out_15  50 out_16  49 out_17  48 out_18  47 out_19  64 out_2  46 out_20  45 out_21  44 out_22  43 out_23  42 out_24  41 out_25  40 out_26  39 out_27  38 out_28  37 out_29  63 out_3  36 out_30  35 out_31  34 out_32  33 out_33  32 out_34  31 out_35  30 out_36  29 out_37  28 out_38  27 out_39  62 out_4  26 out_40  25 out_41  24 out_42  23 out_43  22 out_44  21 out_45  20 out_46  19 out_47  18 out_48  17 out_49  61 out_5  16 out_50  15 out_51  14 out_52  13 out_53  12 out_54  11 out_55  10 out_56  9 out_57  8 out_58  7 out_59  60 out_6  6 out_60  5 out_61  4 out_62  3 out_63  59 out_7  58 out_8  57 out_9  
+0 IN up_down 0 65 225 O 226 O 227 O 228 O 229 O 230 O 231 O 232 O 233 O 234 O 235 O 236 O 237 O 238 O 239 O 240 O 241 O 242 O 243 O 244 O 245 O 246 O 247 O 248 O 249 O 250 O 251 O 252 O 253 O 254 O 255 O 256 O 257 O 258 O 194 O 195 O 196 O 197 O 198 O 199 O 200 O 201 O 202 O 203 O 204 O 205 O 206 O 207 O 208 O 209 O 210 O 211 O 212 O 213 O 214 O 215 O 216 O 217 O 218 O 219 O 220 O 221 O 222 O 223 O 224 O 
+1 IN clk 0 64 3 O 4 O 5 O 6 O 7 O 8 O 9 O 10 O 11 O 12 O 13 O 14 O 15 O 16 O 17 O 18 O 19 O 20 O 21 O 22 O 23 O 24 O 25 O 26 O 27 O 28 O 29 O 30 O 31 O 32 O 33 O 34 O 35 O 36 O 37 O 38 O 39 O 40 O 41 O 42 O 43 O 44 O 45 O 46 O 47 O 48 O 49 O 50 O 51 O 52 O 53 O 54 O 55 O 56 O 57 O 58 O 59 O 60 O 61 O 62 O 63 O 64 O 65 O 66 O 
+2 IN reset 0 64 3 O 4 O 5 O 6 O 7 O 8 O 9 O 10 O 11 O 12 O 13 O 14 O 15 O 16 O 17 O 18 O 19 O 20 O 21 O 22 O 23 O 24 O 25 O 26 O 27 O 28 O 29 O 30 O 31 O 32 O 33 O 34 O 35 O 36 O 37 O 38 O 39 O 40 O 41 O 42 O 43 O 44 O 45 O 46 O 47 O 48 O 49 O 50 O 51 O 52 O 53 O 54 O 55 O 56 O 57 O 58 O 59 O 60 O 61 O 62 O 63 O 64 O 65 O 66 O 
+3 FDR out_0 3 1 C 2 R 68 D 2 67 Q 194 Q 
+4 FDR out_1 3 1 C 2 R 70 D 2 69 Q 195 Q 
+5 FDR out_2 3 1 C 2 R 72 D 2 71 Q 196 Q 
+6 FDR out_3 3 1 C 2 R 74 D 2 73 Q 197 Q 
+7 FDR out_4 3 1 C 2 R 76 D 2 75 Q 198 Q 
+8 FDR out_5 3 1 C 2 R 78 D 2 77 Q 199 Q 
+9 FDR out_6 3 1 C 2 R 80 D 2 79 Q 200 Q 
+10 FDR out_7 3 1 C 2 R 82 D 2 81 Q 201 Q 
+11 FDR out_8 3 1 C 2 R 84 D 2 83 Q 202 Q 
+12 FDR out_9 3 1 C 2 R 86 D 2 85 Q 203 Q 
+13 FDR out_10 3 1 C 2 R 88 D 2 87 Q 204 Q 
+14 FDR out_11 3 1 C 2 R 90 D 2 89 Q 205 Q 
+15 FDR out_12 3 1 C 2 R 92 D 2 91 Q 206 Q 
+16 FDR out_13 3 1 C 2 R 94 D 2 93 Q 207 Q 
+17 FDR out_14 3 1 C 2 R 96 D 2 95 Q 208 Q 
+18 FDR out_15 3 1 C 2 R 98 D 2 97 Q 209 Q 
+19 FDR out_16 3 1 C 2 R 100 D 2 99 Q 210 Q 
+20 FDR out_17 3 1 C 2 R 102 D 2 101 Q 211 Q 
+21 FDR out_18 3 1 C 2 R 104 D 2 103 Q 212 Q 
+22 FDR out_19 3 1 C 2 R 106 D 2 105 Q 213 Q 
+23 FDR out_20 3 1 C 2 R 108 D 2 107 Q 214 Q 
+24 FDR out_21 3 1 C 2 R 110 D 2 109 Q 215 Q 
+25 FDR out_22 3 1 C 2 R 112 D 2 111 Q 216 Q 
+26 FDR out_23 3 1 C 2 R 114 D 2 113 Q 217 Q 
+27 FDR out_24 3 1 C 2 R 116 D 2 115 Q 218 Q 
+28 FDR out_25 3 1 C 2 R 118 D 2 117 Q 219 Q 
+29 FDR out_26 3 1 C 2 R 120 D 2 119 Q 220 Q 
+30 FDR out_27 3 1 C 2 R 122 D 2 121 Q 221 Q 
+31 FDR out_28 3 1 C 2 R 124 D 2 123 Q 222 Q 
+32 FDR out_29 3 1 C 2 R 126 D 2 125 Q 223 Q 
+33 FDR out_30 3 1 C 2 R 128 D 2 127 Q 224 Q 
+34 FDR out_31 3 1 C 2 R 130 D 2 129 Q 225 Q 
+35 FDR out_32 3 1 C 2 R 132 D 2 131 Q 226 Q 
+36 FDR out_33 3 1 C 2 R 134 D 2 133 Q 227 Q 
+37 FDR out_34 3 1 C 2 R 136 D 2 135 Q 228 Q 
+38 FDR out_35 3 1 C 2 R 138 D 2 137 Q 229 Q 
+39 FDR out_36 3 1 C 2 R 140 D 2 139 Q 230 Q 
+40 FDR out_37 3 1 C 2 R 142 D 2 141 Q 231 Q 
+41 FDR out_38 3 1 C 2 R 144 D 2 143 Q 232 Q 
+42 FDR out_39 3 1 C 2 R 146 D 2 145 Q 233 Q 
+43 FDR out_40 3 1 C 2 R 148 D 2 147 Q 234 Q 
+44 FDR out_41 3 1 C 2 R 150 D 2 149 Q 235 Q 
+45 FDR out_42 3 1 C 2 R 152 D 2 151 Q 236 Q 
+46 FDR out_43 3 1 C 2 R 154 D 2 153 Q 237 Q 
+47 FDR out_44 3 1 C 2 R 156 D 2 155 Q 238 Q 
+48 FDR out_45 3 1 C 2 R 158 D 2 157 Q 239 Q 
+49 FDR out_46 3 1 C 2 R 160 D 2 159 Q 240 Q 
+50 FDR out_47 3 1 C 2 R 162 D 2 161 Q 241 Q 
+51 FDR out_48 3 1 C 2 R 164 D 2 163 Q 242 Q 
+52 FDR out_49 3 1 C 2 R 166 D 2 165 Q 243 Q 
+53 FDR out_50 3 1 C 2 R 168 D 2 167 Q 244 Q 
+54 FDR out_51 3 1 C 2 R 170 D 2 169 Q 245 Q 
+55 FDR out_52 3 1 C 2 R 172 D 2 171 Q 246 Q 
+56 FDR out_53 3 1 C 2 R 174 D 2 173 Q 247 Q 
+57 FDR out_54 3 1 C 2 R 176 D 2 175 Q 248 Q 
+58 FDR out_55 3 1 C 2 R 178 D 2 177 Q 249 Q 
+59 FDR out_56 3 1 C 2 R 180 D 2 179 Q 250 Q 
+60 FDR out_57 3 1 C 2 R 182 D 2 181 Q 251 Q 
+61 FDR out_58 3 1 C 2 R 184 D 2 183 Q 252 Q 
+62 FDR out_59 3 1 C 2 R 186 D 2 185 Q 253 Q 
+63 FDR out_60 3 1 C 2 R 188 D 2 187 Q 254 Q 
+64 FDR out_61 3 1 C 2 R 190 D 2 189 Q 255 Q 
+65 FDR out_62 3 1 C 2 R 192 D 2 191 Q 256 Q 
+66 FDR out_63 3 1 C 2 R 193 D 1 257 Q 
+67 MUXCY Mcount_out_cy_0__ 3 3 DI 258 CI 194 S 2 69 O 70 O 
+68 XORCY Mcount_out_xor_0__ 2 258 CI 194 LI 1 3 O 
+69 MUXCY Mcount_out_cy_1__ 3 4 DI 67 CI 195 S 2 71 O 72 O 
+70 XORCY Mcount_out_xor_1__ 2 67 CI 195 LI 1 4 O 
+71 MUXCY Mcount_out_cy_2__ 3 5 DI 69 CI 196 S 2 73 O 74 O 
+72 XORCY Mcount_out_xor_2__ 2 69 CI 196 LI 1 5 O 
+73 MUXCY Mcount_out_cy_3__ 3 6 DI 71 CI 197 S 2 75 O 76 O 
+74 XORCY Mcount_out_xor_3__ 2 71 CI 197 LI 1 6 O 
+75 MUXCY Mcount_out_cy_4__ 3 7 DI 73 CI 198 S 2 77 O 78 O 
+76 XORCY Mcount_out_xor_4__ 2 73 CI 198 LI 1 7 O 
+77 MUXCY Mcount_out_cy_5__ 3 8 DI 75 CI 199 S 2 79 O 80 O 
+78 XORCY Mcount_out_xor_5__ 2 75 CI 199 LI 1 8 O 
+79 MUXCY Mcount_out_cy_6__ 3 9 DI 77 CI 200 S 2 81 O 82 O 
+80 XORCY Mcount_out_xor_6__ 2 77 CI 200 LI 1 9 O 
+81 MUXCY Mcount_out_cy_7__ 3 10 DI 79 CI 201 S 2 83 O 84 O 
+82 XORCY Mcount_out_xor_7__ 2 79 CI 201 LI 1 10 O 
+83 MUXCY Mcount_out_cy_8__ 3 11 DI 81 CI 202 S 2 85 O 86 O 
+84 XORCY Mcount_out_xor_8__ 2 81 CI 202 LI 1 11 O 
+85 MUXCY Mcount_out_cy_9__ 3 12 DI 83 CI 203 S 2 87 O 88 O 
+86 XORCY Mcount_out_xor_9__ 2 83 CI 203 LI 1 12 O 
+87 MUXCY Mcount_out_cy_10__ 3 13 DI 85 CI 204 S 2 89 O 90 O 
+88 XORCY Mcount_out_xor_10__ 2 85 CI 204 LI 1 13 O 
+89 MUXCY Mcount_out_cy_11__ 3 14 DI 87 CI 205 S 2 91 O 92 O 
+90 XORCY Mcount_out_xor_11__ 2 87 CI 205 LI 1 14 O 
+91 MUXCY Mcount_out_cy_12__ 3 15 DI 89 CI 206 S 2 93 O 94 O 
+92 XORCY Mcount_out_xor_12__ 2 89 CI 206 LI 1 15 O 
+93 MUXCY Mcount_out_cy_13__ 3 16 DI 91 CI 207 S 2 95 O 96 O 
+94 XORCY Mcount_out_xor_13__ 2 91 CI 207 LI 1 16 O 
+95 MUXCY Mcount_out_cy_14__ 3 17 DI 93 CI 208 S 2 97 O 98 O 
+96 XORCY Mcount_out_xor_14__ 2 93 CI 208 LI 1 17 O 
+97 MUXCY Mcount_out_cy_15__ 3 18 DI 95 CI 209 S 2 99 O 100 O 
+98 XORCY Mcount_out_xor_15__ 2 95 CI 209 LI 1 18 O 
+99 MUXCY Mcount_out_cy_16__ 3 19 DI 97 CI 210 S 2 101 O 102 O 
+100 XORCY Mcount_out_xor_16__ 2 97 CI 210 LI 1 19 O 
+101 MUXCY Mcount_out_cy_17__ 3 20 DI 99 CI 211 S 2 103 O 104 O 
+102 XORCY Mcount_out_xor_17__ 2 99 CI 211 LI 1 20 O 
+103 MUXCY Mcount_out_cy_18__ 3 21 DI 101 CI 212 S 2 105 O 106 O 
+104 XORCY Mcount_out_xor_18__ 2 101 CI 212 LI 1 21 O 
+105 MUXCY Mcount_out_cy_19__ 3 22 DI 103 CI 213 S 2 107 O 108 O 
+106 XORCY Mcount_out_xor_19__ 2 103 CI 213 LI 1 22 O 
+107 MUXCY Mcount_out_cy_20__ 3 23 DI 105 CI 214 S 2 109 O 110 O 
+108 XORCY Mcount_out_xor_20__ 2 105 CI 214 LI 1 23 O 
+109 MUXCY Mcount_out_cy_21__ 3 24 DI 107 CI 215 S 2 111 O 112 O 
+110 XORCY Mcount_out_xor_21__ 2 107 CI 215 LI 1 24 O 
+111 MUXCY Mcount_out_cy_22__ 3 25 DI 109 CI 216 S 2 113 O 114 O 
+112 XORCY Mcount_out_xor_22__ 2 109 CI 216 LI 1 25 O 
+113 MUXCY Mcount_out_cy_23__ 3 26 DI 111 CI 217 S 2 115 O 116 O 
+114 XORCY Mcount_out_xor_23__ 2 111 CI 217 LI 1 26 O 
+115 MUXCY Mcount_out_cy_24__ 3 27 DI 113 CI 218 S 2 117 O 118 O 
+116 XORCY Mcount_out_xor_24__ 2 113 CI 218 LI 1 27 O 
+117 MUXCY Mcount_out_cy_25__ 3 28 DI 115 CI 219 S 2 119 O 120 O 
+118 XORCY Mcount_out_xor_25__ 2 115 CI 219 LI 1 28 O 
+119 MUXCY Mcount_out_cy_26__ 3 29 DI 117 CI 220 S 2 121 O 122 O 
+120 XORCY Mcount_out_xor_26__ 2 117 CI 220 LI 1 29 O 
+121 MUXCY Mcount_out_cy_27__ 3 30 DI 119 CI 221 S 2 123 O 124 O 
+122 XORCY Mcount_out_xor_27__ 2 119 CI 221 LI 1 30 O 
+123 MUXCY Mcount_out_cy_28__ 3 31 DI 121 CI 222 S 2 125 O 126 O 
+124 XORCY Mcount_out_xor_28__ 2 121 CI 222 LI 1 31 O 
+125 MUXCY Mcount_out_cy_29__ 3 32 DI 123 CI 223 S 2 127 O 128 O 
+126 XORCY Mcount_out_xor_29__ 2 123 CI 223 LI 1 32 O 
+127 MUXCY Mcount_out_cy_30__ 3 33 DI 125 CI 224 S 2 129 O 130 O 
+128 XORCY Mcount_out_xor_30__ 2 125 CI 224 LI 1 33 O 
+129 MUXCY Mcount_out_cy_31__ 3 34 DI 127 CI 225 S 2 131 O 132 O 
+130 XORCY Mcount_out_xor_31__ 2 127 CI 225 LI 1 34 O 
+131 MUXCY Mcount_out_cy_32__ 3 35 DI 129 CI 226 S 2 133 O 134 O 
+132 XORCY Mcount_out_xor_32__ 2 129 CI 226 LI 1 35 O 
+133 MUXCY Mcount_out_cy_33__ 3 36 DI 131 CI 227 S 2 135 O 136 O 
+134 XORCY Mcount_out_xor_33__ 2 131 CI 227 LI 1 36 O 
+135 MUXCY Mcount_out_cy_34__ 3 37 DI 133 CI 228 S 2 137 O 138 O 
+136 XORCY Mcount_out_xor_34__ 2 133 CI 228 LI 1 37 O 
+137 MUXCY Mcount_out_cy_35__ 3 38 DI 135 CI 229 S 2 139 O 140 O 
+138 XORCY Mcount_out_xor_35__ 2 135 CI 229 LI 1 38 O 
+139 MUXCY Mcount_out_cy_36__ 3 39 DI 137 CI 230 S 2 141 O 142 O 
+140 XORCY Mcount_out_xor_36__ 2 137 CI 230 LI 1 39 O 
+141 MUXCY Mcount_out_cy_37__ 3 40 DI 139 CI 231 S 2 143 O 144 O 
+142 XORCY Mcount_out_xor_37__ 2 139 CI 231 LI 1 40 O 
+143 MUXCY Mcount_out_cy_38__ 3 41 DI 141 CI 232 S 2 145 O 146 O 
+144 XORCY Mcount_out_xor_38__ 2 141 CI 232 LI 1 41 O 
+145 MUXCY Mcount_out_cy_39__ 3 42 DI 143 CI 233 S 2 147 O 148 O 
+146 XORCY Mcount_out_xor_39__ 2 143 CI 233 LI 1 42 O 
+147 MUXCY Mcount_out_cy_40__ 3 43 DI 145 CI 234 S 2 149 O 150 O 
+148 XORCY Mcount_out_xor_40__ 2 145 CI 234 LI 1 43 O 
+149 MUXCY Mcount_out_cy_41__ 3 44 DI 147 CI 235 S 2 151 O 152 O 
+150 XORCY Mcount_out_xor_41__ 2 147 CI 235 LI 1 44 O 
+151 MUXCY Mcount_out_cy_42__ 3 45 DI 149 CI 236 S 2 153 O 154 O 
+152 XORCY Mcount_out_xor_42__ 2 149 CI 236 LI 1 45 O 
+153 MUXCY Mcount_out_cy_43__ 3 46 DI 151 CI 237 S 2 155 O 156 O 
+154 XORCY Mcount_out_xor_43__ 2 151 CI 237 LI 1 46 O 
+155 MUXCY Mcount_out_cy_44__ 3 47 DI 153 CI 238 S 2 157 O 158 O 
+156 XORCY Mcount_out_xor_44__ 2 153 CI 238 LI 1 47 O 
+157 MUXCY Mcount_out_cy_45__ 3 48 DI 155 CI 239 S 2 159 O 160 O 
+158 XORCY Mcount_out_xor_45__ 2 155 CI 239 LI 1 48 O 
+159 MUXCY Mcount_out_cy_46__ 3 49 DI 157 CI 240 S 2 161 O 162 O 
+160 XORCY Mcount_out_xor_46__ 2 157 CI 240 LI 1 49 O 
+161 MUXCY Mcount_out_cy_47__ 3 50 DI 159 CI 241 S 2 163 O 164 O 
+162 XORCY Mcount_out_xor_47__ 2 159 CI 241 LI 1 50 O 
+163 MUXCY Mcount_out_cy_48__ 3 51 DI 161 CI 242 S 2 165 O 166 O 
+164 XORCY Mcount_out_xor_48__ 2 161 CI 242 LI 1 51 O 
+165 MUXCY Mcount_out_cy_49__ 3 52 DI 163 CI 243 S 2 167 O 168 O 
+166 XORCY Mcount_out_xor_49__ 2 163 CI 243 LI 1 52 O 
+167 MUXCY Mcount_out_cy_50__ 3 53 DI 165 CI 244 S 2 169 O 170 O 
+168 XORCY Mcount_out_xor_50__ 2 165 CI 244 LI 1 53 O 
+169 MUXCY Mcount_out_cy_51__ 3 54 DI 167 CI 245 S 2 171 O 172 O 
+170 XORCY Mcount_out_xor_51__ 2 167 CI 245 LI 1 54 O 
+171 MUXCY Mcount_out_cy_52__ 3 55 DI 169 CI 246 S 2 173 O 174 O 
+172 XORCY Mcount_out_xor_52__ 2 169 CI 246 LI 1 55 O 
+173 MUXCY Mcount_out_cy_53__ 3 56 DI 171 CI 247 S 2 175 O 176 O 
+174 XORCY Mcount_out_xor_53__ 2 171 CI 247 LI 1 56 O 
+175 MUXCY Mcount_out_cy_54__ 3 57 DI 173 CI 248 S 2 177 O 178 O 
+176 XORCY Mcount_out_xor_54__ 2 173 CI 248 LI 1 57 O 
+177 MUXCY Mcount_out_cy_55__ 3 58 DI 175 CI 249 S 2 179 O 180 O 
+178 XORCY Mcount_out_xor_55__ 2 175 CI 249 LI 1 58 O 
+179 MUXCY Mcount_out_cy_56__ 3 59 DI 177 CI 250 S 2 181 O 182 O 
+180 XORCY Mcount_out_xor_56__ 2 177 CI 250 LI 1 59 O 
+181 MUXCY Mcount_out_cy_57__ 3 60 DI 179 CI 251 S 2 183 O 184 O 
+182 XORCY Mcount_out_xor_57__ 2 179 CI 251 LI 1 60 O 
+183 MUXCY Mcount_out_cy_58__ 3 61 DI 181 CI 252 S 2 185 O 186 O 
+184 XORCY Mcount_out_xor_58__ 2 181 CI 252 LI 1 61 O 
+185 MUXCY Mcount_out_cy_59__ 3 62 DI 183 CI 253 S 2 187 O 188 O 
+186 XORCY Mcount_out_xor_59__ 2 183 CI 253 LI 1 62 O 
+187 MUXCY Mcount_out_cy_60__ 3 63 DI 185 CI 254 S 2 189 O 190 O 
+188 XORCY Mcount_out_xor_60__ 2 185 CI 254 LI 1 63 O 
+189 MUXCY Mcount_out_cy_61__ 3 64 DI 187 CI 255 S 2 191 O 192 O 
+190 XORCY Mcount_out_xor_61__ 2 187 CI 255 LI 1 64 O 
+191 MUXCY Mcount_out_cy_62__ 3 65 DI 189 CI 256 S 1 193 O 
+192 XORCY Mcount_out_xor_62__ 2 189 CI 256 LI 1 65 O 
+193 XORCY Mcount_out_xor_63__ 2 191 CI 257 LI 1 66 O 
+194 LUT2 Mcount_out_lut_0__ 2 0 I0 3 I1 2 67 O 68 O 6
+195 LUT2 Mcount_out_lut_1__ 2 0 I0 4 I1 2 69 O 70 O 9
+196 LUT2 Mcount_out_lut_2__ 2 0 I0 5 I1 2 71 O 72 O 9
+197 LUT2 Mcount_out_lut_3__ 2 0 I0 6 I1 2 73 O 74 O 9
+198 LUT2 Mcount_out_lut_4__ 2 0 I0 7 I1 2 75 O 76 O 9
+199 LUT2 Mcount_out_lut_5__ 2 0 I0 8 I1 2 77 O 78 O 9
+200 LUT2 Mcount_out_lut_6__ 2 0 I0 9 I1 2 79 O 80 O 9
+201 LUT2 Mcount_out_lut_7__ 2 0 I0 10 I1 2 81 O 82 O 9
+202 LUT2 Mcount_out_lut_8__ 2 0 I0 11 I1 2 83 O 84 O 9
+203 LUT2 Mcount_out_lut_9__ 2 0 I0 12 I1 2 85 O 86 O 9
+204 LUT2 Mcount_out_lut_10__ 2 0 I0 13 I1 2 87 O 88 O 9
+205 LUT2 Mcount_out_lut_11__ 2 0 I0 14 I1 2 89 O 90 O 9
+206 LUT2 Mcount_out_lut_12__ 2 0 I0 15 I1 2 91 O 92 O 9
+207 LUT2 Mcount_out_lut_13__ 2 0 I0 16 I1 2 93 O 94 O 9
+208 LUT2 Mcount_out_lut_14__ 2 0 I0 17 I1 2 95 O 96 O 9
+209 LUT2 Mcount_out_lut_15__ 2 0 I0 18 I1 2 97 O 98 O 9
+210 LUT2 Mcount_out_lut_16__ 2 0 I0 19 I1 2 99 O 100 O 9
+211 LUT2 Mcount_out_lut_17__ 2 0 I0 20 I1 2 101 O 102 O 9
+212 LUT2 Mcount_out_lut_18__ 2 0 I0 21 I1 2 103 O 104 O 9
+213 LUT2 Mcount_out_lut_19__ 2 0 I0 22 I1 2 105 O 106 O 9
+214 LUT2 Mcount_out_lut_20__ 2 0 I0 23 I1 2 107 O 108 O 9
+215 LUT2 Mcount_out_lut_21__ 2 0 I0 24 I1 2 109 O 110 O 9
+216 LUT2 Mcount_out_lut_22__ 2 0 I0 25 I1 2 111 O 112 O 9
+217 LUT2 Mcount_out_lut_23__ 2 0 I0 26 I1 2 113 O 114 O 9
+218 LUT2 Mcount_out_lut_24__ 2 0 I0 27 I1 2 115 O 116 O 9
+219 LUT2 Mcount_out_lut_25__ 2 0 I0 28 I1 2 117 O 118 O 9
+220 LUT2 Mcount_out_lut_26__ 2 0 I0 29 I1 2 119 O 120 O 9
+221 LUT2 Mcount_out_lut_27__ 2 0 I0 30 I1 2 121 O 122 O 9
+222 LUT2 Mcount_out_lut_28__ 2 0 I0 31 I1 2 123 O 124 O 9
+223 LUT2 Mcount_out_lut_29__ 2 0 I0 32 I1 2 125 O 126 O 9
+224 LUT2 Mcount_out_lut_30__ 2 0 I0 33 I1 2 127 O 128 O 9
+225 LUT2 Mcount_out_lut_31__ 2 0 I1 34 I0 2 129 O 130 O 9
+226 LUT2 Mcount_out_lut_32__ 2 0 I1 35 I0 2 131 O 132 O 9
+227 LUT2 Mcount_out_lut_33__ 2 0 I1 36 I0 2 133 O 134 O 9
+228 LUT2 Mcount_out_lut_34__ 2 0 I1 37 I0 2 135 O 136 O 9
+229 LUT2 Mcount_out_lut_35__ 2 0 I1 38 I0 2 137 O 138 O 9
+230 LUT2 Mcount_out_lut_36__ 2 0 I1 39 I0 2 139 O 140 O 9
+231 LUT2 Mcount_out_lut_37__ 2 0 I1 40 I0 2 141 O 142 O 9
+232 LUT2 Mcount_out_lut_38__ 2 0 I1 41 I0 2 143 O 144 O 9
+233 LUT2 Mcount_out_lut_39__ 2 0 I1 42 I0 2 145 O 146 O 9
+234 LUT2 Mcount_out_lut_40__ 2 0 I1 43 I0 2 147 O 148 O 9
+235 LUT2 Mcount_out_lut_41__ 2 0 I1 44 I0 2 149 O 150 O 9
+236 LUT2 Mcount_out_lut_42__ 2 0 I1 45 I0 2 151 O 152 O 9
+237 LUT2 Mcount_out_lut_43__ 2 0 I1 46 I0 2 153 O 154 O 9
+238 LUT2 Mcount_out_lut_44__ 2 0 I1 47 I0 2 155 O 156 O 9
+239 LUT2 Mcount_out_lut_45__ 2 0 I1 48 I0 2 157 O 158 O 9
+240 LUT2 Mcount_out_lut_46__ 2 0 I1 49 I0 2 159 O 160 O 9
+241 LUT2 Mcount_out_lut_47__ 2 0 I1 50 I0 2 161 O 162 O 9
+242 LUT2 Mcount_out_lut_48__ 2 0 I1 51 I0 2 163 O 164 O 9
+243 LUT2 Mcount_out_lut_49__ 2 0 I1 52 I0 2 165 O 166 O 9
+244 LUT2 Mcount_out_lut_50__ 2 0 I1 53 I0 2 167 O 168 O 9
+245 LUT2 Mcount_out_lut_51__ 2 0 I1 54 I0 2 169 O 170 O 9
+246 LUT2 Mcount_out_lut_52__ 2 0 I1 55 I0 2 171 O 172 O 9
+247 LUT2 Mcount_out_lut_53__ 2 0 I1 56 I0 2 173 O 174 O 9
+248 LUT2 Mcount_out_lut_54__ 2 0 I1 57 I0 2 175 O 176 O 9
+249 LUT2 Mcount_out_lut_55__ 2 0 I1 58 I0 2 177 O 178 O 9
+250 LUT2 Mcount_out_lut_56__ 2 0 I1 59 I0 2 179 O 180 O 9
+251 LUT2 Mcount_out_lut_57__ 2 0 I1 60 I0 2 181 O 182 O 9
+252 LUT2 Mcount_out_lut_58__ 2 0 I1 61 I0 2 183 O 184 O 9
+253 LUT2 Mcount_out_lut_59__ 2 0 I1 62 I0 2 185 O 186 O 9
+254 LUT2 Mcount_out_lut_60__ 2 0 I1 63 I0 2 187 O 188 O 9
+255 LUT2 Mcount_out_lut_61__ 2 0 I1 64 I0 2 189 O 190 O 9
+256 LUT2 Mcount_out_lut_62__ 2 0 I1 65 I0 2 191 O 192 O 9
+257 LUT2 Mcount_out_lut_63__ 2 0 I1 66 I0 1 193 O 9
+258 INV up_down_inv2_INV_0 1 0 I 2 67 O 68 O 
