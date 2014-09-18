@@ -458,6 +458,7 @@ void CutFunction::processAIGCutsX(bool np){
 			calculate(node);
 			unsigned long long functionVal = m_NodeValue[node];
 			unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
+			
 			printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
 
 			//Check to see if the function is a primitive/in the library
@@ -510,6 +511,7 @@ void CutFunction::processAIGCutsX(bool np){
 				0x0000000000000000, 
 				0xFFFFFFFFFFFFFFFF
 			};
+			std::set<unsigned long long> existingFunctionFound; 
 
 			printf("\nDONT CARE!-------------------------------------------------\n");
 			for(unsigned dcIndex = 0; dcIndex < cuts->size(); dcIndex++){
@@ -517,6 +519,8 @@ void CutFunction::processAIGCutsX(bool np){
 				for(unsigned w = 0; w < 2; w++){
 					pIndex= 0;	//Index for permutation
 					unsigned int index = 0; 
+
+					m_NodeValue.clear();
 
 					//Set the assignments for the inputs
 					for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
@@ -546,6 +550,19 @@ void CutFunction::processAIGCutsX(bool np){
 					unsigned long long functionVal = m_NodeValue[node];
 					unsigned long long negateVal = ~(functionVal); //N-Equivalence Check the negation of the output
 					printf("FUNCTION: %llx\tNEGATE:: %llx\n",  functionVal, negateVal);
+
+					if(existingFunctionFound.find(functionVal) != existingFunctionFound.end()){
+						printf("SKIPPED-----------\n");
+						continue;
+					}
+					else if(existingFunctionFound.find(negateVal) != existingFunctionFound.end()){
+						printf("SKIPPED-----------\n");
+						continue;
+					}
+
+					existingFunctionFound.insert(functionVal);
+					existingFunctionFound.insert(negateVal);
+
 
 					//Check to see if the function is a primitive/in the library
 					unsigned long long function;
@@ -583,13 +600,14 @@ void CutFunction::processAIGCutsX(bool np){
 						m_PortMap[function].push_back(gateInputs);
 					}
 
-					m_NodeValue.clear();
 				}
 
 			}
 			printf("END DONT CARE COMPUTATION\n\n");
 		}
 	}
+
+	m_NodeValue.clear();
 }
 
 /*******************************************************
