@@ -113,6 +113,7 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::list<std::set<unsigned> >::iterator iList2;
 
+		//Go through each adder function
 		for(unsigned int i = 0; i < inOut.size(); i++){
 			iPMAP = pmap.find(inOut[i]);
 			if(iPMAP != pmap.end()){
@@ -155,6 +156,7 @@ namespace AGGREGATION{
 
 	void carryAggregation(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
 											std::vector<unsigned long long>& inOut, 
+											std::set<unsigned> sumNodes, 
 											std::list<std::set<unsigned> >& addIn,
 											std::list<std::set<unsigned> >& addOut){
 
@@ -168,10 +170,16 @@ namespace AGGREGATION{
 
 					std::set<unsigned> inSet;
 					bool isAgg = false;
+					bool sumOutput = false;
 					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+						unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+						if(sumNodes.find(outnode) != sumNodes.end()){
+							sumOutput = true;
+							continue;
+						}
+
 						inSet.insert(iPMAP->second[j]->at(k));
 
-						unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
 						for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
 							if(iList1->find(iPMAP->second[j]->at(k)) !=  iList1->end()){
 								isAgg = true;
@@ -191,7 +199,7 @@ namespace AGGREGATION{
 						}
 					}
 
-					if(!isAgg){
+					if(!isAgg && !sumOutput){
 						addIn.push_back(inSet);
 						std::set<unsigned> outSet;
 						outSet.insert(-1);
@@ -231,12 +239,14 @@ namespace AGGREGATION{
 
 	bool DFS(AIG* aig, unsigned start, unsigned end, std::set<unsigned>& input, std::set<unsigned>& marked){
 		start = start& 0xFFFFFFFE;
+		printf("START: %d END: %d\n", start, end);
 
 		if(start == end) return true;
 		if(input.find(start) != input.end()) return false;
 
 		marked.insert(start);
 		
+		printf("GETTING CHILDREN\n");
 		unsigned node1, node2, child1, child2;
 		child1 = aig->getChild1(start);
 		child2 = aig->getChild2(start);
@@ -257,6 +267,22 @@ namespace AGGREGATION{
 	
 
 
+	void extractOutputs(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+			std::vector<unsigned long long>& inOut, 
+			std::set<unsigned>& out){
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+
+		//Go through each adder function
+		for(unsigned int i = 0; i < inOut.size(); i++){
+			iPMAP = pmap.find(inOut[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					out.insert(outnode);
+				}
+			}
+		}
+	}
 
 	void findAdder(CutFunction* cf, AIG* aigraph, std::map<unsigned, unsigned>& resultA, std::map<unsigned, unsigned>& resultC){
 		printf("\n\n\n");
@@ -402,6 +428,18 @@ namespace AGGREGATION{
 		//printf("\n\nCLA3 FUNCTIONS___DC: \n");
 		//printIO(pmap_dc, cla3);
 
+		//Extract the output of the possible sums found
+		std::set<unsigned> sumNodes;
+		extractOutputs(pmap, haSum3, sumNodes);
+		extractOutputs(pmap, haSum2, sumNodes);
+		extractOutputs(pmap, faSum3, sumNodes);
+		extractOutputs(pmap, faSum2, sumNodes);
+		extractOutputs(pmap_dc, haSum3, sumNodes);
+		extractOutputs(pmap_dc, haSum2, sumNodes);
+		extractOutputs(pmap_dc, faSum3, sumNodes);
+		extractOutputs(pmap_dc, faSum2, sumNodes);
+
+
 
 		//Aggregation
 		std::list<std::set<unsigned> > addOutputList;
@@ -413,30 +451,34 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator iList3;
 		std::list<std::set<unsigned> >::iterator iList4;
 
-		printf("\n\nHAcarry3 AGG\n");
-		carryAggregation(pmap, haCarry3, addInputList, addOutputList);
+		printf("HAcarry3 AGG\n");
+		carryAggregation(pmap, haCarry3, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry3, carryInputList, carryOutputList);
-		carryAggregation(pmap_dc, haCarry3, addInputList, addOutputList);
+		carryAggregation(pmap_dc, haCarry3, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap_dc, haCarry3, carryInputList, carryOutputList);
 
-		printf("\n\nHAcarry2 AGG\n");
-		carryAggregation(pmap, haCarry2, addInputList, addOutputList);
+		printf("HAcarry2 AGG\n");
+		carryAggregation(pmap, haCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
-		carryAggregation(pmap_dc, haCarry2, addInputList, addOutputList);
+		carryAggregation(pmap_dc, haCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap_dc, haCarry2, carryInputList, carryOutputList);
 		
-		printf("\n\nFAcarry2 AGG\n");
-		carryAggregation(pmap, faCarry2, addInputList, addOutputList);
+		printf("FAcarry2 AGG\n");
+		carryAggregation(pmap, faCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry2, carryInputList, carryOutputList);
-		carryAggregation(pmap_dc, faCarry2, addInputList, addOutputList);
+		carryAggregation(pmap_dc, faCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap_dc, faCarry2, carryInputList, carryOutputList);
 
-		printf("\n\nFAcarry AGG\n");
-		carryAggregation(pmap, faCarry, addInputList, addOutputList);
+		printf("FAcarry AGG\n");
+		carryAggregation(pmap, faCarry, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry, carryInputList, carryOutputList);
-		carryAggregation(pmap_dc, faCarry, addInputList, addOutputList);
+		carryAggregation(pmap_dc, faCarry, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap_dc, faCarry, carryInputList, carryOutputList);
+
+		printf("Printing Carry Aggregation\n");
+		printf("ADDOUTLISTSIZE: %d\n", addOutputList.size());
 		printAddList(addInputList, addOutputList);
+		
 
 		//Chcek to see if any of the sets are contained within each other
 		iList1 = addInputList.begin();
@@ -474,30 +516,32 @@ namespace AGGREGATION{
 
 
 
-		printf("\n\nHASUM3 AGG\n");
+		printf("HASUM3 AGG\n");
 		adderAggregation(pmap, haSum3, addInputList, addOutputList);
 
-		printf("\n\nHASUM2 AGG\n");
+		printf("HASUM2 AGG\n");
 		adderAggregation(pmap, haSum2, addInputList, addOutputList);
 
-		printf("\n\nFASum3 AGG\n");
+		printf("FASum3 AGG\n");
 		adderAggregation(pmap, faSum3, addInputList, addOutputList);
 
-		printf("\n\nFASum2 AGG\n");
+		printf("FASum2 AGG\n");
 		adderAggregation(pmap, faSum2, addInputList, addOutputList);
 		
-		printf("\n\nHASUM3 AGG____DC\n");
+		printf("HASUM3 AGG____DC\n");
 		adderAggregation(pmap_dc, haSum3, addInputList, addOutputList);
 
-		printf("\n\nHASUM2 AGG____DC\n");
+		printf("HASUM2 AGG____DC\n");
 		adderAggregation(pmap_dc, haSum2, addInputList, addOutputList);
 
-		printf("\n\nFASum3 AGG____DC\n");
+		printf("FASum3 AGG____DC\n");
 		adderAggregation(pmap_dc, faSum3, addInputList, addOutputList);
 
-		printf("\n\nFASum2 AGG____DC\n");
+		printf("FASum2 AGG____DC\n");
 		adderAggregation(pmap_dc, faSum2, addInputList, addOutputList);
 		
+
+		printf("Result after aggregation\n");
 		printAddList(addInputList, addOutputList);
 
 
@@ -551,6 +595,27 @@ namespace AGGREGATION{
 				printf("%d ", *iSet);
 			printf("\n");
 
+			std::set<unsigned>::iterator iSet2;
+			//Check for output containment
+			std::vector<unsigned> toBeDeleted;
+			for(iSet = iList2->begin(); iSet != iList2->end(); iSet++){
+				for(iSet2 = iList2->begin(); iSet2 != iList2->end(); iSet2++){
+					if(*iSet == -1 || *iSet2 == -1) continue;
+					else if(*iSet == *iSet2) continue;
+					std::set<unsigned> marked;
+					bool isContained = DFS(aigraph, *iSet, *iSet2, *iList1, marked);
+					printf("OUTPUT %d is contained under %d: RESULT: %d\n", *iSet2, *iSet, isContained);
+					if(isContained) toBeDeleted.push_back(*iSet2);
+
+				}
+			}
+
+			//Delete contained output nodes from output list
+			for(unsigned int i = 0; i < toBeDeleted.size(); i++){
+				iList2->erase(toBeDeleted[i]);
+			}
+	
+
 			if(resultA.find(iList2->size()) == resultA.end())
 				resultA[iList2->size()] = 1;
 			else
@@ -559,7 +624,7 @@ namespace AGGREGATION{
 			iList2++;
 		}
 		
-		printf("%d adders found\n", (int)carryInputList.size() + 1);
+		printf("%d carries found\n", (int)carryInputList.size() + 1);
 		iList2 = carryOutputList.begin();
 		for(iList1 = carryInputList.begin(); iList1 != carryInputList.end(); iList1++){
 
