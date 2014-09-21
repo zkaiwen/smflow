@@ -1,7 +1,7 @@
 #ignore the files that are greater than 50 megs
 
 circuits/raw
-circuits/temp
+circuits/temp/b*
 circuits/g/*.g
 circuits/netlist
 aiger/

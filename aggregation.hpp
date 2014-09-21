@@ -362,29 +362,20 @@ namespace AGGREGATION{
 
 		printf("FACARRY FUNCTIONS: \n");
 		printIO(pmap, faCarry);
-
 		printf("\n\nFASUM FUNCTIONS: \n");
 		printIO(pmap, faSum);
-		
 		printf("\n\nFASUM2 FUNCTIONS: \n");
 		printIO(pmap, faSum2);
-
 		printf("\n\nFASUM3 FUNCTIONS: \n");
 		printIO(pmap, faSum3);
-
 		printf("\n\nFACARRY2 FUNCTIONS: \n");
 		printIO(pmap, faCarry2);
-
 		printf("\n\nHASUM2 FUNCTIONS: \n");
 		printIO(pmap, haSum2);
-		
 		printf("\n\nHACARRY2 FUNCTIONS: \n");
 		printIO(pmap, haCarry2);
-		
 		printf("\n\nHASUM3 FUNCTIONS: \n");
 		printIO(pmap, haSum3);
-		
-
 		printf("\n\nHACARRY3 FUNCTIONS: \n");
 		printIO(pmap, haCarry3);
 
@@ -394,7 +385,6 @@ namespace AGGREGATION{
 
 		//printf("XOR FUNCTIONS___DC: \n");
 		//printIO(pmap_dc, xorFunction);
-		/*
 
 		printf("FACARRY FUNCTIONS___DC: \n");
 		printIO(pmap_dc, faCarry);
@@ -426,7 +416,6 @@ namespace AGGREGATION{
 
 		//printf("\n\nCLA3 FUNCTIONS___DC: \n");
 		//printIO(pmap_dc, cla3);
-		*/
 
 		//Extract the output of the possible sums found
 		std::set<unsigned> sumNodes;
@@ -454,26 +443,26 @@ namespace AGGREGATION{
 		printf("HAcarry3 AGG\n");
 		carryAggregation(pmap, haCarry3, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry3, carryInputList, carryOutputList);
-		//carryAggregation(pmap_dc, haCarry3, sumNodes, addInputList, addOutputList);
-		//adderAggregation(pmap_dc, haCarry3, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, haCarry3, sumNodes, addInputList, addOutputList);
+		adderAggregation(pmap_dc, haCarry3, carryInputList, carryOutputList);
 
 		printf("HAcarry2 AGG\n");
 		carryAggregation(pmap, haCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, haCarry2, carryInputList, carryOutputList);
-		//carryAggregation(pmap_dc, haCarry2, sumNodes, addInputList, addOutputList);
-		//adderAggregation(pmap_dc, haCarry2, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, haCarry2, sumNodes, addInputList, addOutputList);
+		adderAggregation(pmap_dc, haCarry2, carryInputList, carryOutputList);
 		
 		printf("FAcarry2 AGG\n");
 		carryAggregation(pmap, faCarry2, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry2, carryInputList, carryOutputList);
-		//carryAggregation(pmap_dc, faCarry2, sumNodes, addInputList, addOutputList);
-		//adderAggregation(pmap_dc, faCarry2, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, faCarry2, sumNodes, addInputList, addOutputList);
+		adderAggregation(pmap_dc, faCarry2, carryInputList, carryOutputList);
 
 		printf("FAcarry AGG\n");
 		carryAggregation(pmap, faCarry, sumNodes, addInputList, addOutputList);
 		adderAggregation(pmap, faCarry, carryInputList, carryOutputList);
-		//carryAggregation(pmap_dc, faCarry, sumNodes, addInputList, addOutputList);
-		//adderAggregation(pmap_dc, faCarry, carryInputList, carryOutputList);
+		carryAggregation(pmap_dc, faCarry, sumNodes, addInputList, addOutputList);
+		adderAggregation(pmap_dc, faCarry, carryInputList, carryOutputList);
 
 		printf("Printing Carry Aggregation\n");
 		printf("ADDOUTLISTSIZE: %d\n", addOutputList.size());
@@ -528,7 +517,6 @@ namespace AGGREGATION{
 		printf("FASum2 AGG\n");
 		adderAggregation(pmap, faSum2, addInputList, addOutputList);
 		
-		/*
 		printf("HASUM3 AGG____DC\n");
 		adderAggregation(pmap_dc, haSum3, addInputList, addOutputList);
 
@@ -540,7 +528,6 @@ namespace AGGREGATION{
 
 		printf("FASum2 AGG____DC\n");
 		adderAggregation(pmap_dc, faSum2, addInputList, addOutputList);
-		*/
 		
 
 		printf("Result after aggregation\n");
