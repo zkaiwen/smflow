@@ -403,7 +403,7 @@ int main( int argc, char *argv[] )
 		//PERFORM BOOLEAN MATCHING
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
-		functionCalc->processAIGCutsX(true);
+		functionCalc->processAIGCuts(true);
 		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 		functionCalc->printUniqueFunctionStat();
