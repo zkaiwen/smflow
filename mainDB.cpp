@@ -439,19 +439,6 @@ int main( int argc, char *argv[] )
 
 
 
-		gettimeofday(&mux_b, NULL); //-----------------------------------------------
-		//4-1         8 bit       2 of them
-		//mux size, array size, count 
-		std::map<unsigned,std::map<unsigned, unsigned> > muxResult;
-		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
-		
-		//std::vector<unsigned int> muxResult1;
-		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
-		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
-		gettimeofday(&mux_e, NULL);//------------------------------------------
-		stat_muxAgg.push_back(muxResult);		
-
-
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> decoderResult;
 		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
@@ -466,6 +453,19 @@ int main( int argc, char *argv[] )
 		stat_adder.push_back(addResult);
 		stat_carry.push_back(carryResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
+
+
+		gettimeofday(&mux_b, NULL); //-----------------------------------------------
+		//4-1         8 bit       2 of them
+		//mux size, array size, count 
+		std::map<unsigned,std::map<unsigned, unsigned> > muxResult;
+		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
+		
+		//std::vector<unsigned int> muxResult1;
+		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
+		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
+		gettimeofday(&mux_e, NULL);//------------------------------------------
+		stat_muxAgg.push_back(muxResult);		
 
 
 

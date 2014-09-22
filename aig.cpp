@@ -587,10 +587,10 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		char gateSize = '0' + gateSizeNum;
 
 		circuitType = circuitType + gateSize + ".g";
-		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
+		printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 
 		Graph* primCkt = new Graph(circuitType);
-		primCkt->importPrimitive(circuitType, ckt->getLast() +1);
+		primCkt->importGraph(circuitType, ckt->getLast() +1);
 		std::vector<int> subout;
 		primCkt->getOutputs(subout);
 		outputNode = subout[0];

@@ -119,11 +119,12 @@ void CutFunction::preProcessLibrary(std::string fileName){
 		if(file == "\n")
 			continue;
 
+		printf("\n--------------------------------------------------------------------\n");
 		printf("FILE: %s\n", file.c_str());
 		m_AIG = new AIG();
 
 		Graph* circuit = new Graph(file);
-		circuit->importPrimitive(file, 0);
+		circuit->importGraph(file, 0);
 		m_AIG->convertGraph2AIG(circuit, false);
 
 
@@ -179,6 +180,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 					int count = j;
 
 					//Store the inputs
+					m_NodeValue.clear();
 					for(unsigned int i = 1; i < inputSize+1; i++){
 						unsigned int permVal = permutation[i-1];
 						unsigned long long input = m_Xval[permVal];
@@ -210,7 +212,6 @@ void CutFunction::preProcessLibrary(std::string fileName){
 					m_HashTable[result] = file;
 					entriesAdded++;
 					//printf("OUTPUT: %llx\n", m_NodeValue[output[i]]);
-					m_NodeValue.clear();
 				}
 			}while(std::next_permutation(permutation, permutation+inputSize));
 			printf(" * %d functions added to Hashtable\n", entriesAdded);
@@ -224,6 +225,7 @@ void CutFunction::preProcessLibrary(std::string fileName){
 
 
 	infile.close();
+	m_NodeValue.clear();
 }
 
 void CutFunction::preProcessCut(std::string file){
@@ -245,25 +247,39 @@ void CutFunction::preProcessCut(std::string file){
 
 	//Go through each cut of the node
 	unsigned entriesAdded = 0;
-	for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
-		std::stringstream ss;
-		ss<<file<<"_"<<cuts->size();
+	std::set<unsigned>::iterator cutIT;
 
+	for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
 		//Skip trivial cut
 		unsigned int inputSize = cuts->size();
 		if(inputSize < m_AIG->getInputSize()-1)		continue;
+
+		//Make sure the cut has at least cutsize/2+1 inputs
+		int inputLimit = 1;
+		printf("CUT: ");
+		int numInputPort = 0;
+		for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
+			if(*cutIT <= m_AIG->getInputSize()*2)
+				numInputPort++;
+
+			printf("%d ", *cutIT);
+		}
+		/*
+
+		if(numInputPort < inputLimit){
+			printf(".....CUT DOES NOT HAVE ENOUGH INPUTS: %d\n", numInputPort);
+			continue;
+		}
+		*/
+
+		std::stringstream ss;
+		ss<<file<<"_"<<cuts->size();
 		m_PrimInputSize[ss.str()] = inputSize;
 
 		//Permutation of indexes
 		unsigned int* permutation = setPermutation(inputSize);
-		std::set<unsigned>::iterator cutIT;
 
-		printf("\nCUT: ");
-		for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-			printf("%d ", *cutIT);
-		printf("\n");
-
-
+		bool isFuncExist = false;
 		do{
 			unsigned int negationLimit = 1 << inputSize;
 			for(unsigned int j = 0; j < negationLimit; j++){
@@ -271,6 +287,7 @@ void CutFunction::preProcessCut(std::string file){
 				//Set the assignments for the inputs
 				int pIndex= 0;	//Index for permutation
 				int count = j;
+				m_NodeValue.clear();
 				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 					unsigned int permVal = permutation[pIndex];
 					unsigned long long input = m_Xval[permVal];
@@ -294,6 +311,7 @@ void CutFunction::preProcessCut(std::string file){
 					if(m_HashTable[functionVal] != ss.str()){
 						//printf("Output currently already has a function assigned\n");
 						//printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  m_HashTable[functionVal].c_str());
+						isFuncExist = true;
 						break;
 						//exit(1);
 					}
@@ -302,15 +320,19 @@ void CutFunction::preProcessCut(std::string file){
 				//Store function with output
 				m_HashTable[functionVal] = ss.str();
 				entriesAdded++;
-				m_NodeValue.clear();
 			}
+			if(isFuncExist) break;
 		}while(std::next_permutation(permutation, permutation+inputSize));
+
+		if(isFuncExist) printf("...exisitng function found");
+		printf("\n");
 		delete [] permutation;
 	}
 
 	printf(" * %d functions added to Hashtable\n", entriesAdded);
 
 	delete cut;
+	m_NodeValue.clear();
 
 }
 
@@ -584,12 +606,12 @@ void CutFunction::processAIGCutsX(bool np){
 					}
 
 					if(functionFound){
-						//printf("EXISTING FUNCTION FOUND: %s\n", iHash->second.c_str());
 						if(existingFunctionName.find(iHash->second) != existingFunctionName.end())
 							continue;
 
 						if(m_PrimInputSize[iHash->second] != cuts->size()-1)
 							continue;
+						//printf("EXISTING FUNCTION FOUND: %s\n", iHash->second.c_str());
 
 						existingFunctionName.insert(iHash->second);
 

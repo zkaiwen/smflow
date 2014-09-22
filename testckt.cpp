@@ -66,10 +66,13 @@ int main( int argc, char *argv[] )
 	ckname2 = argv[2];        
 
 	//Import Graph
+	printf("[MAIN] -- Importing graphs...\n");
 	Graph* ck1 = new Graph(ckname1);
 	Graph* ck2 = new Graph(ckname2);
 	ck1->importGraph(ckname1, 0);
 	ck2->importGraph(ckname2, 0);
+	
+	printf("[MAIN] -- Replacing LUTs...\n");
 	SEQUENTIAL::replaceLUTs(ck1);
 	SEQUENTIAL::replaceLUTs(ck2);
 
@@ -79,12 +82,14 @@ int main( int argc, char *argv[] )
 	//Convert to AIG
 	AIG* aig1 = new AIG();
 	AIG* aig2 = new AIG();
+	printf("[MAIN] -- Converting Graphs to AIG...\n");
 	aig1->convertGraph2AIG(ck1, false);
 	aig2->convertGraph2AIG(ck2, false);
 	aig1->print();
 	aig2->print();
 	
 		//Make sure the inout sizes are the same for both circuit
+	printf("[MAIN] -- Verifying input and output sizes...\n");
 		printf("IN1: %d IN2: %d\n", aig1->getInputSize(), aig2->getInputSize());
 		assert(aig1->getInputSize() == aig2->getInputSize());
 
