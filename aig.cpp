@@ -587,7 +587,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		char gateSize = '0' + gateSizeNum;
 
 		circuitType = circuitType + gateSize + ".g";
-		printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
+		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 
 		Graph* primCkt = new Graph(circuitType);
 		primCkt->importGraph(circuitType, ckt->getLast() +1);
@@ -602,7 +602,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//Check to see if the node substituted goes to the output
 		if(outputSet.find(it->second->getID()) != outputSet.end()){
 			outInput.insert(outputNode);
-			printf("SUB: Input that goes to output: %d ORIG: %d TYPE: %s\n", outputNode, it->second->getID(),  gateType.c_str());
+			//printf("SUB: Input that goes to output: %d ORIG: %d TYPE: %s\n", outputNode, it->second->getID(),  gateType.c_str());
 		}
 
 		//printf("VERTEXID: %d\n", it->first);
@@ -620,21 +620,17 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//Go through FFs to see the inputs to them
 	std::set<unsigned> ffCKTNodes; 
 	std::set<unsigned>::iterator iSet; 
-	printf("OUTINPUTSET: ");
-	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++)
-		printf("%d ", *iSet);
-	printf("\n");
 
-	printf("Checking FF List to see if FF goes to output\n");
+	//printf("Checking FF List to see if FF goes to output\n");
 	for(unsigned int i = 0; i < ffList.size(); i++){
 		int inID =  ffList[i]->second->getInputPortID("D");
 		assert(inID != -1);
 		ffCKTNodes.insert(inID);
-		printf("FFID: %d\tINPUTID: %d\n", ffList[i]->second->getID(), inID);
+		//printf("FFID: %d\tINPUTID: %d\n", ffList[i]->second->getID(), inID);
 
 		//If FF goes to output, store the input to the FF
 		if(outInput.erase(ffList[i]->second->getID()) == 1){
-			printf("FF GOES TO OUTPUT!\n");
+			//printf("FF GOES TO OUTPUT!\n");
 			outInput.insert(inID);
 			std::string outPortName = ckt->isOutput(ffList[i]->second->getID());
 			if(outPortName != "")
@@ -645,10 +641,12 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			toBeDeleted.push_back(ffList[i]->first);
 	}
 	
+	/*
 	printf("OUTINPUTSET: ");
 	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++)
 		printf("%d ", *iSet);
 	printf("\n");
+	*/
 	
 
 	//Delete substituted nodes from the graph

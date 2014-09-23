@@ -1,9 +1,9 @@
 31
 5 0 A1 1 B1 2 CI 16 A2 17 B2
 1 30 CO
-0 IN name 0 3 3 O 4 O 11 O
-1 IN name 0 3 3 O 5 O 11 O
-2 IN name 0 1 10 O 
+0 IN A1 0 3 3 O 4 O 11 O
+1 IN B1 0 3 3 O 5 O 11 O
+2 IN CI 0 1 10 O 
 3 ANDX name 2 0 I0 1 I1 1 7 O
 4 INV name 1 0 I0  1 6 O
 5 INV name 1 1 I0 1 6 O
@@ -17,8 +17,8 @@
 13 INVX name 1 11 I0 1 14 O
 14 ANDX name 2 12 I0 13 I1 1 15 O
 15 INVX name 1 14 I0 1 25 O
-16 IN name 0 3 18 O 19 O 26 O
-17 IN name 0 3 18 O 20 O 26 O
+16 IN A2 0 3 18 O 19 O 26 O
+17 IN B2 0 3 18 O 20 O 26 O
 18 ANDX name 2 16 I0 17 I1 1 22 O
 19 INV name 1 16 I0  1 21 O
 20 INV name 1 17 I0 1 21 O

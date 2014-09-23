@@ -147,6 +147,9 @@ int main( int argc, char *argv[] )
 		m_NodeValue1.clear();
 		for(unsigned int k = 1; k < inputSize+1; k++){
 			std::string vname = ck2->getVertex(aig2->getGNode(k*2))->getName();
+			if(nameInputMap.find(vname) == nameInputMap.end()){
+				printf("Input cannot be found... %s\n", vname.c_str());
+			}
 			unsigned long long input = m_Xval[nameInputMap[vname]];
 			//printf("PORT: %s\tVAL: %llx\n", vname.c_str(), input);
 

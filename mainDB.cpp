@@ -318,7 +318,7 @@ int main( int argc, char *argv[] )
 
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
 		aigraph->convertGraph2AIG(ckt, false);
-		aigraph->printMap();
+		//aigraph->printMap();
 		aigraph->print();
 		gettimeofday(&iaig_e, NULL);
 
@@ -631,11 +631,12 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
-		
+		/*
 		printf("\nCarry\n");
 		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
+		*/
 
 
 /*
