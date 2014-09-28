@@ -319,7 +319,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
 		aigraph->convertGraph2AIG(ckt, false);
 		//aigraph->printMap();
-		aigraph->print();
+		//aigraph->print();
 		gettimeofday(&iaig_e, NULL);
 
 		stat_aigSize.push_back(aigraph->getSize());
@@ -354,11 +354,11 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
+		//cut->print();
 
 		//Find input cut for FF nodes----------------------------
 		std::vector<unsigned> nodes;
 		aigraph->getFFInput(nodes);
-		cut->findInputCut(nodes);
 
 		//Node, Set of inputs to the node
 		std::map<unsigned, std::set<unsigned> > cutIn;
@@ -449,7 +449,7 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> addResult;
 		std::map<unsigned, unsigned> carryResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		AGGREGATION::findAdder(functionCalc, aigraph, addResult, carryResult);
+		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, carryResult);
 		stat_adder.push_back(addResult);
 		stat_carry.push_back(carryResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
@@ -631,12 +631,10 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
-		/*
-		printf("\nCarry\n");
+		printf("\nDC\n");
 		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
-		*/
 
 
 /*

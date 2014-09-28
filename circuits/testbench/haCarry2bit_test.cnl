@@ -1,0 +1,8 @@
+5
+4 1 A_0  2 A_1  3 B_0  4 B_1  
+1 0 CO  
+0 LUT4 Madd_n0005_cy_1_11 4 1 I0 2 I1 3 I3 4 I2 0 ea80
+1 IN A_0 0 1 0 O 
+2 IN A_1 0 1 0 O 
+3 IN B_0 0 1 0 O 
+4 IN B_1 0 1 0 O 
