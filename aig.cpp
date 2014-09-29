@@ -461,11 +461,13 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::map<std::string, int> cktout;
 	std::map<std::string, int>::iterator iOut;
 	ckt->getOutputs(cktout);
+	printf("OUTPUTS OF CIRCUIT: %d\n", (int)cktout.size());
 	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++){
 			outputSet.insert(iOut->second);
 			printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
 	}
 
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
 
 	int outputNode;
 	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
@@ -576,7 +578,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			if(outputSet.find(it->second->getID()) != outputSet.end()){
 				outputNode = it->second->getID();
 				outInput.insert(outputNode);
-				printf("NO SUB: Input that goes to output: %d TYPE: %s\n", outputNode, gateType.c_str());
+				//printf("NO SUB: Input that goes to output: %d TYPE: %s\n", outputNode, gateType.c_str());
 			}
 
 			continue;
@@ -613,6 +615,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//ckt->printg();
 		//printf("\n\n");
 	}
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
 
 
 
@@ -640,6 +643,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		if(handleFF(ffList[i]->first, ckt))
 			toBeDeleted.push_back(ffList[i]->first);
 	}
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
 	
 	/*
 	printf("OUTINPUTSET: ");
@@ -734,6 +738,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			else if(vertex->getType().find("INV") != std::string::npos){
 				std::vector<Vertex*> in;
 				vertex->getInput(in);
+				//printf("INV NODE: %d IN: %d \nAIG IN: %d\n", vertexID, in[0]->getID(), m_GateMap[in[0]->getID()]);
 
 
 				if(m_GateMap[in[0]->getID()] == 0)
