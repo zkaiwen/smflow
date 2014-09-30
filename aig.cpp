@@ -361,7 +361,11 @@ void AIG::importAIG(std::string fileName){
 	if(msg != NULL)
 		printf("!! ERROR READING AIGER FILE: %s\n", msg);
 
-	printf("Import Complete***********\n\n");
+	msg = aiger_check(m_Aiger);
+	if(msg != NULL){
+		printf("[AIG] -- AIG CHECK FAIL!!\n%s\n", msg);
+	}
+
 }
 
 
@@ -792,17 +796,16 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	}
 	//printf("[AIG]--Conversion Complete\n");
 
-	/*
-	WRITING AIG TO OUTPUT AIGER FILE (.AAG)
+	//WRITING AIG TO OUTPUT AIGER FILE (.AAG)
 	std::string cktname = ckt->getName();
+	if(cktname.find(".g") == std::string::npos) {
 	ckt->getName().rfind("/");
 	int index = cktname.rfind("/")+1;
-	cktname = cktname.substr(index, cktname.length()-index-1);
+	cktname = cktname.substr(index, cktname.length()-index-3);
 	//printf("FILE NAME: %s\n", cktname.c_str());
-	writeAiger("aiger/" + cktname + "aag", true);
+	writeAiger("aiger/" + cktname + "aag", false);
 	printf("END\n");
-	print();
-	*/
+	}
 
 	
 	//Store the inputs that go into each output

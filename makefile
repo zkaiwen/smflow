@@ -54,6 +54,9 @@ test:
 testckt: testckt.cpp $(OBJ)
 	g++ -o testckt $(OBJ) testckt.cpp 
 
+aigex: aigex.cpp aig.o aiger.o graph.o vertex.o
+	g++ -o aigex aig.o aiger.o graph.o vertex.o aigex.cpp 
+
 clean:
 	rm -f *.o *fpgenius* *.out* *.in*  cnf testProgram cDatabase
 

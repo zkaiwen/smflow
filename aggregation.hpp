@@ -31,8 +31,8 @@ namespace AGGREGATION{
 	void findHA(CutFunction* cf, AIG* aigraph);
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in);
 	bool isInputNeg(AIG* aigraph, unsigned out, unsigned in);
-	//int DFS(AIG* aig, unsigned start, unsigned end, std::set<unsigned>& input, std::set<unsigned>& intermediate, std::set<unsigned>& marked);
 	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::set<unsigned>& found, std::set<unsigned>& marked);
+	bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb,  std::set<unsigned>& input, std::set<unsigned>& marked);
 	void printAddList(std::list<std::set<unsigned> >& addIn,	std::list<std::set<unsigned> >& addOut);
 
 
@@ -163,31 +163,128 @@ namespace AGGREGATION{
 			}
 		}
 	}
-/*j
-	void adderAggregation( AIG* aig, 
+	
+	void simplify_output(AIG* aig, 
+			std::map<unsigned, std::set<unsigned> >& outInMap,
+			std::map<unsigned, std::set<unsigned> >& containedComputeTable){
+	printf("SIMPLIFYING OUTPUT SET\n");
+
+		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::list<std::set<unsigned> >::iterator iList1;
+		std::set<unsigned>::iterator iSet;
+
+		std::map<unsigned , std::set<unsigned> >::reverse_iterator iMap;
+		std::map<unsigned , std::set<unsigned> >::reverse_iterator iMap2;
+		std::set<unsigned> tobedeleted;
+
+		//Go through each adder function
+		for(iMap = outInMap.rbegin(); iMap != outInMap.rend(); iMap++){
+			if(tobedeleted.find(iMap->first) != tobedeleted.end()) continue;
+			unsigned outnode = iMap->first;
+			iMap2 = iMap;
+			iMap2++;
+
+			for(; iMap2 != outInMap.rend(); iMap2++){
+				if(tobedeleted.find(iMap->first) != tobedeleted.end()) continue;
+				printf("COMPARING OUTNODE: %3d\t%3d\n", outnode, iMap2->first);
+				unsigned lb = iMap2->first;
+
+				std::set<unsigned> markedS;
+				bool isContain = DFSearch(aig, outnode, iMap2->first, lb, iMap->second,  markedS);
+				if(isContain){
+					printf(" * NODE: %d is contained under %d\n", iMap2->first, outnode);
+
+					//Combine the two inputs
+					std::map<unsigned, std::set<unsigned> >::iterator iTable;
+					iTable= containedComputeTable.find(outnode);
+					if(iTable != containedComputeTable.end()){
+						for(iSet = iMap2->second.begin(); iSet != iMap2->second.end(); iSet++){
+							unsigned innode = *iSet;
+							if(iTable->second.find(innode) == iTable->second.end())
+								iMap->second.insert(innode);
+						}
+					}
+					else{
+						for(iSet = iMap2->second.begin(); iSet != iMap2->second.end(); iSet++){
+							unsigned innode = *iSet;
+							iMap->second.insert(innode);
+						}
+					}
+
+					printf("Combined Set : ");
+					std::set<unsigned>::iterator iPrint;
+					for(iPrint = iMap->second.begin(); iPrint != iMap->second.end(); iPrint++)
+						printf("%d ", *iPrint);
+					printf("\n");
+
+
+
+					//Simplify to see if the inputs are contained
+					iSet = iMap->second.begin();
+					unsigned lb = *iSet;
+					iSet++; //Smallest cannot be contained since it goes by levels
+					unsigned prevVal = lb;
+					printf("LB: %d\n", lb); 
+					while(iSet != iMap->second.end()){
+						printf("Checking containment: %d......", *iSet);
+						std::set<unsigned> marked;
+						std::set<unsigned> found;
+						int result = DFS(aig, *iSet, lb, iMap->second, found,  marked);
+
+						if(result == 1){
+							//Add to contained compute table
+							containedComputeTable[outnode].insert(*iSet);
+
+							printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
+							iMap->second.erase(*iSet);
+							iSet = iMap->second.find(prevVal);
+						}
+						else printf("\n");
+
+
+						prevVal = *iSet;
+						iSet++;
+					}
+					printf("FINAL Set : ");
+					for(iPrint = iMap->second.begin(); iPrint != iMap->second.end(); iPrint++)
+						printf("%d ", *iPrint);
+					printf("\n");
+					
+					tobedeleted.insert(iMap2->first);
+				}
+			}
+		}
+
+			for(iSet = tobedeleted.begin(); iSet != tobedeleted.end(); iSet++)
+				outInMap.erase(*iSet);
+
+		}
+
+		/*j
+			void adderAggregation( AIG* aig, 
 			std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
 			std::vector<unsigned long long>& inOut, 
 			std::set<unsigned> sumNodes, 
 			std::list<std::set<unsigned> >& addIn,
 			std::list<std::set<unsigned> >& addOut){
-		printf("\n\n-------------------------------------------------------------------------------\n");
-		printf("ADDER AGGREGATING UNFCIONT------\n");
+			printf("\n\n-------------------------------------------------------------------------------\n");
+			printf("ADDER AGGREGATING UNFCIONT------\n");
 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
-		std::list<std::set<unsigned> >::iterator iList1;
-		std::list<std::set<unsigned> >::iterator iList2;
+			std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+			std::list<std::set<unsigned> >::iterator iList1;
+			std::list<std::set<unsigned> >::iterator iList2;
 
 		//Go through each adder function
 		for(unsigned int i = 0; i < inOut.size(); i++){
-			iPMAP = pmap.find(inOut[i]);
-			if(iPMAP != pmap.end()){
-				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+		iPMAP = pmap.find(inOut[i]);
+		if(iPMAP != pmap.end()){
+		for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 
-					std::set<unsigned> inSet;
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
-					for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-						inSet.insert(iPMAP->second[j]->at(k));
-					}
+		std::set<unsigned> inSet;
+		unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+		for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
+		inSet.insert(iPMAP->second[j]->at(k));
+		}
 
 					//If no aggregation if found, check if the inputs lead to any of the other inputs in the adder sets
 					std::set<unsigned>::iterator iSet, iASet;	
@@ -459,6 +556,46 @@ namespace AGGREGATION{
 		else return 1;
 	}
 
+bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsigned>& input,  std::set<unsigned>& marked){
+		start = start & 0xFFFFFFFE;
+		end = end & 0xFFFFFFFE;
+		marked.insert(start);
+		//printf("Traversing start node: %d\n", start);
+
+		if(start == end){
+			//printf("DFS -- Start is less than LB\n");
+			return true;; //none lower than this
+		}
+		if(start < lb) return false;
+		if(input.find(start) != input.end()) return false;
+		if(start <= aig->getInputSize()*2){
+			//printf("DFS -- Start is INPUT\n");
+		return false;
+		}
+
+		unsigned node1, node2, child1, child2;
+		child1 = aig->getChild1(start);
+		child2 = aig->getChild2(start);
+		
+
+		node1 = child1 & 0xFFFFFFFE;
+		node2 = child2 & 0xFFFFFFFE;
+
+
+		if(marked.find(node1) == marked.end()){
+		 bool result = DFSearch(aig, node1, end, lb, input,  marked);
+		 if (result) return true;
+
+		}
+
+		if(marked.find(node2) == marked.end()){
+			bool result = DFSearch(aig, node2, end, lb, input, marked);
+		 	if (result) return true;
+		}
+
+		return false;
+	}
+
 	void adderAggregation2( AIG* aig, 
 			std::map<unsigned , std::set<unsigned> >& outIn, 
 			std::set<unsigned> sumNodes, 
@@ -494,13 +631,6 @@ namespace AGGREGATION{
 					//Look for outnode to the inputs of addlist
 					iList2 = addOut.begin();
 					for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
-
-						//Check if output is already in the adder set;
-						if(iList2->find(outnode) != iList2->end()) {
-							//printf("Output node is already in the outlist...skipping\n");
-							containment = true;
-							break;
-						}
 
 						//replace items with furthest cut
 						std::set<unsigned> inputCopySet;
@@ -571,6 +701,30 @@ namespace AGGREGATION{
 							iList2->insert(outnode);
 							for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
 								iList1->insert(*iSet);
+
+							//Simplify to see if the inputs are contained
+							iSet = iList1->begin();
+							lb = *iSet;
+							iSet++; //Smallest cannot be contained since it goes by levels
+							unsigned prevVal = lb;
+							while(iSet != iList1->end()){
+								printf("Checking containment: %d......", *iSet);
+								marked.clear();
+								found.clear();
+								result = DFS(aig, *iSet, lb, *iList1, found,  marked);
+
+								if(result == 1){
+									printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
+									iList1->erase(*iSet);
+									iSet = iList1->find(prevVal);
+								}
+								else printf("\n");
+
+
+								prevVal = *iSet;
+								iSet++;
+							}
+
 							break;
 						}
 
@@ -585,7 +739,7 @@ namespace AGGREGATION{
 						outSet.insert(outnode);
 						addOut.push_back(outSet);
 					}
-		}
+				}
 	}
 	void adderAggregation3( AIG* aig, 
 			std::map<unsigned , std::set<unsigned> >& outIn, 
@@ -807,6 +961,15 @@ namespace AGGREGATION{
 		std::set<unsigned>::iterator iSet;
 		std::map<unsigned, std::set<unsigned> >::iterator iOutin;
 		printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
+		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
+			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
+			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
+		
+		simplify_output(aigraph, outIn, containedComputeTable);
+		printf("\n\nCOMPRESSED IN OUT PORT AFTER OUTPUT SIMPLIFICAITON\n"); 
 		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
 			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
 			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
