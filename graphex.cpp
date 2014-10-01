@@ -1,6 +1,6 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
 	@
-	@  aigex.cpp
+	@  graphex.cpp
 	@    Explores the AIG structure with inline commands
 	@  
 	@  @AUTHOR:Kevin Zeng
@@ -19,11 +19,11 @@
 #include <set>
 #include <list>
 
-#include "aig.hpp"
+#include "graph.hpp"
 
 
-#ifndef GE_GUARD
-#define GE_GUARD
+#ifndef AE_GUARD
+#define AE_GUARD
 
 //Special Print Function
 void printStatement(std::string statement){
@@ -39,43 +39,26 @@ void printStatement(std::string statement){
 
 
 
-bool DFS(AIG* aig, unsigned start, unsigned end,  std::list<unsigned>& path, std::set<unsigned>& marked){
-		start = start & 0xFFFFFFFE;
-		end = end & 0xFFFFFFFE;
-		marked.insert(start);
-		path.push_back(start);
+bool DFS(Graph* ckt, Vertex* start, Vertex* end,  std::list<unsigned>& path, std::set<unsigned>& marked){
+		marked.insert(start->getID());
+		path.push_back(start->getID());
 		//printf("Traversing start node: %d\n", start);
 
-		if(start == end){
-			printf("DFS -- Start is at the END node\n");
+		if(end!= NULL)
+		if(start->getID() == end->getID()){
+			//printf("DFS -- Start is at the END node\n");
 			return true;; //none lower than this
 		}
-		if(start <= aig->getInputSize()*2){
-			//printf("DFS -- Start is INPUT\n");
-		return false;
 
-		}
-
-		unsigned node1, node2, child1, child2;
-		child1 = aig->getChild1(start);
-		child2 = aig->getChild2(start);
-		
-
-		node1 = child1 & 0xFFFFFFFE;
-		node2 = child2 & 0xFFFFFFFE;
+		std::vector<Vertex*> in;
+		start->getInput(in);
 
 
-		//printf("CHILD: %d %d\n", node1, node2);
-
-		if(marked.find(node1) == marked.end()){
-		 bool result = DFS(aig, node1, end, path, marked);
-		 if (result) return true;
-
-		}
-
-		if(marked.find(node2) == marked.end()){
-			bool result = DFS(aig, node2, end, path, marked);
-		 	if (result) return true;
+		for(unsigned int i = 0; i < in.size(); i++){
+			if(marked.find(in[i]->getID()) == marked.end()){
+		 		bool result = DFS(ckt, in[i], end, path, marked);
+		 		if (result) return true;
+			}
 		}
 
 		path.pop_back();
@@ -87,21 +70,21 @@ int main( int argc, char *argv[] )
 {
 
 		std::cout<<"\n============================================================================\n";
-		std::cout<<  "[*]\tBegin AIG Explorer (AIGEX) command line tool \n";
+		std::cout<<  "[*]\tBegin Graph Explorer (GRAPHEX) command line tool \n";
 		std::cout<<"============================================================================\n";
 
 
 	if(argc != 2)
 	{
 		std::cout<<"\n################################################################\n"<<std::endl;
-		printf("    INVALID ARGUMENTS: ./aigex <AIGER FILE> \n");
+		printf("    INVALID ARGUMENTS: ./graphex <CNL FILE> \n");
 		std::cout<<"\n################################################################\n"<<std::endl;
 		return 0;
 	}
 
-	printf(" * Importing AIGER FILE: %s\n", argv[1]);
-	AIG* aig = new AIG();
-	aig->importAIG(argv[1]);
+	printf(" * Importing CNL FILE: %s\n", argv[1]);
+	Graph* ckt = new Graph("");
+	ckt->importGraph(argv[1], 0);
 	printf(" * File Imported\n");
 	printf("\n\nEnter Commands: \n");
 	printf(" >> ");
@@ -116,7 +99,7 @@ int main( int argc, char *argv[] )
 			printf("Searching to see if %d is reachable from %d\n", contain, source);
 			std::set<unsigned> marked;
 			std::list<unsigned> path;
-			bool result = DFS(aig, source, contain, path, marked);
+			bool result = DFS(ckt, ckt->getVertex(source), ckt->getVertex(contain), path, marked);
 			if(result){
 				printf(" * Node %d IS CONTAINED under %d\nPATH: ", contain, source);
 				std::list<unsigned>::iterator iList;
@@ -131,7 +114,7 @@ int main( int argc, char *argv[] )
 			std::cin >> source;
 			std::set<unsigned> marked;
 			std::list<unsigned> path;
-			bool result = DFS(aig, source, 0, path, marked);
+			bool result = DFS(ckt, ckt->getVertex(source), NULL, path, marked);
 			printf("FANIN NODES: ");
 			std::set<unsigned>::iterator iSet;
 			for(iSet = marked.begin(); iSet != marked.end(); iSet++)
@@ -140,7 +123,7 @@ int main( int argc, char *argv[] )
 		}
 
 		else if(command == "print"){
-			aig->print();
+			ckt->print();
 		}
 
 
@@ -149,11 +132,11 @@ int main( int argc, char *argv[] )
 		std::cin>>command;
 		printf("\n");
 	}
-
-	delete aig;
+	
+	delete ckt;
 	
 	printf("-----------------------------------\n");	
-	printf("   aigex Succesfully exited\n");	
+	printf("   graphex Succesfully exited\n");	
 	printf("-----------------------------------\n");	
 
 

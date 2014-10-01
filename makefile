@@ -57,6 +57,9 @@ testckt: testckt.cpp $(OBJ)
 aigex: aigex.cpp aig.o aiger.o graph.o vertex.o
 	g++ -o aigex aig.o aiger.o graph.o vertex.o aigex.cpp 
 
+graphex: graphex.cpp graph.o vertex.o
+	g++ -o graphex graph.o vertex.o graphex.cpp
+
 clean:
 	rm -f *.o *fpgenius* *.out* *.in*  cnf testProgram cDatabase aigex testckt
 
