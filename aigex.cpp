@@ -47,7 +47,7 @@ bool DFS(AIG* aig, unsigned start, unsigned end,  std::list<unsigned>& path, std
 		//printf("Traversing start node: %d\n", start);
 
 		if(start == end){
-			//printf("DFS -- Start is less than LB\n");
+			printf("DFS -- Start is at the END node\n");
 			return true;; //none lower than this
 		}
 		if(start <= aig->getInputSize()*2){

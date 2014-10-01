@@ -719,8 +719,6 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 									iSet = iList1->find(prevVal);
 								}
 								else printf("\n");
-
-
 								prevVal = *iSet;
 								iSet++;
 							}
@@ -741,48 +739,110 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 					}
 				}
 	}
-	void adderAggregation3( AIG* aig, 
+
+
+
+	void adderAggregation3(AIG* aig, 
 			std::map<unsigned , std::set<unsigned> >& outIn, 
 			std::set<unsigned> sumNodes, 
 			std::list<std::set<unsigned> >& addIn,
 			std::list<std::set<unsigned> >& addOut){
-
 		printf("\n\n-------------------------------------------------------------------------------\n");
 		printf("ADDER AGGREGATION3   ------\n");
 
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::list<std::set<unsigned> >::iterator iList2;
 		std::map<unsigned , std::set<unsigned> >::iterator iMap;
-		std::set<unsigned>::iterator iSet; 	
 
 		//Go through each adder function
 				for(iMap = outIn.begin(); iMap != outIn.end(); iMap++){
 
 					unsigned outnode = iMap->first;
-					iList2 = addOut.begin();
-					bool containment = false;
-					for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
-						unsigned int numMatches = 0; 
-						for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
-							if(iList1->find(*iSet) != iList1->end())
-								numMatches++;
-				
-						if(numMatches == iList1->size()){
-							containment = true;
-							break;
-						}
+					printf("Aggregating Output in IMAP:  %d\n", outnode);
 
+					//If no aggregation if found, check if the inputs lead to any of the other inputs in the adder sets
+					std::set<unsigned>::iterator iSet, iASet;	
+					printf("IMAP: ");
+					for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
+						printf("%d ", *iSet);
+					printf("\n");
+
+					bool containment = false;
+					//bool isInputContained = false;
+
+					//Look for outnode to the inputs of addlist
+					iList2 = addOut.begin();
+					printf("See if IMAP output can hit all the inputs in adder list\n");
+					for(iList1 = addIn.begin(); iList1 != addIn.end(); iList1++){
+						printf("AdderLIST: ");
+						for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+							printf("%d ", *iSet);
+						printf("\n");
+
+						std::set<unsigned> marked;
+						std::set<unsigned> found;
+						//printf("Performing DFS Search using INSET OUTPUT: %d LB: %d\n", outnode, lb);
+						unsigned lb = *(iList1->begin());
+						int result = DFS(aig, outnode, lb, *iList1, found,  marked);
+
+						printf("found (INPUTS that IMAP output hit from adder list): RESULT: %d\n * ", result);
+						for(iSet = found.begin(); iSet != found.end(); iSet++){
+							printf("%d ", *iSet);
+						}
+						printf("\n");
+					
+						if(found.size() == iList1->size()) {
+							printf("OUTPUT HITS ALL!\n");
+							containment = true;
+							iList2->insert(outnode);
+							for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
+								iList1->insert(*iSet);
+						
+						printf("new adder list: ");
+						for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+							printf("%d ", *iSet);
+						printf("\n");
+
+							//Simplify to see if the inputs are contained
+							iSet = iList1->begin();
+							lb = *iSet;
+							iSet++; //Smallest cannot be contained since it goes by levels
+							unsigned prevVal = lb;
+							while(iSet != iList1->end()){
+								marked.clear();
+								found.clear();
+								result = DFS(aig, *iSet, lb, *iList1, found,  marked);
+
+								if(result == 1){
+									printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
+									iList1->erase(*iSet);
+									iSet = iList1->find(prevVal);
+								}
+								prevVal = *iSet;
+								iSet++;
+							}
+						
+						printf("sim adder list: ");
+						for(iSet = iList1->begin(); iSet != iList1->end(); iSet++)
+							printf("%d ", *iSet);
+						printf("\n");
+							
+							break;	
+						}
+						
 
 					}
+
 					if(containment == false){
+						printf("NEW ENTRY IN ADDER LIST\n");
 						addIn.push_back(iMap->second);
 						std::set<unsigned> outSet;
 						outSet.insert(-1);
 						outSet.insert(outnode);
 						addOut.push_back(outSet);
 					}
+					printf("---------------------------------------\n\n");
 				}
-
 	}
 
 
@@ -1001,7 +1061,7 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 		printf("HAsum2 AGG\n");
 		adderAggregation2(aigraph, pmap, haSum2, sumNodes, addInputList, addOutputList);
 		*/
-		adderAggregation2(aigraph, outIn, sumNodes, addInputList, addOutputList);
+		adderAggregation3(aigraph, outIn, sumNodes, addInputList, addOutputList);
 		//adderAggregation3(aigraph, outIn, sumNodes, addInputList2, addOutputList2);
 
 /*
