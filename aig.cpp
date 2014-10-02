@@ -194,6 +194,32 @@ unsigned AIG::getChild2(unsigned index){
 
 
 
+void AIG::getParents(unsigned source, std::vector<unsigned>& parents){
+	source = source & 0xFFFFFFFE;
+
+	for(unsigned int i = 0; i < m_Aiger->num_ands; i++){
+		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
+			parents.push_back(m_Aiger->ands[i].lhs);
+		else if((m_Aiger->ands[i].rhs1 & 0xFFFFFFFE)== source)
+			parents.push_back(m_Aiger->ands[i].lhs);
+	}
+
+}
+
+void AIG::getSiblings(unsigned source, std::vector<unsigned>& siblings){
+	source = source & 0xFFFFFFFE;
+
+	for(unsigned int i = 0; i < m_Aiger->num_ands; i++){
+		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
+			siblings.push_back(m_Aiger->ands[i].rhs1);
+		else if((m_Aiger->ands[i].rhs1 & 0xFFFFFFFE)== source)
+			siblings.push_back(m_Aiger->ands[i].rhs0);
+	}
+
+}
+
+
+
 /*******************************************************
  *  getGNode 
  *    Gets the Graph Node ID give an AIG node ID

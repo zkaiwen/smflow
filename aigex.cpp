@@ -142,6 +142,41 @@ int main( int argc, char *argv[] )
 		else if(command == "print"){
 			aig->print();
 		}
+		else if(command == "child"){
+			unsigned source;
+			std::cin >> source;
+
+			unsigned node1, node2, child1, child2;
+			child1 = aig->getChild1(source);
+			child2 = aig->getChild2(source);
+
+
+			node1 = child1 & 0xFFFFFFFE;
+			node2 = child2 & 0xFFFFFFFE;
+			printf("CHILD1: %3d\tCHILD2: %3d\n", node1, node2);
+		}
+		else if(command == "parent"){
+			unsigned source;
+			std::cin >> source;
+			std::vector<unsigned> parentNodes;
+			aig->getParents(source,parentNodes);
+			printf("PARENT NODES OF %d: ", source);
+			for(unsigned int i = 0; i < parentNodes.size(); i++)
+				printf("%d ", parentNodes[i]);
+			printf("\n");
+		}
+		else if(command == "sib"){
+			unsigned source;
+			std::cin >> source;
+			std::vector<unsigned> sibNodes;
+			aig->getSiblings(source,sibNodes);
+			printf("SIBLING NODES OF %d: ", source);
+			for(unsigned int i = 0; i < sibNodes.size(); i++)
+				printf("%d ", sibNodes[i]);
+			printf("\n");
+				
+
+		}
 
 
 
@@ -151,7 +186,7 @@ int main( int argc, char *argv[] )
 	}
 
 	delete aig;
-	
+
 	printf("-----------------------------------\n");	
 	printf("   aigex Succesfully exited\n");	
 	printf("-----------------------------------\n");	

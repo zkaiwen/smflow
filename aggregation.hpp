@@ -31,7 +31,7 @@ namespace AGGREGATION{
 	void findHA(CutFunction* cf, AIG* aigraph);
 	int findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in);
 	bool isInputNeg(AIG* aigraph, unsigned out, unsigned in);
-	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::set<unsigned>& found, std::set<unsigned>& marked);
+	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::list<unsigned>& endpoints, std::set<unsigned>& found, std::set<unsigned>& marked);
 	bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb,  std::set<unsigned>& input, std::set<unsigned>& marked);
 	void printAddList(std::list<std::set<unsigned> >& addIn,	std::list<std::set<unsigned> >& addOut);
 	bool checkContainment(AIG* aig, unsigned start,	unsigned lb,	std::set<unsigned>& setList);
@@ -138,7 +138,8 @@ namespace AGGREGATION{
 							printf("Checking containment: %d......", *iSet);
 							std::set<unsigned> marked;
 							std::set<unsigned> found;
-							int result = DFS(aig, *iSet, lb, iMap->second, found,  marked);
+							std::list<unsigned> endpoints;
+							int result = DFS(aig, *iSet, lb, iMap->second, endpoints, found,  marked);
 
 							if(result == 1){
 								//Add to contained compute table
@@ -230,7 +231,8 @@ namespace AGGREGATION{
 						printf("Checking containment: %d......", *iSet);
 						std::set<unsigned> marked;
 						std::set<unsigned> found;
-						int result = DFS(aig, *iSet, lb, iMap->second, found,  marked);
+						std::list<unsigned> endpoints;
+						int result = DFS(aig, *iSet, lb, iMap->second, endpoints, found,  marked);
 
 						if(result == 1){
 							//Add to contained compute table
@@ -514,17 +516,19 @@ namespace AGGREGATION{
 		 2 - stop intermediate was hit
 	 */
 	//int DFS(AIG* aig, unsigned start, std::set<unsigned>& input, std::set<unsigned>& intermediate, std::set<unsigned>& marked){
-	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::set<unsigned>& found,  std::set<unsigned>& marked){
+	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::list<unsigned>& endpoints, std::set<unsigned>& found,  std::set<unsigned>& marked){
 		start = start& 0xFFFFFFFE;
 		marked.insert(start);
 		//printf("Traversing start node: %d\n", start);
 
 		if(start < lb){
-			printf("DFS -- Start is less than LB: %d\n", start);
+			//printf("DFS -- Start is less than LB: %d\n", start);
+			endpoints.push_back(start);
 		return -1; //none lower than this
 		}
 		if(start <= aig->getInputSize()*2){
-			printf("DFS -- Start is INPUT: %d\n", start);
+			endpoints.push_back(start);
+			//printf("DFS -- Start is INPUT: %d\n", start);
 		return -1;
 
 		}
@@ -545,12 +549,12 @@ namespace AGGREGATION{
 		if(input.find(node1) != input.end())
 			found.insert(node1);
 		else if(marked.find(node1) == marked.end())
-		 result1 = DFS(aig, node1, lb, input, found, marked);
+		 result1 = DFS(aig, node1, lb, input, endpoints, found, marked);
 
 		if(input.find(node2) != input.end())
 			found.insert(node2);
 		else if(marked.find(node2) == marked.end())
-		result2 = DFS(aig, node2, lb, input, found, marked);
+		result2 = DFS(aig, node2, lb, input, endpoints, found, marked);
 
 
 		if(result1 == -1 || result2 == -1) return -1;
@@ -591,6 +595,39 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 
 		if(marked.find(node2) == marked.end()){
 			bool result = DFSearch(aig, node2, end, lb, input, marked);
+		 	if (result) return true;
+		}
+
+		return false;
+	}
+
+bool DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input,  std::set<unsigned>& marked){
+		start = start & 0xFFFFFFFE;
+		marked.insert(start);
+		//printf("Traversing start node: %d\n", start);
+
+		if(input.find(start) != input.end()) return true;
+		if(start < lb) return false;
+		if(start <= aig->getInputSize()*2){
+			//printf("DFS -- Start is INPUT\n");
+		return false;
+		}
+
+		unsigned node1, node2, child1, child2;
+		child1 = aig->getChild1(start);
+		child2 = aig->getChild2(start);
+
+		node1 = child1 & 0xFFFFFFFE;
+		node2 = child2 & 0xFFFFFFFE;
+
+		if(marked.find(node1) == marked.end()){
+		 bool result = DFS_End_Set(aig, node1, lb, input,  marked);
+		 if (result) return true;
+
+		}
+
+		if(marked.find(node2) == marked.end()){
+		 bool result = DFS_End_Set(aig, node2, lb, input,  marked);
 		 	if (result) return true;
 		}
 
@@ -658,7 +695,8 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 
 									std::set<unsigned> marked;
 									std::set<unsigned> found;
-									int result = DFS(aig, *iCut, lb, inputCopySet, found,  marked);
+									std::list<unsigned> endpoints;
+									int result = DFS(aig, *iCut, lb, inputCopySet, endpoints, found,  marked);
 
 									if(result == -1){
 										//printf("NOT FULLY CONTAINED\n");
@@ -685,8 +723,9 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 
 						std::set<unsigned> marked;
 						std::set<unsigned> found;
+						std::list<unsigned> endpoints;
 						//printf("Performing DFS Search using INSET OUTPUT: %d LB: %d\n", outnode, lb);
-						int result = DFS(aig, outnode, lb, inputCopySet, found,  marked);
+						int result = DFS(aig, outnode, lb, inputCopySet, endpoints, found,  marked);
 
 /*
 						printf("found (INPUTS HIT): ");
@@ -712,7 +751,8 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 								printf("Checking containment: %d......", *iSet);
 								marked.clear();
 								found.clear();
-								result = DFS(aig, *iSet, lb, *iList1, found,  marked);
+								endpoints.clear();
+								result = DFS(aig, *iSet, lb, *iList1, endpoints, found,  marked);
 
 								if(result == 1){
 									printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
@@ -782,9 +822,15 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 
 						std::set<unsigned> marked;
 						std::set<unsigned> found;
+						std::list<unsigned> endpoints;
 						//printf("Performing DFS Search using INSET OUTPUT: %d LB: %d\n", outnode, lb);
 						unsigned lb = *(iList1->begin());
-						int result = DFS(aig, outnode, lb, *iList1, found,  marked);
+						int result = DFS(aig, outnode, lb, *iList1, endpoints, found,  marked);
+						std::list<unsigned>::iterator iList;
+						printf("DFS ENDPOINT LIST: ");
+						for(iList = endpoints.begin(); iList != endpoints.end(); iList++)
+							printf("%d ", *iList);
+						printf("\n");
 
 						printf("found (INPUTS that IMAP output hit from adder list): RESULT: %d\n * ", result);
 						for(iSet = found.begin(); iSet != found.end(); iSet++){
@@ -792,25 +838,46 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 						}
 						printf("\n");
 					
+
+						//TEST CASE FOR THIS BLOCK IS adder4_ci
 						if(found.size() != iList1->size() && result != 1){
 							//Nodes that are not found by DFS:
 							printf("LOOKING FOR NODES THAT ARE NOT CVERED\n");
 							for(iSet = iList1->begin(); iSet != iList1->end(); iSet++){
 								if(found.find(*iSet) == found.end()){
 									printf("NODE NOT COVERED: %d\n", *iSet);
-									marked.clear();
-									found.clear();
+									std::set<unsigned> marked2;
+									std::set<unsigned> found2;
+									std::list<unsigned> endpoints2;
 									lb = *(iMap->second.begin());
-									int localresult = DFS(aig, *iSet, lb, iMap->second, found,  marked);
+									int localresult = DFS(aig, *iSet, lb, iMap->second, endpoints2, found2,  marked2);
 									if(localresult == 1){
 										printf(" -- Node is contained in IMAP's inputs\n");
 										result = 1;
 
 									}
 									else{
+										result = -2;
 										printf("NOT CONTAINED...therefore not possible...skip\n");
 										break;
 									}
+								}
+							}
+						}
+
+						//IF FAILED, CHECK TO SEE IF INPUT OF IMAP IS CONTAINED WITHIN INPUT OF ADDLIST
+						if(result == -2){
+							printf("COVERAGE FAILED: TESTING IF IN OF IMAP IS CNTND IN IN OF ADDLIST\n");
+							std::set<unsigned>::reverse_iterator rSet;
+							for(rSet = iList1->rbegin(); rSet != iList1->rend(); rSet++){
+								if(*rSet < lb) break; //if less than then can't be contained
+								
+								std::set<unsigned> marked2;
+								bool hit = DFS_End_Set(aig, *rSet, lb, iMap->second, marked2);
+								if(hit){
+									printf("ADDLIST NODE %d has a hit\n", *rSet);
+
+
 								}
 							}
 						}
@@ -877,8 +944,9 @@ bool DFSearch(AIG* aig, unsigned start, unsigned end, unsigned lb, std::set<unsi
 
 		std::set<unsigned> marked;
 		std::set<unsigned> found;
+		std::list<unsigned> endpoints;
 		//printf("Checking containment: %d......", start);
-		DFS(aig, start, lb, setList, found,  marked);
+		DFS(aig, start, lb, setList, endpoints, found, marked);
 
 		if(found.size() != 0){
 			//printf(" -- Node hits a existing!\nErasing %d from set\n", start);

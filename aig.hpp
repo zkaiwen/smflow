@@ -87,6 +87,8 @@ class AIG{
 		std::vector<unsigned> findNode(unsigned, unsigned );
 		//See if there is another node with * as a child
 		bool hasChild(unsigned, unsigned);
+		void getParents(unsigned, std::vector<unsigned>&);
+	void getSiblings(unsigned, std::vector<unsigned>& );
 
 
 		//Setters
