@@ -17,7 +17,8 @@ circuits/temp/s344_og.cnl
 circuits/temp/s349_og.cnl
 circuits/temp/s344.cnl
 circuits/testbench/adder8x2_sharedIn.cnl
-circuits/testbench/adder4_chain.cnl
 circuits/testbench/adder4x2_sharedIn.cnl
 circuits/testbench/adder4_ci.cnl
 circuits/testbench/adder34.cnl
+circuits/testbench/adder4_chain_mux.cnl
+circuits/testbench/adder4_chain.cnl

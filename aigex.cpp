@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
 
 	std::string command;
 	std::cin >> command;
-	while(command != "exit"){
+	while(command != "exit" && command != "quit"){
 		if(command == "contains"){
 			unsigned source, contain;
 			std::cin >> source;
