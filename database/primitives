@@ -7,3 +7,4 @@ circuits/g/primitive/haSum2bit.g
 circuits/g/primitive/haSum3bit.g
 circuits/g/primitive/haCarry3bit.g
 circuits/g/primitive/faSum3bit_CuT.g
+circuits/g/primitive/xor2.g

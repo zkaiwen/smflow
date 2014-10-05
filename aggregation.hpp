@@ -323,13 +323,17 @@ namespace AGGREGATION{
 
 		//printf("CHILD: %d %d\n", node1, node2);
 
-		if(input.find(node1) != input.end())
+		if(input.find(node1) != input.end()){
+			printf("HIT INPUT: %d\n", node1);
 			found.insert(node1);
+		}
 		else if(marked.find(node1) == marked.end())
 		 result1 = DFS(aig, node1, lb, input, sumnodes, found, marked);
 
-		if(input.find(node2) != input.end())
+		if(input.find(node2) != input.end()){
+			printf("HIT INPUT: %d\n", node2);
 			found.insert(node2);
+		}
 		else if(marked.find(node2) == marked.end())
 		result2 = DFS(aig, node2, lb, input, sumnodes, found, marked);
 
@@ -717,17 +721,17 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		cf->getPortMap(pmap);
 		cf->getPortMap_DC(pmap_dc);
 
-		//printf("XOR FUNCTIONS: \n");
-		//printIO(pmap, xorFunction);
+		printf("XOR FUNCTIONS: \n");
+		printIO(pmap, xorFunction);
 
 		//		printf("FACARRY FUNCTIONS: \n");
 		//		printIO(pmap, faCarry);
-		/*
+		printf("\n\nFASUM FUNCTIONS: \n");
+		printIO(pmap, faSum);
 		printf("\n\nFASUM2 FUNCTIONS: \n");
 		printIO(pmap, faSum2);
 		printf("\n\nFASUM3 FUNCTIONS: \n");
 		printIO(pmap, faSum3);
-		*/
 		//		printf("\n\nFACARRY2 FUNCTIONS: \n");
 		//		printIO(pmap, faCarry2);
 		printf("\n\nHASUM2 FUNCTIONS: \n");
