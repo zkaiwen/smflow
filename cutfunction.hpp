@@ -33,6 +33,15 @@
 #define x4 0x00FF00FF
 #define x5 0x0000FFFF
 
+class InOut{
+	public:
+		std::set<unsigned> input;
+		unsigned output;
+		InOut(){
+			output = 0xFFFFFFFF;		
+		};
+};
+
 
 class CutFunction{
 	private:
@@ -50,8 +59,8 @@ class CutFunction{
 
 		//Function, List of inputs that have that specific output
 		//Output node is stored as the last node in inner vector
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >m_PortMap; 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >m_PortMap_DC; 
+		std::map<unsigned long long, std::vector<InOut*> >m_PortMap; 
+		std::map<unsigned long long, std::vector<InOut*> >m_PortMap_DC; 
 		std::map<std::string, unsigned int> m_PrimInputSize;
 
 
@@ -95,8 +104,8 @@ class CutFunction{
 
 
 		//Getters
-		void getPortMap(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& );
-		void getPortMap_DC(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& );
+		void getPortMap(std::map<unsigned long long, std::vector<InOut*> >& );
+		void getPortMap_DC(std::map<unsigned long long, std::vector<InOut*> >& );
 		void getHashMap(std::map<unsigned long long, std::string>&);
 		void setParams(CutEnumeration*, AIG*);
 		void getFunctionCount(std::map<unsigned long long, int>& );

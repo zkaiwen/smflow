@@ -37,21 +37,21 @@ namespace AGGREGATION{
 	bool checkContainment(AIG* , unsigned ,	std::set<unsigned>&, std::set<unsigned>& );
 
 
-	void printIO(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+	void printIO(std::map<unsigned long long, std::vector<InOut*> >& pmap, 
 			std::vector<unsigned long long>& inOut){
 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
 		int count= 0;
 		for(unsigned int i = 0; i < inOut.size(); i++){
 			iPMAP = pmap.find(inOut[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned int k = 0;
 					printf("INPUT: ");
-					for(k = 0; k < iPMAP->second[j]->size()-1; k++)
-						printf("%d ", iPMAP->second[j]->at(k));
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++)
+						printf("%d ", *iSet);
 
-					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->at(k));
+					printf("\t\tOUTPUT:\t%d\n", iPMAP->second[j]->output);
 
 					count++;
 				}
@@ -60,16 +60,31 @@ namespace AGGREGATION{
 		printf("COUNT: %d ************************************************************** %d\n", count, count);
 	}
 
+	void parsePortMap(std::map<unsigned long long, std::vector<InOut*> >& pmap, 
+			std::vector<unsigned long long>& function ,
+			std::vector<InOut*>& inout ){
+
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
+		for(unsigned int i = 0; i < function.size(); i++){
+			iPMAP = pmap.find(function[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++)
+					inout.push_back(iPMAP->second[j]);	
+			}
+		}
+	}
+
 
 	void simplifyingSet(AIG* aig, 
-			std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+			std::map<unsigned long long, std::vector<InOut*> >& pmap, 
 			std::vector<unsigned long long>& functions, 
 			std::set<unsigned>& sumNodes, 
 			std::map<unsigned, std::set<unsigned> >& outInMap,
 			std::map<unsigned, std::set<unsigned> >& containedComputeTable){
 	printf("SIMPLIFYING SET\n");
 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::map<unsigned, std::set<unsigned> >::iterator iMap;
 		std::set<unsigned>::iterator iSet;
@@ -80,19 +95,19 @@ namespace AGGREGATION{
 			if(iPMAP != pmap.end()){
 				//Go through input output ports of the function
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					unsigned outnode = iPMAP->second[j]->output;
 					printf("\n---------------------------------------------------------------------------------\n");
 					printf("CHECKING PORTMAP OUTNODE: %3d\t\tINSET: ", outnode);
-					for(unsigned k = 0; k < iPMAP->second[j]->size()-1; k++)
-						printf("%d ", iPMAP->second[j]->at(k));
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++)
+						printf("%d ", *iSet);
 					printf("\n");
 
 					iMap = outInMap.find(outnode);
 					if(iMap == outInMap.end()){
 						printf("New Output node!!!!\n");
 						std::set<unsigned> inPort; 
-						for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++)
-							inPort.insert(iPMAP->second[j]->at(k));
+						for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++)
+							inPort.insert(*iSet);
 
 						outInMap[outnode] = inPort;
 					}
@@ -108,15 +123,15 @@ namespace AGGREGATION{
 						std::map<unsigned, std::set<unsigned> >::iterator iTable;
 						iTable= containedComputeTable.find(outnode);
 						if(iTable != containedComputeTable.end()){
-							for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-								unsigned innode = iPMAP->second[j]->at(k);
+							for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
+								unsigned innode = *iSet;
 								if(iTable->second.find(innode) == iTable->second.end())
 									iMap->second.insert(innode);
 							}
 						}
 						else{
-							for(unsigned int k = 0; k < iPMAP->second[j]->size()-1; k++){
-								unsigned innode = iPMAP->second[j]->at(k);
+							for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
+								unsigned innode = *iSet;
 								iMap->second.insert(innode);
 							}
 						}
@@ -170,7 +185,7 @@ namespace AGGREGATION{
 			std::map<unsigned, std::set<unsigned> >& containedComputeTable){
 	printf("SIMPLIFYING OUTPUT SET\n");
 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::set<unsigned>::iterator iSet;
 
@@ -296,15 +311,15 @@ namespace AGGREGATION{
 	int DFS(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input, std::set<unsigned>& sumnodes, std::set<unsigned>& found,  std::set<unsigned>& marked){
 		start = start& 0xFFFFFFFE;
 		marked.insert(start);
-		printf("Traversing start node: %d...", start);
+		//printf("Traversing start node: %d...", start);
 
 		if(start <= aig->getInputSize()*2){
-			printf("DFS -- Start is INPUT: %d\n", start);
+			//printf("DFS -- Start is INPUT: %d\n", start);
 		return -1;
 		}
 		else if(sumnodes.find(start) != sumnodes.end()) {
 			if(lb != start){
-				printf("SUM NODE FOUND: %d\tINITIAL SUM NODE: %d\n", start, lb);
+				//printf("SUM NODE FOUND: %d\tINITIAL SUM NODE: %d\n", start, lb);
 				return -1;
 			}
 
@@ -324,14 +339,14 @@ namespace AGGREGATION{
 		//printf("CHILD: %d %d\n", node1, node2);
 
 		if(input.find(node1) != input.end()){
-			printf("HIT INPUT: %d\n", node1);
+			//printf("HIT INPUT: %d\n", node1);
 			found.insert(node1);
 		}
 		else if(marked.find(node1) == marked.end())
 		 result1 = DFS(aig, node1, lb, input, sumnodes, found, marked);
 
 		if(input.find(node2) != input.end()){
-			printf("HIT INPUT: %d\n", node2);
+			//printf("HIT INPUT: %d\n", node2);
 			found.insert(node2);
 		}
 		else if(marked.find(node2) == marked.end())
@@ -501,7 +516,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 								std::set<unsigned> marked2;
 								int hitNode = DFS_End_Set(aig, *rSet, *rSet, iMap->second, marked2);
-								if(hitNode == *rSet) continue;
+								if((unsigned)hitNode == *rSet) continue;
 								if(hitNode != -1){
 									printf("ADDLIST NODE %d has a hit at input %d\n", *rSet, hitNode);
 									iList1->insert(hitNode);
@@ -617,7 +632,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 			node1 = aig->getChild1((start) & 0xFFFFFFFE) & 0xFFFFFFFE;
 			node2= aig->getChild2((start) & 0xFFFFFFFE) & 0xFFFFFFFE;
 			printf(" * * Adding children nodes: %d %d\n", node1, node2);
-		
+
 			if(!checkContainment(aig, node1, setList, sumNodes )) setList.insert(node1);
 			if(!checkContainment(aig, node2, setList, sumNodes)) setList.insert(node2);
 
@@ -627,18 +642,96 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		return false;
 	}
 
+	void findAddHeader(std::vector<InOut*>& add1,
+			std::vector<InOut*>& add2, 
+			std::vector<InOut*>& add3,
+			std::set<unsigned> sumNodes,
+			std::list<std::set<unsigned> >& addIn,
+			std::list<std::set<unsigned> >& addOut){
 
-	void extractOutputs(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+		std::set<unsigned>::iterator iSet1;
+		std::set<unsigned>::iterator iSet2;
+		std::set<unsigned>::iterator iSet3;
+
+		//Go through each adder function
+		for(unsigned int i = 0; i < add3.size(); i++){
+			for(unsigned int q = 0; q < add2.size(); q++){
+				//Check to see if all the nodes in SUM2 can be found in the SUM3
+				int numMatch = 0;
+				for(iSet2 = add2[q]->input.begin(); iSet2 != add2[q]->input.end(); iSet2++){
+					if(add3[i]->input.find(*iSet2) != add3[i]->input.end())
+						numMatch++;
+					else{
+						numMatch = -1;
+						break;
+					}
+				}
+
+				if((unsigned)numMatch == add2[q]->input.size()) {
+					printf("SUM 3 MATCHES SUM 2\n");
+
+					//make sure a initial can be found
+					for(unsigned int z = 0; z < add1.size(); z++){
+						int numMatch2to1= 0;
+						for(iSet1 = add1[z]->input.begin(); iSet1 != add1[z]->input.end(); iSet1++){
+							if(add2[q]->input.find(*iSet1) != add2[q]->input.end())
+								numMatch2to1++;
+							else{
+								numMatch2to1 = -1;
+								break;
+							}
+						}
+
+						if((unsigned)numMatch2to1 == add1[z]->input.size()) {
+							printf("SUM3 OUT: %d MATCHES SUM2 OUT: %d MATCHES %d. COMBINE THEM\n", add3[i]->output, add2[q]->output, add1[z]->output);
+							printf("SUM2: ");
+							for(iSet1 = add1[z]->input.begin(); iSet1 != add1[z]->input.end(); iSet1++)
+								printf("%d ", *iSet1);
+
+							printf("SUM2: ");
+							for(iSet2 = add2[q]->input.begin(); iSet2 != add2[q]->input.end(); iSet2++)
+								printf("%d ", *iSet2);
+
+							printf("\t\tSUM3: ");
+							for(iSet3 = add3[i]->input.begin(); iSet3 != add3[i]->input.end(); iSet3++)
+								printf("%d ", *iSet3);
+
+
+							printf("\n");
+							std::set<unsigned> inputCopy = add3[i]->input;
+							std::set<unsigned> outputCopy;
+							outputCopy.insert(add3[i]->output);
+							outputCopy.insert(add2[q]->output);
+							outputCopy.insert(add1[z]->output);
+							
+							sumNodes.insert(add3[i]->output);
+							sumNodes.insert(add2[q]->output);
+							sumNodes.insert(add1[z]->output);
+
+							addIn.push_back(inputCopy);
+							addOut.push_back(outputCopy);
+
+							printAddList(addIn, addOut);
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+
+	void extractOutputs(std::map<unsigned long long, std::vector<InOut*> >& pmap, 
 			std::vector<unsigned long long>& inOut, 
 			std::set<unsigned>& out){
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 
 		//Go through each adder function
 		for(unsigned int i = 0; i < inOut.size(); i++){
 			iPMAP = pmap.find(inOut[i]);
 			if(iPMAP != pmap.end()){
 				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-					unsigned outnode = iPMAP->second[j]->at(iPMAP->second[j]->size()-1);
+					unsigned outnode = iPMAP->second[j]->output;
 					out.insert(outnode);
 				}
 			}
@@ -659,16 +752,16 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		//Find all or gate function tt
 		std::vector<unsigned long long> xorFunction;
 		std::vector<unsigned long long> andFunction;
-		std::vector<unsigned long long> faCarry;
-		std::vector<unsigned long long> faSum;
-		std::vector<unsigned long long> faCarry2;
-		std::vector<unsigned long long> faSum2;
-		std::vector<unsigned long long> faSum3;
-		std::vector<unsigned long long> haCarry2;
-		std::vector<unsigned long long> haSum2;
-		std::vector<unsigned long long> haCarry3;
-		std::vector<unsigned long long> haSum3;
-		std::vector<unsigned long long> cla3;
+		std::vector<unsigned long long> faCarry_f;
+		std::vector<unsigned long long> faSum_f;
+		std::vector<unsigned long long> faCarry2_f;
+		std::vector<unsigned long long> faSum2_f;
+		std::vector<unsigned long long> faSum3_f;
+		std::vector<unsigned long long> haCarry2_f;
+		std::vector<unsigned long long> haSum2_f;
+		std::vector<unsigned long long> haCarry3_f;
+		std::vector<unsigned long long> haSum3_f;
+		std::vector<unsigned long long> cla3_f;
 		printf(" * Parsing function database for half adder components...\n");
 		for(it = hmap.begin(); it!=hmap.end(); it++){
 			if(it->second.find("xor") != std::string::npos){
@@ -678,36 +771,36 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 				andFunction.push_back(it->first);
 			}
 			else if(it->second.find("faSum3bit") != std::string::npos){
-				faSum3.push_back(it->first);
+				faSum3_f.push_back(it->first);
 				//TODO: May need to check if the A3XORB3 input function is 
 				//      actually an XOR function
 			}
 			else if(it->second.find("faSum2bit") != std::string::npos){
-				faSum2.push_back(it->first);
+				faSum2_f.push_back(it->first);
 			}
 			else if(it->second.find("faSum") != std::string::npos){
-				faSum.push_back(it->first);
+				faSum_f.push_back(it->first);
 			}
 			else if(it->second.find("faCarry2bit") != std::string::npos){
-				faCarry2.push_back(it->first);
+				faCarry2_f.push_back(it->first);
 			}
 			else if(it->second.find("faCarry") != std::string::npos){
-				faCarry.push_back(it->first);
+				faCarry_f.push_back(it->first);
 			}
 			else if(it->second.find("haSum3") != std::string::npos){
-				haSum3.push_back(it->first);
+				haSum3_f.push_back(it->first);
 			}
 			else if(it->second.find("haSum2") != std::string::npos){
-				haSum2.push_back(it->first);
+				haSum2_f.push_back(it->first);
 			}
 			else if(it->second.find("haCarry3") != std::string::npos){
-				haCarry3.push_back(it->first);
+				haCarry3_f.push_back(it->first);
 			}
 			else if(it->second.find("haCarry2") != std::string::npos){
-				haCarry2.push_back(it->first);
+				haCarry2_f.push_back(it->first);
 			}
 			else if(it->second.find("cla_gp3") != std::string::npos){
-				cla3.push_back(it->first);
+				cla3_f.push_back(it->first);
 			}
 		}
 
@@ -715,9 +808,9 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap_dc;
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> > pmap;
+		std::map<unsigned long long, std::vector<InOut*> > pmap_dc;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 		cf->getPortMap(pmap);
 		cf->getPortMap_DC(pmap_dc);
 
@@ -727,38 +820,38 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		//		printf("FACARRY FUNCTIONS: \n");
 		//		printIO(pmap, faCarry);
 		printf("\n\nFASUM FUNCTIONS: \n");
-		printIO(pmap, faSum);
+		printIO(pmap, faSum_f);
 		printf("\n\nFASUM2 FUNCTIONS: \n");
-		printIO(pmap, faSum2);
+		printIO(pmap, faSum2_f);
 		printf("\n\nFASUM3 FUNCTIONS: \n");
-		printIO(pmap, faSum3);
+		printIO(pmap, faSum3_f);
 		//		printf("\n\nFACARRY2 FUNCTIONS: \n");
 		//		printIO(pmap, faCarry2);
 		printf("\n\nHASUM2 FUNCTIONS: \n");
-		printIO(pmap, haSum2);
-		//		printf("\n\nHACARRY2 FUNCTIONS: \n");
-		//		printIO(pmap, haCarry2);
+		printIO(pmap, haSum2_f);
+		printf("\n\nHACARRY2 FUNCTIONS: \n");
+		printIO(pmap, haCarry2_f);
 		printf("\n\nHASUM3 FUNCTIONS: \n");
-		printIO(pmap, haSum3);
-		//		printf("\n\nHACARRY3 FUNCTIONS: \n");
-		//		printIO(pmap, haCarry3);
+		printIO(pmap, haSum3_f);
+		printf("\n\nHACARRY3 FUNCTIONS: \n");
+		printIO(pmap, haCarry3_f);
 
 		//printf("\n\nCLA3 FUNCTIONS: \n");
 		//printIO(pmap, cla3);
 
-/*
+		/*
 			 printf("\n\nFASUM2 FUNCTIONS___DC: \n");
 			 printIO(pmap_dc, faSum2);
 
 			 printf("\n\nFASUM3 FUNCTIONS___DC: \n");
 			 printIO(pmap_dc, faSum3);
-			 
+
 			 printf("\n\nHASUM2 FUNCTIONS___DC: \n");
 			 printIO(pmap_dc, haSum2);
 
 			 printf("\n\nHASUM3 FUNCTIONS___DC: \n");
 			 printIO(pmap_dc, haSum3);
-			 */
+		 */
 		//printf("XOR FUNCTIONS___DC: \n");
 		//printIO(pmap_dc, xorFunction);
 		/*
@@ -785,53 +878,16 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		//printIO(pmap_dc, cla3);
 		 */
 
+
 		//Extract the output of the possible sums found
-		std::set<unsigned> sumNodes;
-		extractOutputs(pmap, haSum3, sumNodes);
-		extractOutputs(pmap, haSum2, sumNodes);
 		//extractOutputs(pmap, faSum3, sumNodes);
 		//extractOutputs(pmap, faSum2, sumNodes);
 		/*
-		extractOutputs(pmap_dc, haSum3, sumNodes);
-		extractOutputs(pmap_dc, haSum2, sumNodes);
-		extractOutputs(pmap_dc, faSum3, sumNodes);
-		extractOutputs(pmap_dc, faSum2, sumNodes);
-		*/
-
-		std::map<unsigned, std::set<unsigned> > outIn;
-		std::map<unsigned, std::set<unsigned> > containedComputeTable;
-		//simplifyingSet(aigraph, pmap, faSum3, outIn, containedComputeTable);
-		simplifyingSet(aigraph, pmap, haSum3, sumNodes, outIn, containedComputeTable);
-
-		//simplifyingSet(aigraph, pmap, faSum2, outIn, containedComputeTable);
-		simplifyingSet(aigraph, pmap, haSum2, sumNodes, outIn, containedComputeTable);
-		
-		std::set<unsigned>::iterator iSet;
-		std::map<unsigned, std::set<unsigned> >::iterator iOutin;
-		printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
-		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
-			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
-			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-		}
-		
-
-		simplify_output(aigraph, sumNodes, outIn, containedComputeTable);
-		sumNodes.clear();
-		printf("\n\nCOMPRESSED IN OUT PORT AFTER OUTPUT SIMPLIFICAITON\n"); 
-		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
-			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
-			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
-				printf("%d ", *iSet);
-			sumNodes.insert(iOutin->first);
-			printf("\n");
-		}
-			
-			printf("OUTPUT NODES IN OUTNODE: ");
-			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
-				printf("%d ", *iSet);
-				printf("\n");
+			 extractOutputs(pmap_dc, haSum3, sumNodes);
+			 extractOutputs(pmap_dc, haSum2, sumNodes);
+			 extractOutputs(pmap_dc, faSum3, sumNodes);
+			 extractOutputs(pmap_dc, faSum2, sumNodes);
+		 */
 
 		//Aggregation
 		std::list<std::set<unsigned> > addOutputList;
@@ -844,35 +900,96 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		std::list<std::set<unsigned> >::iterator iList2;
 		std::list<std::set<unsigned> >::iterator iList3;
 		std::list<std::set<unsigned> >::iterator iList4;
-/*
-		printf("FAsum3 AGG\n");
-		adderAggregation2(aigraph, pmap, faSum3, sumNodes, addInputList, addOutputList);
+		std::set<unsigned> sumNodes;
 
-		printf("HAsum3 AGG\n");
-		adderAggregation2(aigraph, pmap, haSum3, sumNodes, addInputList, addOutputList);
+		std::vector<InOut*> faCarry;
+		std::vector<InOut*> faSum;
+		std::vector<InOut*> faCarry2;
+		std::vector<InOut*> faSum2;
+		std::vector<InOut*> faSum3;
+		std::vector<InOut*> haCarry2;
+		std::vector<InOut*> haSum2;
+		std::vector<InOut*> haCarry3;
+		std::vector<InOut*> haSum3;
 
-		printf("FAsum2 AGG\n");
-		adderAggregation2(aigraph, pmap, faSum2, sumNodes, addInputList, addOutputList);
+		parsePortMap(pmap, faSum_f, faSum);
+		parsePortMap(pmap, faSum2_f, faSum2);
+		parsePortMap(pmap, faSum3_f, faSum3);
+		parsePortMap(pmap, haSum2_f, haSum2);
+		parsePortMap(pmap, haSum3_f, haSum3);
 
-		printf("HAsum2 AGG\n");
-		adderAggregation2(aigraph, pmap, haSum2, sumNodes, addInputList, addOutputList);
+
+		findAddHeader(faSum, faSum2, faSum3, sumNodes, addInputList, addOutputList);
+		
+	/*	
+		std::map<unsigned, std::set<unsigned> > outIn;
+		std::map<unsigned, std::set<unsigned> > containedComputeTable;
+		//simplifyingSet(aigraph, pmap, faSum3, outIn, containedComputeTable);
+		simplifyingSet(aigraph, pmap, haSum3, sumNodes, outIn, containedComputeTable);
+
+		//simplifyingSet(aigraph, pmap, faSum2, outIn, containedComputeTable);
+		simplifyingSet(aigraph, pmap, haSum2, sumNodes, outIn, containedComputeTable);
+
+		std::set<unsigned>::iterator iSet;
+		std::map<unsigned, std::set<unsigned> >::iterator iOutin;
+		printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
+		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
+			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
+			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
+
+
+		simplify_output(aigraph, sumNodes, outIn, containedComputeTable);
+		sumNodes.clear();
+		printf("\n\nCOMPRESSED IN OUT PORT AFTER OUTPUT SIMPLIFICAITON\n"); 
+		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
+			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
+			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
+				printf("%d ", *iSet);
+			sumNodes.insert(iOutin->first);
+			printf("\n");
+		}
+
+		printf("OUTPUT NODES IN OUTNODE: ");
+		for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
+			printf("%d ", *iSet);
+		printf("\n");
 		*/
-		adderAggregation3(aigraph, outIn, sumNodes, addInputList, addOutputList);
+
+
+
+
+		/*
+			 printf("FAsum3 AGG\n");
+			 adderAggregation2(aigraph, pmap, faSum3, sumNodes, addInputList, addOutputList);
+
+			 printf("HAsum3 AGG\n");
+			 adderAggregation2(aigraph, pmap, haSum3, sumNodes, addInputList, addOutputList);
+
+			 printf("FAsum2 AGG\n");
+			 adderAggregation2(aigraph, pmap, faSum2, sumNodes, addInputList, addOutputList);
+
+			 printf("HAsum2 AGG\n");
+			 adderAggregation2(aigraph, pmap, haSum2, sumNodes, addInputList, addOutputList);
+		 */
+	//************8	adderAggregation3(aigraph, outIn, sumNodes, addInputList, addOutputList);
 		//adderAggregation3(aigraph, outIn, sumNodes, addInputList2, addOutputList2);
 
-/*
-		printf("FAsum3 AGG\n");
-		adderAggregation2(aigraph, pmap_dc, faSum3, sumNodes, dcInputList, dcOutputList);
+		/*
+			 printf("FAsum3 AGG\n");
+			 adderAggregation2(aigraph, pmap_dc, faSum3, sumNodes, dcInputList, dcOutputList);
 
-		printf("HAsum3 AGG\n");
-		adderAggregation2(aigraph, pmap_dc, haSum3, sumNodes, dcInputList, dcOutputList);
+			 printf("HAsum3 AGG\n");
+			 adderAggregation2(aigraph, pmap_dc, haSum3, sumNodes, dcInputList, dcOutputList);
 
-		printf("FAsum2 AGG\n");
-		adderAggregation2(aigraph, pmap_dc, faSum2, sumNodes, dcInputList, dcOutputList);
+			 printf("FAsum2 AGG\n");
+			 adderAggregation2(aigraph, pmap_dc, faSum2, sumNodes, dcInputList, dcOutputList);
 
-		printf("HAsum2 AGG\n");
-		adderAggregation2(aigraph, pmap_dc, haSum2, sumNodes, dcInputList, dcOutputList);
-		*/
+			 printf("HAsum2 AGG\n");
+			 adderAggregation2(aigraph, pmap_dc, haSum2, sumNodes, dcInputList, dcOutputList);
+		 */
 
 		/*
 
@@ -1090,7 +1207,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<InOut*> > pmap;
 		cf->getPortMap(pmap);
 
 		std::vector<unsigned long long> andInput;
@@ -1111,20 +1228,22 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 			}
 		}
 
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
 
 		//Aggregate based on inputs of the and gates
 		for(unsigned int i = 0; i < andInput.size(); i++){
-			if(pmap.find(andInput[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[andInput[i]].size(); j++){
-					unsigned int k = 0;
+			iPMAP = pmap.find(andInput[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					std::vector<unsigned> ports;
 
-					for(k = 0; k < pmap[andInput[i]][j]->size()-1; k++){
-						unsigned in = pmap[andInput[i]][j]->at(k);
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
+						unsigned in = *iSet;
 						ports.push_back(in);
 					}
 
-					agg[ports].push_back(pmap[andInput[i]][j]->at(k));
+					agg[ports].push_back(iPMAP->second[j]->output);
 				}
 			}
 		}
@@ -1352,7 +1471,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 		//Get the map for function tt and every set of input and output with that function
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<InOut*> > pmap;
 		cf->getPortMap(pmap);
 
 		//Find all or gate function tt
@@ -1371,29 +1490,28 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		std::list<unsigned> orOut;
 		std::list<unsigned>::iterator  oroutit;
 		std::list<unsigned>::iterator  oroutit2;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
 		for(unsigned int i = 0; i < orFunction.size(); i++){
-			if(pmap.find(orFunction[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[orFunction[i]].size(); j++){
-					unsigned int k = 0;
+			iPMAP = pmap.find(orFunction[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					//printf("\nINPUT: ");
 					std::vector<unsigned> ports;
-					for(k = 0; k < pmap[orFunction[i]][j]->size()-1; k++){
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
 						//	printf("%d ", pmap[orFunction[i]][j]->at(k));
-						ports.push_back(pmap[orFunction[i]][j]->at(k));
+						ports.push_back(*iSet);
 					}
 					//printf("\nOUTPUT:\t%d", pmap[orFunction[i]][j]->at(k));
 
 					//If input is not contained in an already found, store. 
-					unsigned outnode = pmap[orFunction[i]][j]->at(k);
+					unsigned outnode = iPMAP->second[j]->output;
 					orIn.push_back(ports);
 					orOut.push_back(outnode);
 				}
 			}
 		}
 		printf("done\n");
-
-
-
 
 
 
@@ -1815,25 +1933,27 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		printf("Multiplexor Bitslices found in hashmap database: %d\n", (int)muxes.size());
 
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<InOut*> > pmap;
 		cf->getPortMap(pmap);
 
 		//List of inputs of mux components. Last index is the output
 		std::vector<std::vector<unsigned> > muxlist;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
 
 		//Get the Inputs and outputs of all the mux components found in the circuit 
 		for(unsigned int i = 0; i < muxes.size(); i++){
-			if(pmap.find(muxes[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[muxes[i]].size(); j++){
-					unsigned int k = 0;
+			iPMAP = pmap.find(muxes[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					//printf("INPUT: ");
 					std::vector<unsigned> ports;
-					for(k = 0; k < pmap[muxes[i]][j]->size()-1; k++){
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
 						//printf("%d ", pmap[muxes[i]][j]->at(k));
-						ports.push_back(pmap[muxes[i]][j]->at(k));
+						ports.push_back(*iSet);
 					}
 					//printf("\nOUTPUT:\t%d\n", pmap[muxes[i]][j]->at(k));
-					unsigned outnode = pmap[muxes[i]][j]->at(k);
+					unsigned outnode = iPMAP->second[j]->output;
 					ports.push_back(outnode);
 					muxlist.push_back(ports);
 				}
@@ -1950,25 +2070,27 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 		printf("Multiplexor Bitslices found in hashmap database: %d\n", (int)muxes.size());
 
 		//Function, Vector of every set of inputs with that function. Last item is the output node
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+		std::map<unsigned long long, std::vector<InOut*> > pmap;
 		cf->getPortMap(pmap);
 
 		//List of inputs of mux components. Last index is the output
 		std::vector<std::vector<unsigned> > muxlist;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+		std::set<unsigned>::iterator iSet;
 
 		//Get the Inputs and outputs of all the mux components found in the circuit 
 		for(unsigned int i = 0; i < muxes.size(); i++){
-			if(pmap.find(muxes[i]) != pmap.end()){
-				for(unsigned int j = 0; j < pmap[muxes[i]].size(); j++){
-					unsigned int k = 0;
+			iPMAP = pmap.find(muxes[i]);
+			if(iPMAP != pmap.end()){
+				for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 					//printf("INPUT: ");
 					std::vector<unsigned> ports;
-					for(k = 0; k < pmap[muxes[i]][j]->size()-1; k++){
+					for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
 						//printf("%d ", pmap[muxes[i]][j]->at(k));
-						ports.push_back(pmap[muxes[i]][j]->at(k));
+						ports.push_back(*iSet);
 					}
 					//printf("\nOUTPUT:\t%d\n", pmap[muxes[i]][j]->at(k));
-					unsigned outnode = pmap[muxes[i]][j]->at(k);
+					unsigned outnode = iPMAP->second[j]->output;
 					ports.push_back(outnode);
 					muxlist.push_back(ports);
 				}
@@ -2232,7 +2354,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 		/*j
 			void adderAggregation( AIG* aig, 
-			std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+			std::map<unsigned long long, std::vector<InOut*> >& pmap, 
 			std::vector<unsigned long long>& inOut, 
 			std::set<unsigned> sumNodes, 
 			std::list<std::set<unsigned> >& addIn,
@@ -2240,7 +2362,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 			printf("\n\n-------------------------------------------------------------------------------\n");
 			printf("ADDER AGGREGATING UNFCIONT------\n");
 
-			std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+			std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 			std::list<std::set<unsigned> >::iterator iList1;
 			std::list<std::set<unsigned> >::iterator iList2;
 
@@ -2393,13 +2515,13 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 
 	}
 
-	void carryAggregation(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap, 
+	void carryAggregation(std::map<unsigned long long, std::vector<InOut*> >& pmap, 
 			std::vector<unsigned long long>& inOut, 
 			std::set<unsigned> sumNodes, 
 			std::list<std::set<unsigned> >& addIn,
 			std::list<std::set<unsigned> >& addOut){
 
-		std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator iPMAP;
+		std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 		std::list<std::set<unsigned> >::iterator iList1;
 
 		for(unsigned int i = 0; i < inOut.size(); i++){
@@ -2604,7 +2726,7 @@ int DFS_End_Set(AIG* aig, unsigned start, unsigned lb, std::set<unsigned>& input
 	 const	unsigned long long xor2 = 0x9999999999999999;
 
 //Function, Vector of every set of inputs with that function. Last item is the output node
-std::map<unsigned long long, std::vector<std::vector<unsigned>*> > pmap;
+std::map<unsigned long long, std::vector<InOut*> > pmap;
 cf->getPortMap(pmap);
 
 printf(" * Parsing function database for possible Half Adders...");

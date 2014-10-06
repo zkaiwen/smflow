@@ -45,7 +45,7 @@ CutFunction::CutFunction(){
  *    Deletes allocated space.
  ********************************************************/
 CutFunction::~CutFunction(){
-	std::map<unsigned long long, std::vector<std::vector<unsigned>*> >::iterator it;
+	std::map<unsigned long long, std::vector<InOut*> >::iterator it;
 	for(it = m_PortMap.begin(); it != m_PortMap.end(); it++){
 		for(unsigned int i = 0; i < it->second.size(); i++){
 			delete it->second[i];
@@ -255,7 +255,6 @@ void CutFunction::preProcessCut(std::string file){
 		if(inputSize < m_AIG->getInputSize()-1)		continue;
 
 		//Make sure the cut has at least cutsize/2+1 inputs
-		int inputLimit = 1;
 		printf("CUT: ");
 		int numInputPort = 0;
 		for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
@@ -418,13 +417,13 @@ void CutFunction::processAIGCuts(bool np){
 					continue;
 
 				//Create gateInputs
-				std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
+				InOut* inout = new InOut();
 				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-					gateInputs->push_back(*cutIT);
+					inout->input.insert(*cutIT);
 
 				m_NodeFunction[function].insert(node);
-				gateInputs->push_back(node);
-				m_PortMap[function].push_back(gateInputs);
+				inout->output = node;
+				m_PortMap[function].push_back(inout);
 			}
 
 			m_NodeValue.clear();
@@ -515,13 +514,14 @@ void CutFunction::processAIGCutsX(bool np){
 				existingFunctionName.insert(iHash->second);
 
 				//Create gateInputs
-				std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
+				InOut* inout = new InOut();
+
 				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
-					gateInputs->push_back(*cutIT);
+					inout->input.insert(*cutIT);
 
 				m_NodeFunction[function].insert(node);
-				gateInputs->push_back(node);
-				m_PortMap[function].push_back(gateInputs);
+				inout->output = node;
+				m_PortMap[function].push_back(inout);
 			}
 
 			delete permutation;
@@ -616,17 +616,17 @@ void CutFunction::processAIGCutsX(bool np){
 						existingFunctionName.insert(iHash->second);
 
 						//Create gateInputs
-						std::vector<unsigned>* gateInputs = new std::vector<unsigned>();
+						InOut* inout = new InOut();
 						pIndex = 0; 
 						for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
 							//TODO:if(pIndex != dcIndex)
-								gateInputs->push_back(*cutIT);
-							pIndex++;
+								pIndex++;
+								inout->input.insert(*cutIT);
 						}
 
 						m_NodeFunction[function].insert(node);
-						gateInputs->push_back(node);
-						m_PortMap_DC[function].push_back(gateInputs);
+						inout->output = node;
+						m_PortMap_DC[function].push_back(inout);
 						//printf("PORT MAP STORED****************************\n");
 					}
 
@@ -1006,6 +1006,7 @@ void CutFunction::printStat(){
 		std::set<unsigned int>::iterator sit;
 
 		//For each outputnode
+		/*
 		for(sit = it->second.begin(); sit != it->second.end(); sit++){
 			//printf("NODE: %d\tIN:", (*sit)*2); //AIG NODES are even, ODD is inverse
 
@@ -1033,6 +1034,7 @@ void CutFunction::printStat(){
 
 
 		}
+		*/
 		printf("\n\n");
 
 	}
@@ -1167,11 +1169,11 @@ void CutFunction::printUniqueFunctionStat(){
 
 
 
-void CutFunction::getPortMap(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap){
+void CutFunction::getPortMap(std::map<unsigned long long, std::vector<InOut*> >& pmap){
 	pmap =	m_PortMap;
 }
 
-void CutFunction::getPortMap_DC(std::map<unsigned long long, std::vector<std::vector<unsigned>*> >& pmap){
+void CutFunction::getPortMap_DC(std::map<unsigned long long, std::vector<InOut*> >& pmap){
 	pmap =	m_PortMap_DC;
 }
 
