@@ -16,10 +16,10 @@ PROF=
 all: mainRef mainDB
 
 mainRef: $(OBJ) mainRef.o 
-	g++ $(CFLAGS) -o xfpgeniusRef $(OBJ) mainRef.o -lboost_graph
+	g++ $(CFLAGS) -o xfpgeniusRef $(OBJ) mainRef.o 
 
 mainDB: $(OBJ) mainDB.o 
-	g++ $(CFLAGS) -o xfpgeniusDB $(OBJ) mainDB.o $(PROF) -lboost_graph
+	g++ $(CFLAGS) -o xfpgeniusDB $(OBJ) mainDB.o $(PROF) #-lboost_graph
 
 graph.o: graph.cpp graph.hpp vertex.o
 	g++ $(CFLAGS) -c graph.cpp $(PROF)
@@ -33,7 +33,7 @@ mainRef.o: mainRef.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verifi
 mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp fingerprint.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
-aig.o: aig.cpp aig.hpp graph.o
+aig.o: aig.cpp aig.hpp graph.o aiger.o
 	g++ $(CFLAGS) -c aig.cpp $(PROF)
 
 vertex.o: vertex.cpp vertex.hpp 

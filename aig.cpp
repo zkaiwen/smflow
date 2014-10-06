@@ -497,7 +497,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
 	}
 
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 
 	int outputNode;
 	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
