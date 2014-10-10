@@ -4,4 +4,3 @@ circuits/raw
 circuits/temp/b*
 circuits/g/*.g
 circuits/netlist
-aiger/

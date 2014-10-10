@@ -9,6 +9,7 @@ OBJ= \
 		cutenumeration.o \
 		cutfunction.o \
 		vertex.o \
+		print.o \
 		aiger.o
 
 PROF=
@@ -41,6 +42,9 @@ vertex.o: vertex.cpp vertex.hpp
 
 aiger.o: aiger.c aiger.h 
 	gcc $(CFLAGS) -c aiger.c 
+
+print.o: print.cpp print.hpp 
+	g++ $(CFLAGS) -c print.cpp
 
 cutenumeration.o: cutenumeration.cpp cutenumeration.hpp aig.o
 	g++ $(CFLAGS) -c cutenumeration.cpp $(PROF)
