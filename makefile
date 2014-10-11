@@ -14,7 +14,7 @@ OBJ= \
 
 PROF=
 
-all: mainRef mainDB
+all: mainDB
 
 mainRef: $(OBJ) mainRef.o 
 	g++ $(CFLAGS) -o xfpgeniusRef $(OBJ) mainRef.o 
