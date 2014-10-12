@@ -35,7 +35,8 @@ namespace AGGREGATION{
 	bool DFSearch(AIG* , unsigned , unsigned , unsigned ,  std::set<unsigned>& , std::set<unsigned>& );
 	void printAddList(std::list<std::set<unsigned> >& ,	std::list<std::set<unsigned> >& );
 	bool checkContainment(AIG* , unsigned ,	std::set<unsigned>&, std::set<unsigned>& );
-	bool checkContainment_q(AIG* ,unsigned ,	std::set<unsigned>& ,	std::map<unsigned, std::list<unsigned> >&, std::list<unsigned>& );
+	bool checkContainment_q(AIG* ,unsigned ,	std::set<unsigned>& ,	std::map<unsigned, std::set<unsigned> >&, std::set<unsigned>& );
+	void reduceInputContainment(AIG*, std::set<unsigned>&, std::map<unsigned, std::set<unsigned> >& );
 
 
 	/*#############################################################################
@@ -115,6 +116,8 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator iList1;
 		std::map<unsigned, std::set<unsigned> >::iterator iMap;
 		std::set<unsigned>::iterator iSet;
+		std::map<unsigned, std::set<unsigned> >  inputNodeTable;
+		std::map<unsigned, std::set<unsigned> >::iterator iMapL;
 
 		//Go through input output ports of the function
 		for(unsigned int j = 0; j < functions.size(); j++){
@@ -181,28 +184,7 @@ namespace AGGREGATION{
 				*/
 
 				//Simplify to see if the inputs are contained
-				iSet = iMap->second.begin();
-				unsigned prevVal = *iSet;
-				iSet++; //Smallest cannot be contained since it goes by levels
-				while(iSet != iMap->second.end()){
-					//printf("Checking containment: %d......", *iSet);
-					std::set<unsigned> marked;
-					std::set<unsigned> found;
-					int result = DFS(aig, *iSet, *iSet, iMap->second, sumNodes, found,  marked);
-
-					if(result == 1){
-						//Add to contained compute table
-						containedComputeTable[outnode].insert(*iSet);
-
-						//printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
-						iMap->second.erase(*iSet);
-						iSet = iMap->second.find(prevVal);
-					}
-					//jelse printf("\n");
-
-					prevVal = *iSet;
-					iSet++;
-				}
+					reduceInputContainment(aig, iMap->second, inputNodeTable);
 
 				/*
 				printf("FINAL Set : ");
@@ -234,6 +216,7 @@ namespace AGGREGATION{
 		std::map<unsigned , std::set<unsigned> >::reverse_iterator iMap;
 		std::map<unsigned , std::set<unsigned> >::reverse_iterator iMap2;
 		std::set<unsigned> tobedeleted;
+		std::map<unsigned, std::set<unsigned> > inputNodeTable;
 
 		//Go through each adder function
 		for(iMap = outInMap.rbegin(); iMap != outInMap.rend(); iMap++){
@@ -282,28 +265,7 @@ namespace AGGREGATION{
 
 					//Simplify to see if the inputs are contained
 					iSet = iMap->second.begin();
-					unsigned prevVal = *iSet;
-					iSet++; //Smallest cannot be contained since it goes by levels
-					while(iSet != iMap->second.end()){
-						//printf("Checking containment: %d......", *iSet);
-						std::set<unsigned> marked;
-						std::set<unsigned> found;
-						int result = DFS(aig, *iSet, *iSet, iMap->second, sumNodes, found,  marked);
-
-						if(result == 1){
-							//Add to contained compute table
-							containedComputeTable[outnode].insert(*iSet);
-
-						//	printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
-							iMap->second.erase(*iSet);
-							iSet = iMap->second.find(prevVal);
-						}
-						//else printf("\n");
-
-
-						prevVal = *iSet;
-						iSet++;
-					}
+					reduceInputContainment(aig, iMap->second,inputNodeTable);
 
 					/*
 					printf("FINAL Set : ");
@@ -546,7 +508,7 @@ namespace AGGREGATION{
 		std::map<unsigned , std::set<unsigned> >::iterator iMap;
 		std::set<unsigned>::iterator iSet, iSet2;	
 		
-		std::map<unsigned, std::list<unsigned> > inputNodeTable;
+		std::map<unsigned, std::set<unsigned> > inputNodeTable;
 
 		std::set<unsigned> curSumList;
 		std::set<unsigned> curInputSet;
@@ -702,54 +664,7 @@ namespace AGGREGATION{
 				printf("\n");
 
 				//Simplify to see if the inputs are contained
-				iSet = iListIn->begin();
-				unsigned prevVal = *iSet;
-				iSet++; //Smallest cannot be contained since it goes by levels
-				while(iSet != iListIn->end()){
-					std::list<unsigned> inputNodes;
-					printf("\nBeginning adder set containment check of node: %d\n", *iSet);
-					std::map<unsigned, std::list<unsigned> >::iterator iMapL;
-					iMapL = inputNodeTable.find(*iSet);
-					if(iMapL != inputNodeTable.end()){
-						printf("INPUTNODE TABLE HIT!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
-						iListIn->erase(*iSet);
-						std::list<unsigned>::iterator iList;
-						for(iList = iMapL->second.begin(); iList != iMapL->second.end(); iList++)
-							iListIn->insert(*iList);
-						iSet = iListIn->find(prevVal);
-					}
-					else if(checkContainment_q(aig, *iSet, *iListIn, inputNodeTable, inputNodes)){
-						printf("Removing %d from input set\n", *iSet);
-						iListIn->erase(iSet);
-
-						printf("Adding: ");
-						std::list<unsigned>::iterator iList;
-						for(iList = inputNodes.begin(); iList != inputNodes.end(); iList++){
-							printf("%d ", *iList);
-							iListIn->insert(*iList);
-						}
-						printf("\nto input list\n");
-						iSet = iListIn->find(prevVal);
-						std::map<unsigned, std::list<unsigned> >::iterator tMap;
-						printf("PRINTING INPUT NODE TABLE:\n");
-						for(tMap = inputNodeTable.begin(); tMap != inputNodeTable.end(); tMap++){
-							printf("NODE: %3d\t", tMap->first);
-							for(iList = tMap->second.begin(); iList != tMap->second.end(); iList++){
-								printf("%d ", *iList);
-							}
-							printf("\n");
-						}
-
-					}
-
-					prevVal = *iSet;
-					iSet++;
-				printf("combined intermediate adder list: ");
-				std::set<unsigned>::iterator iPrint;
-				for(iPrint = iListIn->begin(); iPrint != iListIn->end(); iPrint++)
-					printf("%d ", *iPrint);
-				printf("\n");
-				}
+					reduceInputContainment(aig, *iListIn, inputNodeTable);
 
 				printf("reduced adder list: ");
 				for(iSet = iListIn->begin(); iSet != iListIn->end(); iSet++)
@@ -798,6 +713,7 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator deleteIn;
 		std::list<std::set<unsigned> >::iterator deleteOut;
 		std::set<unsigned>::iterator iSet, iSet2;	
+		std::map<unsigned, std::set<unsigned> > inputNodeTable;
 
 		std::set<unsigned> curSumList;
 		std::set<unsigned> curInputSet;
@@ -943,25 +859,10 @@ namespace AGGREGATION{
 				printf("\n");
 
 				//Simplify to see if the inputs are contained
-				iSet = iListInSearch->begin();
-				unsigned prevVal = *iSet;
-				iSet++; //Smallest cannot be contained since it goes by levels
-				while(iSet != iListInSearch->end()){
-					if(checkContainment(aig, *iSet, *iListInSearch, curInputSet)){ //Pass curinputSet to reduce as well
-						iSet = iListInSearch->find(prevVal);
-						exit(1);
-					}
-					prevVal = *iSet;
-					iSet++;
-				}
+				reduceInputContainment(aig, *iListInSearch, inputNodeTable);
 
-				printf("sim adder list: ");
-				for(iSet = iListInSearch->begin(); iSet != iListInSearch->end(); iSet++)
-					printf("%d ", *iSet);
-				printf("\n");
 				addOut.erase(iListOut);
 				addIn.erase(iListIn);
-				
 			}
 			else{
 				printf("NO POSSIBLE AGGREGATION...\n");
@@ -1143,8 +1044,8 @@ namespace AGGREGATION{
 			AIG* aig, 
 			unsigned start,
 			std::set<unsigned>& setList,
-			std::map<unsigned, std::list<unsigned> >& inputNodeTable,
-			std::list<unsigned> & inputNodes 
+			std::map<unsigned, std::set<unsigned> >& inputNodeTable,
+			std::set<unsigned> & inputNodes 
 			){
 		printf("Checking containment: %d......", start);
 		if(start <= aig->getInputSize() * 2){
@@ -1153,13 +1054,15 @@ namespace AGGREGATION{
 		}
 		else printf("\n");
 
+		std::set<unsigned> inputNodes2;
+
 
 
 		//printf(" -- Node hits a existing!\nErasing %d from set\n", start);
 
 		unsigned node1, node2;
 		node1 = aig->getChild1((start) & 0xFFFFFFFE) & 0xFFFFFFFE;
-		node2= aig->getChild2((start) & 0xFFFFFFFE) & 0xFFFFFFFE;
+		node2 = aig->getChild2((start) & 0xFFFFFFFE) & 0xFFFFFFFE;
 		printf(" * * Adding children nodes: %d %d\n", node1, node2);
 		
 
@@ -1169,80 +1072,123 @@ namespace AGGREGATION{
 		bool in1contained = false;
 		bool in2contained = false;
 
-		std::map<unsigned, std::list<unsigned> >::iterator iMap;
-		std::list<unsigned>::iterator iList;
+		std::map<unsigned, std::set<unsigned> >::iterator iMap;
+		std::set<unsigned>::iterator iList;
+		std::set<unsigned>::iterator iSet;
+
+		//Check to see if the node has been mapped before
+		iMap = inputNodeTable.find(node1);
+		if(iMap != inputNodeTable.end()){
+			printf(" * * * Children 1 has been mapped before...returning up\n");
+			inputNodes = iMap->second;
+			printf("Children input: "); 
+			for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
+				printf("%d ", *iSet); 
+			printf("\n");
+			node1contained = true;
+		}
+
+		iMap = inputNodeTable.find(node2);
+		if(iMap != inputNodeTable.end()){
+			printf(" * * * Children 2 has been mapped before...returning up\n");
+			printf("Children input: "); 
+			for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
+				printf("%d ", *iSet); 
+			printf("\n");
+
+			//inputNodes.insert(iMap->second.begin(), iMap->second.end());
+			inputNodes2 = iMap->second;
+			node2contained = true;
+		}
+
 
 		//Check to see if the node is part of the input set
-		if(setList.find(node1) != setList.end()){
-			printf(" * * * Children 1 is part of input...returning up\n");
-			node1contained = true;
-			in1contained = true;
-		}
-		if(setList.find(node2) != setList.end()){
-			printf(" * * * Children 2 is part of input...returning up\n");
-			node2contained = true;
-			in2contained = true;
-		}
-			//Check to see if the node has been mapped before
-
-
-		if(!node1contained){
-			iMap = inputNodeTable.find(node1);
-			if(iMap != inputNodeTable.end()){
-				printf(" * * * Children 1 has been mapped before...returning up\n");
-				inputNodes = iMap->second;
+		if(!node1contained)
+			if(setList.find(node1) != setList.end()){
+				printf(" * * * Children 1 is part of input...returning up\n");
 				node1contained = true;
+				in1contained = true;
 			}
+		if(!node2contained)
+			if(setList.find(node2) != setList.end()){
+				printf(" * * * Children 2 is part of input...returning up\n");
+				node2contained = true;
+				in2contained = true;
+			}
+
+		//Keep looking for a node that in contained in the input set
+		if(!node1contained){
+			if(checkContainment_q(aig, node1, setList, inputNodeTable, inputNodes ))
+				node1contained = true;
+		printf("INPUT NODES AFTER CHKCONTAIN1 %d : ", start);
+		for(iList = inputNodes.begin(); iList != inputNodes.end(); iList++){
+			printf("%d ", *iList);
+		}
+		printf("\n");
+
 		}
 
 		if(!node2contained){
-			iMap = inputNodeTable.find(node2);
-			if(iMap != inputNodeTable.end()){
-				printf(" * * * Children 2 has been mapped before...returning up\n");
-				inputNodes = iMap->second;
+			if(checkContainment_q(aig, node2, setList, inputNodeTable, inputNodes2))
 				node2contained = true;
-			}
+		printf("INPUT NODES AFTER CHKCONTAIN2 %d : ", start);
+		for(iList = inputNodes2.begin(); iList != inputNodes2.end(); iList++){
+			printf("%d ", *iList);
 		}
+		printf("\n");
 
-
-		//Keep looking for a node that in contained in the input set
-		if(!node1contained)
-			if(checkContainment_q(aig, node1, setList, inputNodeTable, inputNodes ))
-				node1contained = true;
-
-		if(!node2contained)
-			if(checkContainment_q(aig, node2, setList, inputNodeTable, inputNodes))
-				node2contained = true;
+		}
 
 
 		bool contained = false;
 		if(node1contained){
 			if(in1contained)
-				inputNodes.push_back(node1);
+				inputNodes.insert(node1);
 			contained = true;
 		}
 
 		if(node2contained){
 			if(in2contained)
-				inputNodes.push_back(node2);
+				inputNodes.insert(node2);
 
 			else if(contained == false)
-				inputNodes.push_back(node1);
+				inputNodes.insert(node1);
 
 			contained = true;
 		}
 		else{
-			inputNodes.push_back(node2);
+			inputNodes.insert(node2);
 		}
 
 		if(contained){
 			inputNodeTable[start];
 			iMap = inputNodeTable.find(start);
-			for(iList = inputNodes.begin(); iList != inputNodes.end(); iList++)
-				iMap->second.push_back(*iList);
+			printf("adding into inputtable: ");
+			for(iList = inputNodes.begin(); iList != inputNodes.end(); iList++){
+				iMap->second.insert(*iList);
+				printf("%d ", *iList);
+				if(*iList > start) {
+					printf("NODE INPUT IS GREATER THAN START\n");
+					exit(1);
+				}
+			}
+			for(iList = inputNodes2.begin(); iList != inputNodes2.end(); iList++){
+				iMap->second.insert(*iList);
+				printf("%d ", *iList);
+				if(*iList > start) {
+					printf("NODE INPUT IS GREATER THAN START\n");
+					exit(1);
+				}
+			}
+			printf("\n");
 
 			return true;
 		}
+		printf("adding into inputtable: ");
+		for(iList = inputNodes.begin(); iList != inputNodes.end(); iList++){
+			printf("%d ", *iList);
+		}
+		printf("\n");
 		return false;
 	}
 
@@ -1389,6 +1335,7 @@ namespace AGGREGATION{
 		std::set<unsigned>::iterator iSet;
 		std::map<unsigned , std::set<unsigned> >::iterator iMap;
 		std::set<unsigned> ignoreOutputs;
+		std::map<unsigned, std::set<unsigned> > inputNodeTable;
 
 		//Go through each adder function
 		for(unsigned int i = 0; i < add3.size(); i++){
@@ -1420,26 +1367,8 @@ namespace AGGREGATION{
 
 
 					//Simplify to see if the inputs are contained
-					iSet = inputCopy.begin();
-					unsigned prevVal = *iSet;
-					iSet++; //Smallest cannot be contained since it goes by levels
-					while(iSet != inputCopy.end()){
-						//printf("Checking containment: %d......", *iSet);
-						std::set<unsigned> marked;
-						std::set<unsigned> found;
-						int result = DFS(aig, *iSet, *iSet, iMap->second, sumNodes, found,  marked);
 
-						if(result == 1){
-							//Add to contained compute table
-							//printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
-							inputCopy.erase(*iSet);
-							iSet = inputCopy.find(prevVal);
-						}
-						//else printf("\n");
-
-						prevVal = *iSet;
-						iSet++;
-					}
+					reduceInputContainment(aig, inputCopy, inputNodeTable);
 
 
 					std::set<unsigned> outputCopy;
@@ -1484,12 +1413,16 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator iPrevIn;
 		std::list<std::set<unsigned> >::iterator iPrevOut;
 		std::set<unsigned>::iterator iSet;
+		
+		std::map<unsigned, std::set<unsigned> >  inputNodeTable;
+		std::map<unsigned, std::set<unsigned> >::iterator iMapL;
 
 		iListOut1 = addOut.begin();
 		iListIn1 = addIn.begin();
 		int matchLimit = iListOut1->size() - 1;
 
 
+		//Combine based on output similarity
 		while(iListOut1 != addOut.end()){
 			iListOut2 = iListOut1;
 			iListOut2++;
@@ -1501,7 +1434,6 @@ namespace AGGREGATION{
 
 			while(iListOut2 != addOut.end()){
 				int numMatch = 0;
-				/*
 					 printf("COMPARING OUT SET1: ");
 					 for(iSet = iListOut1->begin(); iSet != iListOut1->end(); iSet++)
 					 printf("%d ", *iSet);
@@ -1509,7 +1441,6 @@ namespace AGGREGATION{
 					 for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 					 printf("%d ", *iSet);
 					 printf("\n");
-				 */
 
 				for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 					if(iListOut1->find(*iSet) != iListOut1->end())
@@ -1517,7 +1448,7 @@ namespace AGGREGATION{
 
 
 				if(numMatch >= matchLimit){
-					//printf(" * COMBINE!\n");
+					printf(" * COMBINE!\n");
 					for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
 						iListIn1->insert(*iSet);
 					for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
@@ -1525,35 +1456,78 @@ namespace AGGREGATION{
 
 
 					//Simplify to see if the inputs are contained
-					iSet = iListIn1->begin();
-					unsigned prevVal = *iSet;
-					iSet++; //Smallest cannot be contained since it goes by levels
-					while(iSet != iListIn1->end()){
-						//printf("Checking containment: %d......", *iSet);
-						std::set<unsigned> marked;
-						std::set<unsigned> found;
-						std::set<unsigned> dummy;
-						int result = DFS(aig, *iSet, *iSet, *iListIn1, dummy, found,  marked);
+					reduceInputContainment(aig, *iListIn1, inputNodeTable);
 
-						if(result == 1){
-							//printf(" -- CONTAINED!\nErasing %d from set\n", *iSet);
-							iListIn1->erase(*iSet);
-							iSet = iListIn1->find(prevVal);
-						}
-						//else printf("\n");
-
-						prevVal = *iSet;
-						iSet++;
-					}
 					/*
-						 printf("FINAL Set : ");
-						 for(iSet= iListIn1->begin(); iSet!= iListIn1->end(); iSet++)
-						 printf("%d ", *iSet);
-						 printf("\n");
+					   printf("FINAL Set : ");
+					   for(iSet= iListIn1->begin(); iSet!= iListIn1->end(); iSet++)
+					   printf("%d ", *iSet);
+					   printf("\n");
 					 */
 
+					addOut.erase(iListOut2);
+					addIn.erase(iListIn2);
+					iListOut2 = iPrevOut;
+					iListIn2 = iPrevIn;
+				}
+				else{
+					iPrevIn = iListIn2;
+					iPrevOut= iListOut2;
+				}
+
+				iListIn2++;
+				iListOut2++;
+			}
+			iListIn1++;
+			iListOut1++;
+
+		}
 
 
+		//Combine based on Input similarity
+		iListOut1 = addOut.begin();
+		iListIn1 = addIn.begin();
+		while(iListIn1 != addIn.end()){
+			iListOut2 = iListOut1;
+			iListOut2++;
+			iListIn2 = iListIn1;
+			iListIn2++;
+
+			iPrevIn = iListIn1;
+			iPrevOut= iListOut1;
+
+			while(iListIn2 != addIn.end()){
+				unsigned numMatch = 0;
+					 printf("COMPARING In SET1: ");
+					 for(iSet = iListOut1->begin(); iSet != iListOut1->end(); iSet++)
+					 printf("%d ", *iSet);
+					 printf("\t\tCOMPARING In SET2: ");
+					 for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
+					 printf("%d ", *iSet);
+					 printf("\n");
+
+				for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
+					if(iListIn1->find(*iSet) != iListIn1->end())
+						numMatch++;
+
+
+				if(numMatch == iListIn2->size() || numMatch == iListIn1->size()){
+					printf(" * COMBINE!\n");
+					for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
+						iListIn1->insert(*iSet);
+					for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
+						iListOut1->insert(*iSet);
+
+
+					//Simplify to see if the inputs are contained
+					reduceInputContainment(aig, *iListIn1, inputNodeTable);
+
+					/*
+					   printf("FINAL Set : ");
+					   for(iSet= iListIn1->begin(); iSet!= iListIn1->end(); iSet++)
+					   printf("%d ", *iSet);
+					   printf("\n");
+					 */
 
 					addOut.erase(iListOut2);
 					addIn.erase(iListIn2);
@@ -1577,7 +1551,71 @@ namespace AGGREGATION{
 
 
 
+	/*#############################################################################
+	 *
+	 *  reduceInputContainment 
+	 * 	  Given a input adder set, lower the input bound if a input node is 
+	 *    contained under another
+	 *
+	 *#############################################################################*/
+	void reduceInputContainment(
+	AIG* aig, 
+	std::set<unsigned>& inputSet, 
+	std::map<unsigned, std::set<unsigned> >& inputNodeTable){
+		std::set<unsigned>::iterator iSet;
+		std::map<unsigned, std::set<unsigned> >::iterator iMapL;
 
+		//Simplify to see if the inputs are contained
+		iSet = inputSet.begin();
+		unsigned prevVal = *iSet;
+		iSet++; //Smallest cannot be contained since it goes by levels
+		while(iSet != inputSet.end()){
+			std::set<unsigned> inputNodes;
+			printf("\nBeginning adder set containment check of node: %d\n", *iSet);
+			std::map<unsigned, std::set<unsigned> >::iterator iMapL;
+			iMapL = inputNodeTable.find(*iSet);
+			if(iMapL != inputNodeTable.end()){
+				printf("INPUTNODE TABLE HIT!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
+				inputSet.erase(*iSet);
+				std::set<unsigned>::iterator iSetU;
+				for(iSetU = iMapL->second.begin(); iSetU != iMapL->second.end(); iSetU++)
+					inputSet.insert(*iSetU);
+				iSet = inputSet.find(prevVal);
+			}
+			else if(checkContainment_q(aig, *iSet, inputSet,  inputNodeTable, inputNodes)){
+				printf("Removing %d from input set\n", *iSet);
+				inputSet.erase(iSet);
+
+				printf("Adding: ");
+				std::set<unsigned>::iterator iSetU;
+				for(iSetU = inputNodes.begin(); iSetU != inputNodes.end(); iSetU++){
+					printf("%d ", *iSetU);
+					inputSet.insert(*iSetU);
+				}
+				printf("\nto input list\n");
+				iSet = inputSet.find(prevVal);
+				std::map<unsigned, std::set<unsigned> >::iterator tMap;
+				printf("PRINTING INPUT NODE TABLE:\n");
+				for(tMap = inputNodeTable.begin(); tMap != inputNodeTable.end(); tMap++){
+					printf("NODE: %3d\t", tMap->first);
+					for(iSetU = tMap->second.begin(); iSetU != tMap->second.end(); iSetU++){
+						printf("%d ", *iSetU);
+					}
+					printf("\n");
+				}
+
+			}
+
+			prevVal = *iSet;
+			iSet++;
+			printf("combined intermediate adder list: ");
+			std::set<unsigned>::iterator iPrint;
+			for(iPrint = inputSet.begin(); iPrint != inputSet.end(); iPrint++)
+				printf("%d ", *iPrint);
+			printf("\n");
+
+		}
+	}
 
 	/*#############################################################################
 	 *
@@ -1687,12 +1725,8 @@ namespace AGGREGATION{
 		printIO(pmap, faSum3_f);
 		//		printf("\n\nFACARRY2 FUNCTIONS: \n");
 		//		printIO(pmap, faCarry2);
-		printf("\n\nHASUM2 FUNCTIONS: \n");
-		printIO(pmap, haSum2_f);
 		printf("\n\nHACARRY2 FUNCTIONS: \n");
 		printIO(pmap, haCarry2_f);
-		printf("\n\nHASUM3 FUNCTIONS: \n");
-		printIO(pmap, haSum3_f);
 		printf("\n\nHACARRY3 FUNCTIONS: \n");
 		printIO(pmap, haCarry3_f);
 
@@ -1701,6 +1735,10 @@ namespace AGGREGATION{
 		*/
 		printf("\n\nFASUM FUNCTIONS: \n");
 		printIO(pmap, faSum_f);
+		printf("\n\nHASUM2 FUNCTIONS: \n");
+		printIO(pmap, haSum2_f);
+		printf("\n\nHASUM3 FUNCTIONS: \n");
+		printIO(pmap, haSum3_f);
 
 		/*
 			 printf("\n\nFASUM2 FUNCTIONS___DC: \n");
@@ -1807,7 +1845,6 @@ namespace AGGREGATION{
 
 
 		std::map<unsigned, std::set<unsigned> >::iterator iOutin;
-		/*
 		printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
 		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
 			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
@@ -1815,18 +1852,15 @@ namespace AGGREGATION{
 				printf("%d ", *iSet);
 			printf("\n");
 		}
-		*/
 
 
 		simplify_output(aigraph, sumNodes, outIn, containedComputeTable);
-		//printf("\n\nCOMPRESSED IN OUT PORT AFTER OUTPUT SIMPLIFICAITON\n"); 
+		printf("\n\nCOMPRESSED IN OUT PORT AFTER OUTPUT SIMPLIFICAITON\n"); 
 		for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
-			/*
 			printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
 			for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
 				printf("%d ", *iSet);
 			printf("\n");
-			*/
 			sumNodes.insert(iOutin->first);
 		}
 
@@ -1840,27 +1874,26 @@ namespace AGGREGATION{
 
 
 
-
-
-
 		//printf("\n\nFINDING ADD HEADER FOR FULL ADDER\n");
 		findHAddHeader(aigraph, faSum, faSum2, sumNodes, outIn, faddInputList, faddOutputList);
 		printf("\n\nFINDING ADD HEADER FOR HALF ADDER\n");
 		findHAddHeader(aigraph, haSum2, haSum3, sumNodes, outIn, haddInputList, haddOutputList);
 
-/*
+
 		printf("FADD CARRY Aggregation\n");
 		printAddList(faddInputList, faddOutputList);
 		printf("HADD CARRY Aggregation\n");
 		printAddList(haddInputList, haddOutputList);
-		*/
 
 
 		combineAdder(aigraph, haddInputList, haddOutputList);
-		//combineAdder(aigraph, faddInputList, faddOutputList);
+		combineAdder(aigraph, faddInputList, faddOutputList);
 
 		printf("HADD CARRY AggregationAFTER COMBING #################################\n");
 		printAddList(haddInputList, haddOutputList);
+
+		printf("FADD CARRY AggregationAFTER COMBING #################################\n");
+		printAddList(faddInputList, faddOutputList);
 
 
 
@@ -1892,8 +1925,18 @@ namespace AGGREGATION{
 			printf("%d ", *iSet);
 		printf("\n");
 		*/
+		if(faddInputList.size() != 0){
+			printf("Performing FULL ADDER AGGREGATION**************************************************************************************************************\n");
+		adderAggregation3_heuristic(aigraph, outIn, sumNodes,  faddInputList, faddOutputList);
+		adderAggregation3_cleanup(aigraph, sumNodes, faddInputList, faddOutputList);
+
+		}
+		if(haddInputList.size() != 0){
+			printf("Performing HALF  ADDER AGGREGATION**************************************************************************************************************\n");
 		adderAggregation3_heuristic(aigraph, outIn, sumNodes,  haddInputList, haddOutputList);
-		//adderAggregation3_cleanup(aigraph, sumNodes, haddInputList, haddOutputList);
+		adderAggregation3_cleanup(aigraph, sumNodes, haddInputList, haddOutputList);
+
+		}
 		/*
 			 ifain= faddInputList.begin(); 
 			 while(ifain!= faddInputList.end()){
@@ -1967,8 +2010,8 @@ namespace AGGREGATION{
 
 
 		printf("\n####################################################################\n");
-		//printf("FADD CARRY Aggregation\n");
-		///printAddList(faddInputList, faddOutputList);
+		printf("FADD CARRY Aggregation\n");
+		printAddList(faddInputList, faddOutputList);
 		printf("HADD CARRY Aggregation\n");
 		printAddList(haddInputList, haddOutputList);
 		printf("####################################################################\n");
