@@ -1,2 +1,5 @@
 circuits/g/primitive/
 circuits/testbench/adder34.cnl
+circuits/temp/c7552_c.cnl
+circuits/temp/c7552_re_h.cnl
+circuits/temp/c7552_re_flat.cnl
