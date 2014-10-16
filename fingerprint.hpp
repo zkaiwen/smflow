@@ -198,6 +198,9 @@ namespace FINGERPRINT{
 		const int windowSize = 5;
 		std::set<unsigned> marked1;
 		std::set<unsigned> marked2;
+		double multiplier[6] = {
+			1.00, 0.95, 0.90, 0.85, 0.80, 0.75
+		};
 
 		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
 			iTemp = data2.find(iMap->first);	
@@ -224,7 +227,7 @@ namespace FINGERPRINT{
 
 				//Similar size found within window
 				if(minDistance1 <= windowSize){
-					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
+					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second)* multiplier[minDistance1] : (iMap->second / iTemp->second)* multiplier[minDistance1];
 					N_f1f2_ratio += ratio;
 					marked1.insert(iMap->first);
 					marked2.insert(iTemp->first);

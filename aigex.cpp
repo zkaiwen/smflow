@@ -147,13 +147,19 @@ int main( int argc, char *argv[] )
 			std::cin >> source;
 
 			unsigned node1, node2, child1, child2;
-			child1 = aig->getChild1(source);
-			child2 = aig->getChild2(source);
+			if(source <= aig->getInputSize()*2)
+				printf("INPUT\n");
+			else{
+				child1 = aig->getChild1(source);
+				child2 = aig->getChild2(source);
 
 
-			node1 = child1 & 0xFFFFFFFE;
-			node2 = child2 & 0xFFFFFFFE;
-			printf("CHILD1: %3d\tCHILD2: %3d\n", node1, node2);
+				node1 = child1 & 0xFFFFFFFE;
+				node2 = child2 & 0xFFFFFFFE;
+				printf("CHILD1: %3d\tCHILD2: %3d\n", node1, node2);
+			}
+
+
 		}
 		else if(command == "parent"){
 			unsigned source;
@@ -174,7 +180,7 @@ int main( int argc, char *argv[] )
 			for(unsigned int i = 0; i < sibNodes.size(); i++)
 				printf("%d ", sibNodes[i]);
 			printf("\n");
-				
+
 
 		}
 
