@@ -31,7 +31,7 @@
 #include "sequential.hpp"
 #include "topoDescriptors.hpp"
 #include "aggregation.hpp"
-#include "fingerprint.hpp"
+#include "similarity.hpp"
 
 using namespace boost;
 
@@ -95,7 +95,7 @@ int main( int argc, char *argv[] )
 	timeval reg_b, reg_e;
 	timeval mux_b, mux_e;
 	timeval dec_b, dec_e;
-	timeval fgp_b, fgp_e;
+	//timeval fgp_b, fgp_e;
 	timeval add_b, add_e;
 
 	float elapsedTime;
@@ -423,34 +423,6 @@ int main( int argc, char *argv[] )
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 		functionCalc->printUniqueFunctionStat();
 
-		/*
-		   std::list<unsigned> out;
-		   std::set<unsigned> in;
-		   out.push_back(2248);
-		   in.insert(236);
-		   in.insert(1384);
-		   in.insert(1656);
-		   in.insert(1816);
-		   aigraph->printSubgraph(out, in);
-		   out.clear();
-		   in.clear();
-		   out.push_back(3060);
-		   in.insert(262);
-		   in.insert(1368);
-		   in.insert(3030);
-		   in.insert(3032);
-		   aigraph->printSubgraph(out, in);
-		   out.clear();
-		   in.clear();
-		   out.push_back(2672);
-		   in.insert(1396);
-		   in.insert(2062);
-		   in.insert(2170);
-		   in.insert(2172);
-		   aigraph->printSubgraph(out, in);
-		 */
-
-
 
 
 
@@ -584,15 +556,14 @@ int main( int argc, char *argv[] )
 		printf("%-20s\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 		printf("================================================================================\n");
 
+/*
 		//Get fingerprint for mux
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
 		std::vector<unsigned long long> fingerprintMux;
 		fingerprintMux.resize(12);
-		FINGERPRINT::getMuxFingerprint_naive(stat_muxAgg[i], fingerprintMux);
-		/*
-		 * 0-11 mux
-		 * 12-15 reg
-		 */
+		SIMILARITY::getMuxFingerprint_naive(stat_muxAgg[i], fingerprintMux);
+		// * 0-11 mux
+		// * 12-15 reg
 		fpMuxes.push_back(fingerprintMux);
 
 		std::vector<unsigned long long> fingerprint;
@@ -603,23 +574,13 @@ int main( int argc, char *argv[] )
 		elapsedTime = (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
 		elapsedTime += (fgp_e.tv_usec - fgp_b.tv_usec) / 1000.0;
 
-		int totalMux = 0;
-		for(iMapM = stat_muxAgg[i].begin(); iMapM != stat_muxAgg[i].end(); iMapM++){
-
-			printf("\t%d-1 MUX:\n", iMapM->first);
-			for(iMap = iMapM->second.begin(); iMap != iMapM->second.end(); iMap++){
-				printf("\t\t%4d-Bit Mux %7d\n", iMap->first, iMap->second);
-				totalMux+=iMap->second;
-			}
-		}
 
 
 
-		int totalReg = 0;
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
 		std::vector<unsigned long long> fingerprintReg;
 		fingerprintReg.resize(4);
-		FINGERPRINT::getRegFingerprint_naive(stat_reg[i], fingerprintReg);
+		SIMILARITY::getRegFingerprint_naive(stat_reg[i], fingerprintReg);
 		fpRegs.push_back(fingerprintReg);
 
 		for(unsigned int k = 0; k < fingerprintReg.size(); k++)
@@ -629,6 +590,18 @@ int main( int argc, char *argv[] )
 		gettimeofday(&fgp_e, NULL);//------------------------------------------
 		elapsedTime += (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
 		elapsedTime += (fgp_e.tv_usec - fgp_b.tv_usec) / 1000.0;
+		*/
+
+		int totalMux = 0;
+		int totalReg = 0;
+		for(iMapM = stat_muxAgg[i].begin(); iMapM != stat_muxAgg[i].end(); iMapM++){
+
+			printf("\t%d-1 MUX:\n", iMapM->first);
+			for(iMap = iMapM->second.begin(); iMap != iMapM->second.end(); iMap++){
+				printf("\t\t%4d-Bit Mux %7d\n", iMap->first, iMap->second);
+				totalMux+=iMap->second;
+			}
+		}
 
 		for(iMap = stat_reg[i].begin(); iMap != stat_reg[i].end(); iMap++)
 		{
@@ -769,7 +742,7 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
+			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -794,7 +767,7 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
+			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -819,7 +792,7 @@ int main( int argc, char *argv[] )
 				printf("%10s", "-0.000");
 				continue;
 			}
-			double sim = FINGERPRINT::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
+			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -934,7 +907,7 @@ int main( int argc, char *argv[] )
 	  f2.push_back((double)stat_dspSize[k]);
 	  f2.push_back((double)stat_numFFFeedback[k]);
 
-	  double sim = FINGERPRINT::euclideanDistance(f1, f2);
+	  double sim = SIMILARITY::euclideanDistance(f1, f2);
 	  printf("%12.3f", sim);
 	  }
 	  printf("\n");
@@ -1025,7 +998,7 @@ void calculateSimilarity(std::vector<std::string>& name,
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::tanimotoWindow(fingerprint[i], fingerprint[k]);
+			double sim = SIMILARITY::tanimotoWindow(fingerprint[i], fingerprint[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);

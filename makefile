@@ -10,6 +10,8 @@ OBJ= \
 		cutfunction.o \
 		vertex.o \
 		print.o \
+		aggregation.o \
+		similarity.o \
 		aiger.o
 
 PROF=
@@ -31,7 +33,7 @@ graph_b.o: graph_b.cpp graph_b.hpp
 mainRef.o: mainRef.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp fingerprint.hpp $(OBJ)
+mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp similarity.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o aiger.o
@@ -39,6 +41,12 @@ aig.o: aig.cpp aig.hpp graph.o aiger.o
 
 vertex.o: vertex.cpp vertex.hpp 
 	g++ $(CFLAGS) -c vertex.cpp $(PROF)
+
+aggregation.o: aggregation.cpp aggregation.hpp 
+	g++ $(CFLAGS) -c aggregation.cpp $(PROF)
+
+similarity.o: similarity.cpp similarity.hpp 
+	g++ $(CFLAGS) -c similarity.cpp $(PROF)
 
 aiger.o: aiger.c aiger.h 
 	gcc $(CFLAGS) -c aiger.c 
