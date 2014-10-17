@@ -1,12 +1,12 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-	@
-	@  MAINDB.cpp
-	@  
-	@  @AUTHOR:Kevin Zeng
-	@  Copyright 2012 – 2013 
-	@  Virginia Polytechnic Institute and State University
-	@
-	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+  @
+  @  MAINDB.cpp
+  @  
+  @  @AUTHOR:Kevin Zeng
+  @  Copyright 2012 – 2013 
+  @  Virginia Polytechnic Institute and State University
+  @
+  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 
 #ifndef MAINDB_GUARD
@@ -50,6 +50,9 @@ void printStatement(std::string statement){
 
 }
 
+void calculateSimilarity(std::vector<std::string>& name, 
+	std::vector<std::map<unsigned, unsigned> >& fingerprint,
+	std::vector<std::vector< std::vector<double> > >& simTable);
 
 
 int main( int argc, char *argv[] )
@@ -140,7 +143,6 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned > stat_f2;
 	std::vector<unsigned > stat_f1f2;
 
-	std::vector<std::vector< std::vector<double> > > simTable;
 
 
 
@@ -174,7 +176,7 @@ int main( int argc, char *argv[] )
 	std::string aigComponentDefinition;
 	getline(infile, aigComponentDefinition);
 	AIG::s_SourcePrim = aigComponentDefinition;
-	
+
 	//*************************************************************************
 	//*  Preprocess library for boolean matching 
 	//**************************************************************************
@@ -220,7 +222,7 @@ int main( int argc, char *argv[] )
 		gettimeofday(&rlut_e, NULL); //--------------------------------------------
 		printf(" * Replaced %d LUTs\n", numLUTs);
 		stat_numLUTs.push_back(numLUTs);
-		
+
 
 
 		//Count the number of specific components
@@ -272,10 +274,10 @@ int main( int argc, char *argv[] )
 		gettimeofday(&count_e, NULL); //--------------------------------------------
 
 		/*
-			 std::map<int,int>::iterator mscit;
-			 for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
-			 printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
-			 }
+		   std::map<int,int>::iterator mscit;
+		   for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
+		   printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
+		   }
 		 */
 
 
@@ -303,17 +305,17 @@ int main( int argc, char *argv[] )
 
 		stat_numCktInput.push_back(ckt->getNumInputs());
 		stat_numCktOutput.push_back(ckt->getNumOutputs());
-		
+
 
 
 
 		//Begin conversion to AIG
 		AIG* aigraph = new AIG();
 		/*aigraph->convertGraph2AIG(ckt, true);
-			int lastSlashIndex = file.find_last_of("/") + 1;
-			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
-			ckt->exportGraphSDFV3000(cname, sdfid);
-			sdfid++;
+		  int lastSlashIndex = file.find_last_of("/") + 1;
+		  std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
+		  ckt->exportGraphSDFV3000(cname, sdfid);
+		  sdfid++;
 		 */
 
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
@@ -328,21 +330,21 @@ int main( int argc, char *argv[] )
 
 
 
-/*
-		std::list<unsigned> out;
-		std::set<unsigned> in;
-		in.insert(2);
-		in.insert(4);
-		in.insert(6);
-		in.insert(8);
-		in.insert(10);
-		in.insert(12);
-		in.insert(14);
-		in.insert(16);
-		out.push_back(204);
-		aigraph->printSubgraph(out, in);
-		out.clear();
-		*/
+		/*
+		   std::list<unsigned> out;
+		   std::set<unsigned> in;
+		   in.insert(2);
+		   in.insert(4);
+		   in.insert(6);
+		   in.insert(8);
+		   in.insert(10);
+		   in.insert(12);
+		   in.insert(14);
+		   in.insert(16);
+		   out.push_back(204);
+		   aigraph->printSubgraph(out, in);
+		   out.clear();
+		 */
 
 
 
@@ -356,17 +358,29 @@ int main( int argc, char *argv[] )
 		cut->findKFeasibleCuts(k);
 		//cut->print();
 
+
+
+		/**********************************************************************
+		 *
+		 * Searching for output/FF input cut correspondence
+		 *
+		 **********************************************************************/
+
 		//Find input cut for FF nodes----------------------------
 		std::vector<unsigned> nodes;
+
+		//Cut input size, count
 		aigraph->getFFInput(nodes);
+		cut->findInputCut(nodes);
+
+		//Cut input size, count
+		std::map<unsigned, unsigned> cutCountFF;
 
 		//Node, Set of inputs to the node
 		std::map<unsigned, std::set<unsigned> > cutIn;
 		std::map<unsigned, std::set<unsigned> >::iterator iCut;
-
-		//Cut input size, count
-		std::map<unsigned, unsigned> cutCountFF;
 		cut->getCut2(cutIn);
+
 		for(iCut = cutIn.begin(); iCut != cutIn.end(); iCut++){
 			if(cutCountFF.find(iCut->second.size()) == cutCountFF.end())
 				cutCountFF[iCut->second.size()] = 1;
@@ -377,8 +391,9 @@ int main( int argc, char *argv[] )
 
 
 		//Find input cut for out nodes----------------------------
-		aigraph->getOutInput(nodes);
-		cut->findInputCut(nodes);
+		nodes.clear();
+		aigraph->getOutInput(nodes);  
+		cut->findInputCut(nodes);	//Sets the result in cut2
 
 		//Cut input size, count
 		std::map<unsigned, unsigned> cutCountOut;
@@ -409,30 +424,30 @@ int main( int argc, char *argv[] )
 		functionCalc->printUniqueFunctionStat();
 
 		/*
-			 std::list<unsigned> out;
-			 std::set<unsigned> in;
-			 out.push_back(2248);
-			 in.insert(236);
-			 in.insert(1384);
-			 in.insert(1656);
-			 in.insert(1816);
-			 aigraph->printSubgraph(out, in);
-			 out.clear();
-			 in.clear();
-			 out.push_back(3060);
-			 in.insert(262);
-			 in.insert(1368);
-			 in.insert(3030);
-			 in.insert(3032);
-			 aigraph->printSubgraph(out, in);
-			 out.clear();
-			 in.clear();
-			 out.push_back(2672);
-			 in.insert(1396);
-			 in.insert(2062);
-			 in.insert(2170);
-			 in.insert(2172);
-			 aigraph->printSubgraph(out, in);
+		   std::list<unsigned> out;
+		   std::set<unsigned> in;
+		   out.push_back(2248);
+		   in.insert(236);
+		   in.insert(1384);
+		   in.insert(1656);
+		   in.insert(1816);
+		   aigraph->printSubgraph(out, in);
+		   out.clear();
+		   in.clear();
+		   out.push_back(3060);
+		   in.insert(262);
+		   in.insert(1368);
+		   in.insert(3030);
+		   in.insert(3032);
+		   aigraph->printSubgraph(out, in);
+		   out.clear();
+		   in.clear();
+		   out.push_back(2672);
+		   in.insert(1396);
+		   in.insert(2062);
+		   in.insert(2170);
+		   in.insert(2172);
+		   aigraph->printSubgraph(out, in);
 		 */
 
 
@@ -460,7 +475,7 @@ int main( int argc, char *argv[] )
 		//mux size, array size, count 
 		std::map<unsigned,std::map<unsigned, unsigned> > muxResult;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
-		
+
 		//std::vector<unsigned int> muxResult1;
 		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
 		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
@@ -476,11 +491,11 @@ int main( int argc, char *argv[] )
 		functionCalc->getFunctionCount(functionCount);
 		count.push_back(functionCount.size());
 		/*
-			 outdb<< file << "\n";
-			 outdb<< functionCount.size() << "\n";
-			 for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
-			 outdb<< fcit->first << " " << fcit->second << "\n";
-			 }
+		   outdb<< file << "\n";
+		   outdb<< functionCount.size() << "\n";
+		   for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
+		   outdb<< fcit->first << " " << fcit->second << "\n";
+		   }
 		 */
 
 
@@ -626,7 +641,7 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++){
 			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 		}
-		
+
 		printf("\nAdders\n");
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
@@ -637,17 +652,15 @@ int main( int argc, char *argv[] )
 		}
 
 
-/*
+		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut FF Input size Count\n");
 		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
-		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut Out Input size Count\n");
 		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
-		*/
 
 
 
@@ -655,20 +668,19 @@ int main( int argc, char *argv[] )
 		stat_numReg.push_back(totalReg);
 		stat_fingerprintTime.push_back(elapsedTime);
 
-/*
-		printf("\nMux Fingerprint:\t");
-		//for(unsigned int i = fingerprintMux.size() - 1; i >= 0; i--){
-		for(unsigned int i =  0; i < fingerprintMux.size(); i++){
-			printf("%llx ", fingerprintMux[i]);
-		}
-		printf("\n");
+		/*
+		   printf("\nMux Fingerprint:\t");
+		   for(unsigned int i =  0; i < fingerprintMux.size(); i++){
+		   printf("%llx ", fingerprintMux[i]);
+		   }
+		   printf("\n");
 
-		printf("Register fingerprint:\t");
-		for(unsigned int i =  0; i < fingerprintReg.size(); i++){
-			printf("%llx ", fingerprintReg[i]);
-		}
-		printf("\n");
-		*/
+		   printf("Register fingerprint:\t");
+		   for(unsigned int i =  0; i < fingerprintReg.size(); i++){
+		   printf("%llx ", fingerprintReg[i]);
+		   }
+		   printf("\n");
+		 */
 	}
 	printf("\n\n");
 
@@ -725,6 +737,7 @@ int main( int argc, char *argv[] )
 
 
 
+	std::vector<std::vector< std::vector<double> > > simTable;
 	simTable.reserve(name.size());
 	for(unsigned int i = 0; i < name.size(); i++){
 		std::vector<std::vector<double> > sim(name.size());
@@ -814,116 +827,23 @@ int main( int argc, char *argv[] )
 	}
 
 	printf("\nREGISTER SIMILARITY MATRIX\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::tanimotoWindow(stat_reg[i], stat_reg[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
+	calculateSimilarity(name, stat_reg, simTable);
 
 	printf("\nOUTOUT CUT\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
+	calculateSimilarity(name, stat_spCutCountOut, simTable);
 
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::tanimotoWindow(stat_spCutCountOut[i], stat_spCutCountOut[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
-	
 	printf("\nADDER SIMILARITY\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::tanimotoWindow(stat_adder[i], stat_adder[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
-
-/*
-	printf("\nOUTFF CUT\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::cutInputFingerprint(stat_spCutCountOut[i], stat_spCutCountFF[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
-	*/
-
+	calculateSimilarity(name, stat_adder, simTable);
+	
+	printf("\nADDER-aggregated SIMILARITY\n");
+	calculateSimilarity(name, stat_carry, simTable);
 
 	printf("\nFF-FF CUT\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = FINGERPRINT::tanimotoWindow(stat_spCutCountFF[i], stat_spCutCountFF[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
+	calculateSimilarity(name, stat_spCutCountFF, simTable);
 
 
-		printf("\n***********************************************************************\n");
-	
+	printf("\n***********************************************************************\n");
+
 	printf("FINAL SIM RESULT\n");
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
@@ -941,14 +861,14 @@ int main( int argc, char *argv[] )
 			for(unsigned int q = 0; q < simTable[i][k].size(); q++){
 				sum += simTable[i][k][q];
 			}
-			
+
 			printf("%10.3f", (sum/simTable[i][k].size())*100.0);
 
 		}
 		printf("\n");
 	}
-		printf("\n");
-	
+	printf("\n");
+
 	printf("Excel Format\n");
 	printf("Circuits\t");
 	for(unsigned int i = 0; i < name.size(); i++){
@@ -966,61 +886,61 @@ int main( int argc, char *argv[] )
 			for(unsigned int q = 0; q < simTable[i][k].size(); q++){
 				sum += simTable[i][k][q];
 			}
-			
+
 			printf("%.3f\t", (sum/simTable[i][k].size())*100.0);
 
 		}
 		printf("\n");
 	}
-		printf("\n");
-	
-	/*printf("\n\n%-12s", "Ecdn Distance");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
 	printf("\n");
 
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+	/*printf("\n\n%-12s", "Ecdn Distance");
+	  for(unsigned int i = 0; i < name.size(); i++){
+	  int lastSlashIndex = name[i].find_last_of("/") + 1;
+	  printf("%12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+	  }
+	  printf("\n");
 
-		std::vector<double> f1;
-		f1.reserve(14);
-		f1.push_back((double)stat_numInput[i]);
-		f1.push_back((double)count[i]);
-		f1.push_back((double)stat_aigSize[i]);
-		f1.push_back((double)stat_ffSize[i]);
-		f1.push_back((double)stat_numMux[i]);
-		f1.push_back((double)stat_numReg[i]);
-		f1.push_back((double)stat_addAgg[i][0]);
-		f1.push_back((double)stat_addAgg[i][1]);
-		f1.push_back((double)stat_addAgg[i][2]);
-		f1.push_back((double)stat_dspSize[i]);
-		f1.push_back((double)stat_numFFFeedback[i]);
+	  for(unsigned int i = 0; i < name.size(); i++){
+	  int lastSlashIndex = name[i].find_last_of("/") + 1;
+	  printf("%-12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
-		for(unsigned int k = 0; k < name.size(); k++){
-			std::vector<double> f2;
-			f2.reserve(14);
-			f2.push_back((double)stat_numInput[k]);
-			f2.push_back((double)count[k]);
-			f2.push_back((double)stat_aigSize[k]);
-			f2.push_back((double)stat_ffSize[k]);
-			f2.push_back((double)stat_numMux[k]);
-			f2.push_back((double)stat_numReg[k]);
-			f2.push_back((double)stat_addAgg[k][0]);
-			f2.push_back((double)stat_addAgg[k][1]);
-			f2.push_back((double)stat_addAgg[k][2]);
-			f2.push_back((double)stat_dspSize[k]);
-			f2.push_back((double)stat_numFFFeedback[k]);
+	  std::vector<double> f1;
+	  f1.reserve(14);
+	  f1.push_back((double)stat_numInput[i]);
+	  f1.push_back((double)count[i]);
+	  f1.push_back((double)stat_aigSize[i]);
+	  f1.push_back((double)stat_ffSize[i]);
+	  f1.push_back((double)stat_numMux[i]);
+	  f1.push_back((double)stat_numReg[i]);
+	  f1.push_back((double)stat_addAgg[i][0]);
+	  f1.push_back((double)stat_addAgg[i][1]);
+	  f1.push_back((double)stat_addAgg[i][2]);
+	  f1.push_back((double)stat_dspSize[i]);
+	  f1.push_back((double)stat_numFFFeedback[i]);
 
-			double sim = FINGERPRINT::euclideanDistance(f1, f2);
-			printf("%12.3f", sim);
-		}
-		printf("\n");
+	  for(unsigned int k = 0; k < name.size(); k++){
+	  std::vector<double> f2;
+	  f2.reserve(14);
+	  f2.push_back((double)stat_numInput[k]);
+	  f2.push_back((double)count[k]);
+	  f2.push_back((double)stat_aigSize[k]);
+	  f2.push_back((double)stat_ffSize[k]);
+	  f2.push_back((double)stat_numMux[k]);
+	  f2.push_back((double)stat_numReg[k]);
+	  f2.push_back((double)stat_addAgg[k][0]);
+	  f2.push_back((double)stat_addAgg[k][1]);
+	  f2.push_back((double)stat_addAgg[k][2]);
+	  f2.push_back((double)stat_dspSize[k]);
+	  f2.push_back((double)stat_numFFFeedback[k]);
 
-	}
-		 */
+	  double sim = FINGERPRINT::euclideanDistance(f1, f2);
+	  printf("%12.3f", sim);
+	  }
+	  printf("\n");
+
+	  }
+	 */
 	//std::cout<<"\033[1;4;31m"<<"BLUE TEXT"<<"\033[0m"<<std::endl;
 
 
@@ -1079,12 +999,40 @@ int main( int argc, char *argv[] )
 
 	return 0;
 
+}
+
+
+
+
+
+
+
+
+
+void calculateSimilarity(std::vector<std::string>& name, 
+	std::vector<std::map<unsigned, unsigned> >& fingerprint,
+	std::vector<std::vector< std::vector<double> > >& simTable){
+
+	printf("%-10s", "Circuits");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
+	printf("\n");
 
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
-
-
-
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim = FINGERPRINT::tanimotoWindow(fingerprint[i], fingerprint[k]);
+			if(sim >= 0.00)
+				simTable[i][k].push_back(sim);
+			printf("%10.3f", sim*100);
+		}
+		printf("\n");
+	}
+}
 
 
 #endif

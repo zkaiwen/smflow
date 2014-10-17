@@ -645,7 +645,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//ckt->printg();
 		//printf("\n\n");
 	}
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 
 
 
@@ -673,7 +673,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		if(handleFF(ffList[i]->first, ckt))
 			toBeDeleted.push_back(ffList[i]->first);
 	}
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", outInput.size(), outputSet.size());
+	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 	
 	/*
 	printf("OUTINPUTSET: ");

@@ -1264,12 +1264,14 @@ namespace AGGREGATION{
 		std::list<std::set<unsigned> >::iterator iAddIn;
 		std::list<std::set<unsigned> >::iterator iAddOut;
 		
+		/*
 		std::map<std::set<unsigned>, unsigned> outputPairFound; //outputset. Index first found in addlist
 		std::map<std::set<unsigned>, unsigned>::iterator iOPF; //outputset. Index first found in addlist
 		std::set<unsigned> deleteQueue;
+		*/
 
 		assert(addIn.size() == addOut.size());
-		unsigned addListStart = addIn.size();
+		//unsigned addListStart = addIn.size();
 		//printf("ADDLISTSTART: %d\n", addListStart);
 
 		//Go through each adder function
@@ -1337,6 +1339,7 @@ namespace AGGREGATION{
 		}
 
 		//printAddList(addIn, addOut);
+		/*
 			iAddIn = addIn.begin();
 			iAddOut = addOut.begin();
 			unsigned index = 0;
@@ -1354,6 +1357,7 @@ namespace AGGREGATION{
 				index++;
 			}
 
+*/
 
 	}
 
@@ -1439,7 +1443,7 @@ namespace AGGREGATION{
 						 printf("\n");
 					 */
 				}
-				else if(numMatch == iListOut2->size() ){
+				else if(numMatch == (int)iListOut2->size() ){
 					for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 						iListOut1->insert(*iSet);
 
