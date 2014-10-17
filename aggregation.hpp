@@ -956,6 +956,7 @@ namespace AGGREGATION{
 			BFS(aig, outnode, curInputSet, inputHit);
 			for(unsigned int i = 0; i < inputHit.size(); i++)
 				printf("INPUT HIT: %d\n", inputHit[i]);
+
 			if(inputHit.size() == 0){
 				for(iSet = iListInSearch->begin(); iSet != iListInSearch->end(); iSet++)
 					curInputSet.insert(*iSet);
@@ -963,6 +964,7 @@ namespace AGGREGATION{
 				iListOutSearch++;
 				continue;
 			}
+
 			assert(inputHit.size() != 0);
 
 			iListOut = addOut.begin();
@@ -971,9 +973,10 @@ namespace AGGREGATION{
 			std::list<std::list<std::set<unsigned> >::iterator> iteratorListOut;
 			std::list<std::list<std::set<unsigned> >::iterator>::iterator iListInIt;
 			std::list<std::list<std::set<unsigned> >::iterator>::iterator iListOutIt;
+
 			for(unsigned int i = 0; i < inputHit.size(); i++){
-			iListOut = addOut.begin();
-			iListIn = addIn.begin();
+				iListOut = addOut.begin();
+				iListIn = addIn.begin();
 				while(iListIn != addIn.end()){
 					if(iListIn->find(inputHit[i]) != iListIn->end()){
 						iteratorListIn.push_back(iListIn);
@@ -1013,6 +1016,7 @@ namespace AGGREGATION{
 					if(iListIn->find(*iSet) != iListIn->end())
 						nummatch++;
 				}
+
 				//printf("NUMMATCH: %d\tIMAPSIZE: %d\tADDERSIZE: %d\n", nummatch,(int) iListInSearch->size(), (int)iListIn->size());
 				if(nummatch == iListInSearch->size() || nummatch == iListIn->size()){
 					//printf("INPUT CONTAINMENT FOUND\n");
@@ -1270,12 +1274,10 @@ namespace AGGREGATION{
 
 		//Go through each adder function
 		for(unsigned int i = 0; i < add3.size(); i++){
-			//if(ignoreOutputs.find(add3[i]->output) != ignoreOutputs.end()) continue; 
 			iMap = outIn.find(add3[i]->output);
 			if(iMap == outIn.end()) continue;
 
 			for(unsigned int q = 0; q < add2.size(); q++){
-				//if(ignoreOutputs.find(add2[2]->output) != ignoreOutputs.end()) continue; 
 				if(outIn.find(add2[q]->output) == outIn.end()) continue;
 
 				//Check to see if all the nodes in SUM2 can be found in the SUM3
@@ -1298,7 +1300,7 @@ namespace AGGREGATION{
 					std::set<unsigned> outputCopy;
 					outputCopy.insert(add3[i]->output);
 					outputCopy.insert(add2[q]->output);
-
+/*
 					iOPF = outputPairFound.find(outputCopy);
 					if(iOPF != outputPairFound.end()){
 						deleteQueue.insert(iOPF->second);
@@ -1307,6 +1309,7 @@ namespace AGGREGATION{
 
 					outputPairFound[outputCopy] = addListStart;
 					addListStart++;
+					*/
 
 					std::set<unsigned> inputCopy = add3[i]->input;
 /*
@@ -1412,7 +1415,7 @@ namespace AGGREGATION{
 						numMatch++;
 
 
-				if(numMatch >= matchLimit){
+				if(numMatch == matchLimit){
 					//printf(" * COMBINE!\n");
 					for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
 						iListIn1->insert(*iSet);
@@ -1436,6 +1439,16 @@ namespace AGGREGATION{
 						 printf("\n");
 					 */
 				}
+				else if(numMatch == iListOut2->size() ){
+					for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
+						iListOut1->insert(*iSet);
+
+					addOut.erase(iListOut2);
+					addIn.erase(iListIn2);
+					iListOut2 = iPrevOut;
+					iListIn2 = iPrevIn;
+				}
+
 				else{
 					iPrevIn = iListIn2;
 					iPrevOut= iListOut2;

@@ -1,5 +1,10 @@
 circuits/g/primitive/
-circuits/testbench/adder34.cnl
-circuits/temp/c7552_c.cnl
-circuits/temp/c7552_re_h.cnl
-circuits/temp/c7552_re_flat.cnl
+circuits/testbench/adder4_74283.cnl
+circuits/testbench/adder8.cnl
+circuits/testbench/adder8x2.cnl
+circuits/testbench/adder4x2_sharedIn.cnl
+circuits/testbench/adder8x2_sharedIn.cnl
+circuits/testbench/adder4_chain.cnl
+circuits/testbench/adder4_chain_mux.cnl
+circuits/testbench/adder4_chain_fa.cnl
+circuits/testbench/adder4_chain_mux_fa.cnl
