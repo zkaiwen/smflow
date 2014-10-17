@@ -184,37 +184,77 @@ namespace FINGERPRINT{
 		if(data1.size() == 0 || data2.size() == 0){
 			return -1.0;
 		}
-		//Assert the bitlenght of the two fingerprints are the same
 		double N_f1 = data1.size();
 		double N_f2 = data2.size();
 
 		//Count the number of 1's in the second fingerprint
+		const int windowSize = 5;
 		double N_f1f2_ratio = 0.0;
 
 		std::map<unsigned, unsigned>::iterator iMap;
 		std::map<unsigned, unsigned>::iterator iMap2;
 		std::map<unsigned, unsigned>::iterator iTemp;
 		std::map<unsigned, unsigned>::iterator iMapF;
-		const int windowSize = 5;
 		std::set<unsigned> marked1;
 		std::set<unsigned> marked2;
-		double multiplier[6] = {
+
+		const double multiplier[6] = {
 			1.00, 0.95, 0.90, 0.85, 0.80, 0.75
 		};
 
+		printf("\n\nBIT LOC1: ");
+		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
+			printf("%d ", iMap->first);
+		}
+		printf("\t\tBIT CNT1: ");
+		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
+			printf("%d ", iMap->second);
+		}
+		
+		printf("\nBIT LOC2: ");
+		for(iMap = data2.begin(); iMap != data2.end(); iMap++){
+			printf("%d ", iMap->first);
+		}
+		printf("\t\tBIT CNT2: ");
+		for(iMap = data2.begin(); iMap != data2.end(); iMap++){
+			printf("%d ", iMap->second);
+		}
+		printf("\n");
+
+		//Count the number of bits that are the same
 		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
 			iTemp = data2.find(iMap->first);	
+			printf("Looking for %d in data1...", iMap->first);
 
 			if(iTemp != data2.end()){
-				double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second) : (iMap->second / iTemp->second);
+				printf("found\n");
+				double ratio;
+				/*
+				   if(iTemp->second < iMap->second)
+				   ratio = (double)iTemp->second / (double) iMap->second; 
+				   else
+				   ratio = (double)iMap->second / (double) iTemp->second;
+				 */
+				if(iTemp->second < iMap->second){
+					ratio = (double)iMap->second - (double) iTemp->second;
+					ratio = ratio /(((double)iMap->second + (double) iTemp->second)/2);
+				}
+				else{
+					ratio = (double)iTemp->second - (double) iMap->second;
+					ratio = ratio /(((double)iMap->second + (double) iTemp->second)/2);
+				}
+
+				ratio = 1.0 - ratio;
+
 				N_f1f2_ratio += ratio;
 				marked1.insert(iMap->first);
 				marked2.insert(iTemp->first);
 			}
+			else printf("\n");
 		}
 
+		//Go through the vector again and try and find similar matches in the bits (WINDOWING)
 		for(iMap = data1.begin(); iMap != data1.end(); iMap++){
-
 			if(marked1.find(iMap->first) == marked1.end()){
 				int minDistance1 = findMinDistance(data2, marked2, iMap->first, iTemp);
 				int minDistance2 = findMinDistance(data1, marked1, iTemp->first, iMapF);
@@ -227,20 +267,39 @@ namespace FINGERPRINT{
 
 				//Similar size found within window
 				if(minDistance1 <= windowSize){
-					double ratio = (iTemp->second < iMap->second) ? (iTemp->second / iMap->second)* multiplier[minDistance1] : (iMap->second / iTemp->second)* multiplier[minDistance1];
+					double ratio;
+					/*
+					   if(iTemp->second < iMap->second) 
+					   ratio = ((double)iTemp->second / (double)iMap->second)*multiplier[minDistance1];
+					   else
+					   ratio = ((double)iMap->second / (double)iTemp->second)*multiplier[minDistance1];
+					 */
+
+					if(iTemp->second < iMap->second){
+						ratio = (double)iMap->second - (double) iTemp->second;
+						ratio = ratio /(((double)iMap->second + (double) iTemp->second)/2);
+					}
+					else{
+						ratio = (double)iTemp->second - (double) iMap->second;
+						ratio = ratio /(((double)iMap->second + (double) iTemp->second)/2);
+					}
+
+					ratio = (1.0 - ratio) * multiplier[minDistance1];
+
 					N_f1f2_ratio += ratio;
 					marked1.insert(iMap->first);
 					marked2.insert(iTemp->first);
 				}
 			}
 		}
+
 		double denom = (N_f1+N_f2-N_f1f2_ratio);
 		if(denom == 0.0)	return 0.0;
 
 		return N_f1f2_ratio / denom;
 	}
 
-	
+
 	double tanimoto2(std::vector<unsigned>& f1, std::vector<unsigned>&f2){
 		//Assert the bitlenght of the two fingerprints are the same
 		assert(f1.size() == f2.size());
@@ -260,8 +319,8 @@ namespace FINGERPRINT{
 		double N_f1f2 = 0.0;
 		double N_f1f2_ratio = 0.0;
 		for(unsigned int i = 0; i < f2.size(); i++){
-				if(f2[i] > 0){
-					N_f2++;
+			if(f2[i] > 0){
+				N_f2++;
 
 					//Check if the first set has the same bit high
 					if(f1Pos.find(i) != f1Pos.end()){
