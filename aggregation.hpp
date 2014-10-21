@@ -99,6 +99,7 @@ namespace AGGREGATION{
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );
 	void findAdder(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>& );
+	void findCarry(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>& ); 
 
 
 	/*#############################################################################

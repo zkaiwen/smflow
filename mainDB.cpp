@@ -137,7 +137,9 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
 	std::vector<std::map<unsigned, unsigned> > stat_adder;
+	std::vector<std::map<unsigned, unsigned> > stat_adderAgg;
 	std::vector<std::map<unsigned, unsigned> > stat_carry;
+	std::vector<std::map<unsigned, unsigned> > stat_carryAgg;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -418,7 +420,7 @@ int main( int argc, char *argv[] )
 		//PERFORM BOOLEAN MATCHING
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
-		functionCalc->processAIGCutsX(true);
+		functionCalc->processAIGCuts(true);
 		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 		functionCalc->printUniqueFunctionStat();
@@ -434,11 +436,17 @@ int main( int argc, char *argv[] )
 
 		aigraph->printOutputs();
 		std::map<unsigned, unsigned> addResult;
+		std::map<unsigned, unsigned> addAggResult;
 		std::map<unsigned, unsigned> carryResult;
+		std::map<unsigned, unsigned> carryAggResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, carryResult);
+		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult);
 		stat_adder.push_back(addResult);
+		stat_adderAgg.push_back(addAggResult);
+		
+		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult);
 		stat_carry.push_back(carryResult);
+		stat_carryAgg.push_back(carryAggResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -619,12 +627,21 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
-		printf("\nDC\n");
+		printf("\nAdderAgg\n");
+		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++){
+			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+		}
+	/*	
+		printf("\nCarry\n");
 		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
+		printf("\nCarryAgg\n");
+		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++){
+			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+		}
 
-
+*/
 		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut FF Input size Count\n");
 		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
@@ -940,7 +957,6 @@ int main( int argc, char *argv[] )
 	printf("%-12s", "MUX AGG");
 	printf("%-12s", "DEC AGG");
 	printf("%-12s", "ADD AGG");
-	printf("%-12s", "Fngrprint");
 	printf("\n") ;
 
 	std::vector<float> totalTime;
@@ -955,8 +971,8 @@ int main( int argc, char *argv[] )
 			totalTime[k]+=stat_time[i][k];
 		}
 
-		printf("%-12.3f", stat_fingerprintTime[i]);
-		totalTime[stat_time[i].size()]+=stat_fingerprintTime[i];
+	//	printf("%-12.3f", stat_fingerprintTime[i]);
+	//	totalTime[stat_time[i].size()]+=stat_fingerprintTime[i];
 		printf("\n");
 	}
 
