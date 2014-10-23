@@ -19,7 +19,6 @@
 #include "graph.hpp"
 #include "vertex.hpp"
 #include "aig.hpp"
-#include "graph_b.hpp"
 
 
 //Topology Descriptor Functions

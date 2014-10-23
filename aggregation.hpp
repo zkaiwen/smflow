@@ -50,7 +50,7 @@ namespace AGGREGATION{
 			std::set<unsigned>& ,
 			std::set<unsigned>& ,
 			std::set<unsigned>& );
-	void adderAggregation3_verify(AIG* , 
+	bool adderAggregation3_verify(AIG* , 
 			std::set<unsigned>& ,
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );

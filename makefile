@@ -12,6 +12,8 @@ OBJ= \
 		print.o \
 		aggregation.o \
 		similarity.o \
+		sequential.o \
+		verification.o \
 		aiger.o
 
 PROF=
@@ -30,10 +32,10 @@ graph.o: graph.cpp graph.hpp vertex.o
 graph_b.o: graph_b.cpp graph_b.hpp 
 	g++ $(CFLAGS) -c graph_b.cpp $(PROF)
 
-mainRef.o: mainRef.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp $(OBJ)
+mainRef.o: mainRef.cpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp sequential.hpp aggregation.hpp topoDescriptors.hpp verification.hpp similarity.hpp $(OBJ)
+mainDB.o: mainDB.cpp topoDescriptors.hpp verification.hpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o aiger.o
@@ -47,6 +49,12 @@ aggregation.o: aggregation.cpp aggregation.hpp
 
 similarity.o: similarity.cpp similarity.hpp 
 	g++ $(CFLAGS) -c similarity.cpp $(PROF)
+
+verification.o: verification.cpp verification.hpp 
+	g++ $(CFLAGS) -c verification.cpp $(PROF)
+
+sequential.o: sequential.cpp sequential.hpp verification.o
+	g++ $(CFLAGS) -c sequential.cpp $(PROF)
 
 aiger.o: aiger.c aiger.h 
 	gcc $(CFLAGS) -c aiger.c 

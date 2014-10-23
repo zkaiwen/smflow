@@ -34,7 +34,8 @@ int SIMILARITY::findMinDistance(std::map<unsigned, unsigned>& data, std::set<uns
 
 double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<unsigned,unsigned>& data2){
 	if(data1.size() == 0 || data2.size() == 0){
-		return -1.0;
+		//return -1.0;
+		return 0.0;
 	}
 	double N_f1 = data1.size();
 	double N_f2 = data2.size();

@@ -29,7 +29,6 @@
 #include "cutenumeration.hpp"
 #include "cutfunction.hpp"
 #include "sequential.hpp"
-#include "topoDescriptors.hpp"
 #include "aggregation.hpp"
 #include "similarity.hpp"
 
@@ -140,6 +139,13 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_adderAgg;
 	std::vector<std::map<unsigned, unsigned> > stat_carry;
 	std::vector<std::map<unsigned, unsigned> > stat_carryAgg;
+	
+	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM1;
+	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM2;
+	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM3;
+	std::vector<std::map<unsigned, unsigned> > stat_blockFFM0;
+	std::vector<std::map<unsigned, unsigned> > stat_blockFFM1;
+	std::vector<std::map<unsigned, unsigned> > stat_blockFFM2;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -308,8 +314,27 @@ int main( int argc, char *argv[] )
 		stat_numCktInput.push_back(ckt->getNumInputs());
 		stat_numCktOutput.push_back(ckt->getNumOutputs());
 
+		//FIND COUNTERS
+		//SEQUENTIAL::counterIdentification(ckt);
+		std::map<unsigned,unsigned> casFFM1;
+		std::map<unsigned,unsigned> casFFM2;
+		std::map<unsigned,unsigned> casFFM3;
+		std::map<unsigned,unsigned> blockFFM0;
+		std::map<unsigned,unsigned> blockFFM1;
+		std::map<unsigned,unsigned> blockFFM2;
+		SEQUENTIAL::cascadingFF(ckt, 1, casFFM1);
+		SEQUENTIAL::cascadingFF(ckt, 2, casFFM2);
+		SEQUENTIAL::cascadingFF(ckt, 3, casFFM3);
+		SEQUENTIAL::blockFF(ckt, 0, blockFFM0);
+		SEQUENTIAL::blockFF(ckt, 1, blockFFM1);
+		SEQUENTIAL::blockFF(ckt, 2, blockFFM2);
 
-
+		stat_cascadeFFM1.push_back(casFFM1);
+		stat_cascadeFFM2.push_back(casFFM2);
+		stat_cascadeFFM3.push_back(casFFM3);
+		stat_blockFFM0.push_back(blockFFM0);
+		stat_blockFFM1.push_back(blockFFM1);
+		stat_blockFFM2.push_back(blockFFM2);
 
 		//Begin conversion to AIG
 		AIG* aigraph = new AIG();
@@ -816,21 +841,38 @@ int main( int argc, char *argv[] )
 		printf("\n");
 	}
 
-	printf("\nREGISTER SIMILARITY MATRIX\n");
+	printf("\n[MAINDB] -- Calculating similarity for Register fingerprint\n");
 	calculateSimilarity(name, stat_reg, simTable);
 
-	printf("\nOUTOUT CUT\n");
+	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
 
-	printf("\nADDER SIMILARITY\n");
-	calculateSimilarity(name, stat_adder, simTable);
-	
-	printf("\nADDER-aggregated SIMILARITY\n");
-	calculateSimilarity(name, stat_carry, simTable);
-
-	printf("\nFF-FF CUT\n");
+	printf("\n[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountFF, simTable);
 
+	printf("\n[MAINDB] -- Calculating similarity Adder aggregation\n");
+	calculateSimilarity(name, stat_adder, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
+	calculateSimilarity(name, stat_adderAgg, simTable);
+	
+	printf("\n[MAINDB] -- Calculating similarity carry aggregation\n");
+	calculateSimilarity(name, stat_carry, simTable);
+	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
+	calculateSimilarity(name, stat_carryAgg, simTable);
+
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M0\n");
+	calculateSimilarity(name, stat_blockFFM0, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M1\n");
+	calculateSimilarity(name, stat_blockFFM1, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M2\n");
+	calculateSimilarity(name, stat_blockFFM2, simTable);
+	
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
+	calculateSimilarity(name, stat_cascadeFFM1, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
+	calculateSimilarity(name, stat_cascadeFFM2, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
+	calculateSimilarity(name, stat_cascadeFFM3, simTable);
 
 	printf("\n***********************************************************************\n");
 
@@ -1002,24 +1044,26 @@ void calculateSimilarity(std::vector<std::string>& name,
 	std::vector<std::map<unsigned, unsigned> >& fingerprint,
 	std::vector<std::vector< std::vector<double> > >& simTable){
 
+/*
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
+	*/
 
 	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		//int lastSlashIndex = name[i].find_last_of("/") + 1;
+		//printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
 			double sim = SIMILARITY::tanimotoWindow(fingerprint[i], fingerprint[k]);
 			if(sim >= 0.00)
 				simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
+			//printf("%10.3f", sim*100);
 		}
-		printf("\n");
+		//printf("\n");
 	}
 }
 

@@ -491,13 +491,12 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::map<std::string, int> cktout;
 	std::map<std::string, int>::iterator iOut;
 	ckt->getOutputs(cktout);
-	printf("OUTPUTS OF CIRCUIT: %d\n", (int)cktout.size());
+	//printf("OUTPUTS OF CIRCUIT: %d\n", (int)cktout.size());
 	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++){
 			outputSet.insert(iOut->second);
-			printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
+			//printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
 	}
 
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 
 	int outputNode;
 	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
@@ -645,10 +644,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		//ckt->printg();
 		//printf("\n\n");
 	}
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
-
-
-
 
 	//Go through FFs to see the inputs to them
 	std::set<unsigned> ffCKTNodes; 
@@ -924,19 +919,19 @@ unsigned AIG::create_and2(unsigned e1, unsigned e2){
 		return 0; 
 	}
 	if(e1 == 1){
-		printf("FOLD e1 = 1\n");
+		//printf("FOLD e1 = 1\n");
 		return e2;
 	}
 	if(e2 == 1){
-		printf("FOLD e2 = 1\n");
+		//printf("FOLD e2 = 1\n");
 		return e1;
 	}
 	if(e1 == e2){
-		printf("FOLD e1 = e2 \n");
+		//printf("FOLD e1 = e2 \n");
 		return e1;
 	}
 	if(((e1& 0xFFFFFFFE) == e2) || ((e2 & 0xFFFFFFFE) == e1)){
-		printf("FOLD e1 = -e2: %d %d \n", e1, e2);
+		//printf("FOLD e1 = -e2: %d %d \n", e1, e2);
 		return 0;
 	}
 
