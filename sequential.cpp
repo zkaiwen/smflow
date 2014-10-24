@@ -1256,7 +1256,7 @@ void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, un
  *    Looks for possible counters 	
  *
  *#############################################################################*/
-void SEQUENTIAL::counterIdentification(Graph* ckt){
+void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>& result){
 	printf("[SEQ] -- Counter Identification\n");
 
 	//map of <ff id label, vid in the graph>
@@ -1270,7 +1270,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 
 	//Find all the flip flops in the circuit
 	std::set<unsigned> marked; 
-	printf("[SEQ] -- Finding possible counter FF\n");
+	//printf("[SEQ] -- Finding possible counter FF\n");
 	for(it = ckt->begin(); it != ckt->end(); it++){
 		if(it->second->getType().find("FD") != std::string::npos){
 			//Check to see if Q loops back to D (Possible counter)		
@@ -1294,6 +1294,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 	std::map<unsigned, std::set<unsigned> >::iterator iMap2;
 	std::set<unsigned>::iterator iSet;
 	std::set<unsigned>::iterator iSet2;
+	/*
 	for(iMap = ffDependence.begin(); iMap != ffDependence.end(); iMap++){
 		printf("FF %3d SZ: %3d\t", iMap->first, (int)iMap->second.size()) ;
 		printf(" * ");
@@ -1310,6 +1311,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 		printf("%d ", iMap2->first);
 	}
 	printf("\n");
+	*/
 
 
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
@@ -1323,6 +1325,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 	}
 
 
+/*
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
 		printf("START NODE: %d\t\t", iMap2->first);
 		for(iSet = iMap2->second.begin(); iSet != iMap2->second.end(); iSet++){
@@ -1330,11 +1333,12 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 		}
 		printf("\n");
 	}
+	*/
 
 
 	//Go through each of the possible FF counters
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
-		printf("START NODE: %d\t\t", iMap2->first);
+		//printf("START NODE: %d\t\t", iMap2->first);
 
 		//Go through the nodes that contain the start node
 		std::vector<unsigned> tobedeleted;
@@ -1356,7 +1360,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 				marked.insert(*iSet);
 
 
-			printf("%d ", *iSet);
+			//printf("%d ", *iSet);
 		}
 
 		for(unsigned int i= 0; i < tobedeleted.size(); i++){
@@ -1364,7 +1368,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 		}
 
 
-		printf("\n");
+		//printf("\n");
 	}
 
 
@@ -1402,6 +1406,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 	}
 
 	printf("Possible counters\n");
+	std::map<unsigned, unsigned>::iterator iResult;
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
 		std::set<unsigned>::iterator iSet;
 		if(iMap2->second.size() > 1){
@@ -1411,7 +1416,10 @@ void SEQUENTIAL::counterIdentification(Graph* ckt){
 				printf("%d ", *iSet);
 			}
 			printf("\n");
-
+	
+			iResult = result.find(iMap2->second.size());
+			if(iResult == result.end()) result[iMap2->second.size()] = 1;
+			else iResult->second++;
 		}
 	}
 

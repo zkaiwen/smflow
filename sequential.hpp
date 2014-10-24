@@ -45,7 +45,7 @@ namespace SEQUENTIAL{
 
 	void cascadingFF(Graph* , unsigned , std::map<unsigned, unsigned>& );
 	void blockFF(Graph* , unsigned , std::map<unsigned, unsigned>& );
-	void counterIdentification(Graph* );
+	void counterIdentification(Graph*, std::map<unsigned, unsigned>&);
 
 }
 

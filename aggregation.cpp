@@ -1429,7 +1429,6 @@ void AGGREGATION::combineAdder(
 
 	iListOut1 = addOut.begin(); 
 	iListIn1 = addIn.begin();
-	assert(iListOut1->size() != 0);
 	unsigned matchLimit = iListOut1->size() - 1;
 
 

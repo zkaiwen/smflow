@@ -129,10 +129,12 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> >  stat_decAgg;
 	std::vector<std::vector<unsigned> >  stat_addAgg;
 
-	//size/count
-	std::vector<std::map<unsigned, unsigned> >  stat_reg;
 	std::vector< std::vector<float> > stat_time;
 	std::vector<float> stat_fingerprintTime;
+
+	//size/count
+	std::vector<std::map<unsigned, unsigned> > stat_reg;
+	std::vector<std::map<unsigned, unsigned> > stat_counter;
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
 	std::vector<std::map<unsigned, unsigned> > stat_adder;
@@ -322,12 +324,14 @@ int main( int argc, char *argv[] )
 		std::map<unsigned,unsigned> blockFFM0;
 		std::map<unsigned,unsigned> blockFFM1;
 		std::map<unsigned,unsigned> blockFFM2;
+		std::map<unsigned,unsigned> counters;
 		SEQUENTIAL::cascadingFF(ckt, 1, casFFM1);
 		SEQUENTIAL::cascadingFF(ckt, 2, casFFM2);
 		SEQUENTIAL::cascadingFF(ckt, 3, casFFM3);
 		SEQUENTIAL::blockFF(ckt, 0, blockFFM0);
 		SEQUENTIAL::blockFF(ckt, 1, blockFFM1);
 		SEQUENTIAL::blockFF(ckt, 2, blockFFM2);
+		SEQUENTIAL::counterIdentification(ckt, counters);
 
 		stat_cascadeFFM1.push_back(casFFM1);
 		stat_cascadeFFM2.push_back(casFFM2);
@@ -335,6 +339,8 @@ int main( int argc, char *argv[] )
 		stat_blockFFM0.push_back(blockFFM0);
 		stat_blockFFM1.push_back(blockFFM1);
 		stat_blockFFM2.push_back(blockFFM2);
+		stat_counter.push_back(counters);
+		
 
 		//Begin conversion to AIG
 		AIG* aigraph = new AIG();
@@ -656,7 +662,7 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
-	/*	
+
 		printf("\nCarry\n");
 		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
@@ -666,7 +672,7 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		}
 
-*/
+/*
 		std::map<unsigned, unsigned>::iterator iCount;
 		printf("Special Cut FF Input size Count\n");
 		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
@@ -676,6 +682,7 @@ int main( int argc, char *argv[] )
 		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
 			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
 		}
+		*/
 
 
 
@@ -780,11 +787,15 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() || stat_muxAgg[k].find(2)== stat_muxAgg[k].end()){
-				printf("%10s", "-0.000");
-				continue;
+			double sim;
+			if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() && stat_muxAgg[k].find(2)== stat_muxAgg[k].end())
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() || stat_muxAgg[k].find(2)== stat_muxAgg[k].end()){
+				sim = 0.00;
 			}
-			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
+			else
+				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
+
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -805,11 +816,14 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() || stat_muxAgg[k].find(3)== stat_muxAgg[k].end()){
-				printf("%10s", "-0.000");
-				continue;
-			}
-			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
+			double sim; 
+			if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() && stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() || stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
+				sim = 0.00;
+			else
+				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
+
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
@@ -830,19 +844,22 @@ int main( int argc, char *argv[] )
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() || stat_muxAgg[k].find(4)== stat_muxAgg[k].end() ){
-				printf("%10s", "-0.000");
-				continue;
-			}
-			double sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
+			double sim;
+			if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() && stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() || stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
+				sim = 0.00;
+			else
+				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
+
 			simTable[i][k].push_back(sim);
 			printf("%10.3f", sim*100);
 		}
 		printf("\n");
 	}
 
-	printf("\n[MAINDB] -- Calculating similarity for Register fingerprint\n");
-	calculateSimilarity(name, stat_reg, simTable);
+	//printf("\n[MAINDB] -- Calculating similarity for Register fingerprint\n");
+	//calculateSimilarity(name, stat_reg, simTable);
 
 	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
@@ -873,6 +890,10 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_cascadeFFM2, simTable);
 	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
 	calculateSimilarity(name, stat_cascadeFFM3, simTable);
+
+
+	printf("\n[MAINDB] -- Calculating similarity Counter identification: 3\n");
+	calculateSimilarity(name, stat_counter, simTable);
 
 	printf("\n***********************************************************************\n");
 
@@ -1044,26 +1065,29 @@ void calculateSimilarity(std::vector<std::string>& name,
 	std::vector<std::map<unsigned, unsigned> >& fingerprint,
 	std::vector<std::vector< std::vector<double> > >& simTable){
 
-/*
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
-	*/
 
 	for(unsigned int i = 0; i < name.size(); i++){
-		//int lastSlashIndex = name[i].find_last_of("/") + 1;
-		//printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 
 		for(unsigned int k = 0; k < name.size(); k++){
-			double sim = SIMILARITY::tanimotoWindow(fingerprint[i], fingerprint[k]);
-			if(sim >= 0.00)
-				simTable[i][k].push_back(sim);
-			//printf("%10.3f", sim*100);
+
+			double sim;
+			if(fingerprint[i].size() == 0 and fingerprint[k].size() == 0)
+				sim = 1.00;
+			else
+				sim = SIMILARITY::tanimotoWindow(fingerprint[i], fingerprint[k]);
+
+			simTable[i][k].push_back(sim);
+			printf("%10.3f", sim*100);
 		}
-		//printf("\n");
+		printf("\n");
 	}
 }
 
