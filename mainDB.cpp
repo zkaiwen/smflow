@@ -53,6 +53,10 @@ void calculateSimilarity(std::vector<std::string>& name,
 	std::vector<std::map<unsigned, unsigned> >& fingerprint,
 	std::vector<std::vector< std::vector<double> > >& simTable);
 
+void calculateSimilarity_size(std::vector<std::string>& name, 
+	std::vector<std::map<unsigned, unsigned> >& fingerprint,
+	std::vector<std::vector< std::vector<double> > >& simTable);
+
 
 int main( int argc, char *argv[] )
 {
@@ -148,6 +152,8 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM0;
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM1;
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM2;
+	
+	std::vector<std::map<unsigned, unsigned> > stat_parity;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -481,6 +487,11 @@ int main( int argc, char *argv[] )
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
+		std::map<unsigned, unsigned> parityResult;
+		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
+		stat_parity.push_back(parityResult);
+
+
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
 		//4-1         8 bit       2 of them
 		//mux size, array size, count 
@@ -670,6 +681,11 @@ int main( int argc, char *argv[] )
 		printf("\nCarryAgg\n");
 		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++){
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+		}
+		
+		printf("\nParity\n");
+		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++){
+			printf("\t%d-Bit parity tree...\t\t%d\n", iMap->first, iMap->second);
 		}
 
 /*
@@ -863,7 +879,6 @@ int main( int argc, char *argv[] )
 
 	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
-
 	printf("\n[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountFF, simTable);
 
@@ -871,7 +886,6 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_adder, simTable);
 	printf("\n[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
 	calculateSimilarity(name, stat_adderAgg, simTable);
-	
 	printf("\n[MAINDB] -- Calculating similarity carry aggregation\n");
 	calculateSimilarity(name, stat_carry, simTable);
 	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
@@ -890,7 +904,6 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_cascadeFFM2, simTable);
 	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
 	calculateSimilarity(name, stat_cascadeFFM3, simTable);
-
 
 	printf("\n[MAINDB] -- Calculating similarity Counter identification: 3\n");
 	calculateSimilarity(name, stat_counter, simTable);
@@ -947,53 +960,112 @@ int main( int argc, char *argv[] )
 	}
 	printf("\n");
 
-	/*printf("\n\n%-12s", "Ecdn Distance");
-	  for(unsigned int i = 0; i < name.size(); i++){
-	  int lastSlashIndex = name[i].find_last_of("/") + 1;
-	  printf("%12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	  }
-	  printf("\n");
+	simTable.clear();
+	simTable.reserve(name.size());
+	for(unsigned int i = 0; i < name.size(); i++){
+		std::vector<std::vector<double> > sim(name.size());
+		simTable.push_back(sim);
+	}
+	
+	for(unsigned int i = 0; i < name.size(); i++){
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim;
+			if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() && stat_muxAgg[k].find(2)== stat_muxAgg[k].end())
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() || stat_muxAgg[k].find(2)== stat_muxAgg[k].end()){
+				sim = 0.00;
+			}
+			else
+				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
 
-	  for(unsigned int i = 0; i < name.size(); i++){
-	  int lastSlashIndex = name[i].find_last_of("/") + 1;
-	  printf("%-12s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+			simTable[i][k].push_back(sim);
+		}
+	}
 
-	  std::vector<double> f1;
-	  f1.reserve(14);
-	  f1.push_back((double)stat_numInput[i]);
-	  f1.push_back((double)count[i]);
-	  f1.push_back((double)stat_aigSize[i]);
-	  f1.push_back((double)stat_ffSize[i]);
-	  f1.push_back((double)stat_numMux[i]);
-	  f1.push_back((double)stat_numReg[i]);
-	  f1.push_back((double)stat_addAgg[i][0]);
-	  f1.push_back((double)stat_addAgg[i][1]);
-	  f1.push_back((double)stat_addAgg[i][2]);
-	  f1.push_back((double)stat_dspSize[i]);
-	  f1.push_back((double)stat_numFFFeedback[i]);
+	for(unsigned int i = 0; i < name.size(); i++){
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim; 
+			if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() && stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() || stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
+				sim = 0.00;
+			else
+				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
 
-	  for(unsigned int k = 0; k < name.size(); k++){
-	  std::vector<double> f2;
-	  f2.reserve(14);
-	  f2.push_back((double)stat_numInput[k]);
-	  f2.push_back((double)count[k]);
-	  f2.push_back((double)stat_aigSize[k]);
-	  f2.push_back((double)stat_ffSize[k]);
-	  f2.push_back((double)stat_numMux[k]);
-	  f2.push_back((double)stat_numReg[k]);
-	  f2.push_back((double)stat_addAgg[k][0]);
-	  f2.push_back((double)stat_addAgg[k][1]);
-	  f2.push_back((double)stat_addAgg[k][2]);
-	  f2.push_back((double)stat_dspSize[k]);
-	  f2.push_back((double)stat_numFFFeedback[k]);
+			simTable[i][k].push_back(sim);
+		}
+	}
 
-	  double sim = SIMILARITY::euclideanDistance(f1, f2);
-	  printf("%12.3f", sim);
-	  }
-	  printf("\n");
+	for(unsigned int i = 0; i < name.size(); i++){
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim;
+			if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() && stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
+				sim = 1.00;
+			else if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() || stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
+				sim = 0.00;
+			else
+				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
 
-	  }
-	 */
+			simTable[i][k].push_back(sim);
+		}
+	}
+
+	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
+	calculateSimilarity_size(name, stat_spCutCountOut, simTable);
+	printf("\n[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
+	calculateSimilarity_size(name, stat_spCutCountFF, simTable);
+
+	printf("\n[MAINDB] -- Calculating similarity Adder aggregation\n");
+	calculateSimilarity_size(name, stat_adder, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
+	calculateSimilarity_size(name, stat_adderAgg, simTable);
+	printf("\n[MAINDB] -- Calculating similarity carry aggregation\n");
+	calculateSimilarity_size(name, stat_carry, simTable);
+	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
+	calculateSimilarity_size(name, stat_carryAgg, simTable);
+
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M0\n");
+	calculateSimilarity_size(name, stat_blockFFM0, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M1\n");
+	calculateSimilarity_size(name, stat_blockFFM1, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential block M2\n");
+	calculateSimilarity_size(name, stat_blockFFM2, simTable);
+	
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
+	calculateSimilarity_size(name, stat_cascadeFFM1, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
+	calculateSimilarity_size(name, stat_cascadeFFM2, simTable);
+	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
+	calculateSimilarity_size(name, stat_cascadeFFM3, simTable);
+
+	printf("\n[MAINDB] -- Calculating similarity Counter identification: 3\n");
+	calculateSimilarity_size(name, stat_counter, simTable);
+
+	printf("Excel Format Size\n");
+	printf("Circuits\t");
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%s\t", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+	}
+	printf("\n");
+
+	for(unsigned int i = 0; i < name.size(); i++){
+		int lastSlashIndex = name[i].find_last_of("/") + 1;
+		printf("%s\t", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sum = 0.0;
+			for(unsigned int q = 0; q < simTable[i][k].size(); q++){
+				sum += simTable[i][k][q];
+			}
+
+			printf("%.3f\t", (sum/simTable[i][k].size())*100.0);
+
+		}
+		printf("\n");
+	}
+	printf("\n");
+
 	//std::cout<<"\033[1;4;31m"<<"BLUE TEXT"<<"\033[0m"<<std::endl;
 
 
@@ -1092,4 +1164,22 @@ void calculateSimilarity(std::vector<std::string>& name,
 }
 
 
+
+
+void calculateSimilarity_size(std::vector<std::string>& name, 
+	std::vector<std::map<unsigned, unsigned> >& fingerprint,
+	std::vector<std::vector< std::vector<double> > >& simTable){
+
+	for(unsigned int i = 0; i < name.size(); i++){
+		for(unsigned int k = 0; k < name.size(); k++){
+			double sim;
+			if(fingerprint[i].size() == 0 and fingerprint[k].size() == 0)
+				sim = 1.00;
+			else
+				sim = SIMILARITY::tanimotoWindow_size(fingerprint[i], fingerprint[k]);
+
+			simTable[i][k].push_back(sim);
+		}
+	}
+}
 #endif

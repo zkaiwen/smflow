@@ -12,6 +12,91 @@
 
 #include "aggregation.hpp"
 
+void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, unsigned>& result){
+	//Get the hashmap of circuit names to function tt
+	std::map<unsigned long long, std::string>::iterator it;
+	std::map<unsigned long long, std::string> hmap;
+	cf->getHashMap(hmap);
+
+	//Find all adder bitslices 
+	std::vector<unsigned long long> xorFunction;
+	printf(" * Parsing function database for half adder components...\n");
+
+	for(it = hmap.begin(); it!=hmap.end(); it++){
+		if(it->second.find("xor") != std::string::npos)
+			xorFunction.push_back(it->first);
+	}
+
+
+
+	//Get the map for function tt and every set of input and output with that function
+	//Function, Vector of every set of inputs with that function. Last item is the output node
+	std::map<unsigned long long, std::vector<InOut*> > pmap;
+	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+	cf->getPortMap(pmap);
+	
+
+	std::map<unsigned, InOut*> outInMap;
+	std::map<unsigned, InOut*>::iterator iMap;
+	for(unsigned int i = 0; i < xorFunction.size(); i++){
+		iPMAP = pmap.find(xorFunction[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++)
+				outInMap[iPMAP->second[j]->output] = iPMAP->second[j];
+		}
+	}
+
+
+	std::set<unsigned>::iterator iSet;
+	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+		printf("OUTPUT: %3d\t\tINPUT: ", iMap->first);
+		for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++){
+			printf("%d ", *iSet);
+		}
+		printf("\n");
+	}
+
+
+
+	std::map<unsigned, unsigned>::iterator iResult;
+	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+		std::set<unsigned> inputParity;
+		DFS_parity(outInMap, iMap->first, inputParity);
+
+		if(inputParity.size()>2){
+			printf("POSSIBLE PARITY TREE: SIZE: %3d:\tOUTPUT: %3d\t",(int) inputParity.size(), iMap->first);
+			for(iSet = inputParity.begin(); iSet != inputParity.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+
+			result.find(inputParity.size());
+			if(iResult == result.end()) result[inputParity.size()] = 1;
+			else iResult->second++;
+		}
+	}
+}
+
+void AGGREGATION::DFS_parity(std::map<unsigned, InOut*>& outInMap, unsigned start, std::set<unsigned>& inputParity){
+	std::map<unsigned, InOut*>::iterator iMap;
+	iMap = outInMap.find(start);
+
+	std::set<unsigned>::iterator iSet;
+	for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++){
+		//See if the input is another xor gate	
+		if(outInMap.find(*iSet) != outInMap.end()){
+			DFS_parity(outInMap, *iSet, inputParity);
+		}
+		else{
+			inputParity.insert(*iSet);
+		}
+	}
+}
+
+
+
+
+
+
 
 /*#############################################################################
  *

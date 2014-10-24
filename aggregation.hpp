@@ -1,13 +1,13 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@ 
-  @
-  @  AGGREGATION.hpp
-  @		--Aggregates Common components into higher structures
-  @  
-  @  @AUTHOR:Kevin Zeng
-  @  Copyright 2012 – 2013 
-  @  Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@  AGGREGATION.hpp
+	@		--Aggregates Common components into higher structures
+	@  
+	@  @AUTHOR:Kevin Zeng
+	@  Copyright 2012 – 2013 
+	@  Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef AGG_GUARD
 #define AGG_GUARD
@@ -119,11 +119,16 @@ namespace AGGREGATION{
 	unsigned int findMux_Orig(CutFunction* , AIG* , std::vector<unsigned int>& );
 	unsigned int findMux(CutFunction* , AIG* , std::vector<unsigned int>& );
 
-
-
 	int findNegInput(AIG* , unsigned , std::vector<unsigned>& );
 	bool isInputNeg(AIG* , unsigned , unsigned );
 
+	/*#############################################################################
+	 *
+	 * 	 MUX AGGREGATION 
+	 *
+	 *#############################################################################*/
+	void findParityTree(CutFunction*, AIG*, std::map<unsigned, unsigned>&);
+	void DFS_parity(std::map<unsigned, InOut*>& , unsigned , std::set<unsigned>& );
 
 }
 
