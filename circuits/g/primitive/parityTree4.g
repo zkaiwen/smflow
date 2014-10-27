@@ -1,5 +1,5 @@
 25
-2 0 I0 1 I1 9 I2 10 I3
+4 0 I0 1 I1 9 I2 10 I3
 1 24 O
 0 IN name 0 2 3 O 2 O
 1 IN name 0 2 4 O 2 O
@@ -25,4 +25,4 @@
 21 ANDX name 2 19 I0 20 I1 1 23 O
 22 INV name 1 18 I0 1 24 O
 23 INV name 1 21 I0 1 24 O
-24 ANDX name 2 22 I0 23 I1 0  
+24 ANDX name 2 22 I0 23 I1 0

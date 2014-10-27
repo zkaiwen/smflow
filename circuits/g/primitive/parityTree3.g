@@ -9,7 +9,7 @@
 5 ANDX name 2 3 I0 4 I1 1 7 O
 6 INV name 1 2 I0 1 8 O
 7 INV name 1 5 I0 1 8 O
-8 ANDX name 2 7 I0 6 I1 10 O 11 O  
+8 ANDX name 2 7 I0 6 I1 2 10 O 11 O  
 9 IN name 0 2 10 O 12 O
 10 ANDX name 2 8 I0 9 I1 1 14 O
 11 INV name 1 8 I0  1 13 O
