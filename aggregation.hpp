@@ -128,7 +128,7 @@ namespace AGGREGATION{
 	 *
 	 *#############################################################################*/
 	void findParityTree(CutFunction*, AIG*, std::map<unsigned, unsigned>&);
-	void DFS_parity(std::map<unsigned, InOut*>& , unsigned , std::set<unsigned>& );
+	void DFS_parity(std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
 
 }
 

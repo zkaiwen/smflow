@@ -890,6 +890,9 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_carry, simTable);
 	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
+	
+	printf("\n[MAINDB] -- Calculating similarity of parity tree aggregation\n");
+	calculateSimilarity(name, stat_parity, simTable);
 
 	printf("\n[MAINDB] -- Calculating similarity Sequential block M0\n");
 	calculateSimilarity(name, stat_blockFFM0, simTable);
@@ -1010,35 +1013,38 @@ int main( int argc, char *argv[] )
 		}
 	}
 
-	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
+	printf("\n[MAINDB] -- Calculating similarity for of Output Output input dependency size\n");
 	calculateSimilarity_size(name, stat_spCutCountOut, simTable);
-	printf("\n[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
+	printf("\n[MAINDB] -- Calculating similarity for of FF FF input dependency size\n");
 	calculateSimilarity_size(name, stat_spCutCountFF, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Adder aggregation\n");
+	printf("\n[MAINDB] -- Calculating similarity of Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adder, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
+	printf("\n[MAINDB] -- Calculating similarity of Combined Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adderAgg, simTable);
-	printf("\n[MAINDB] -- Calculating similarity carry aggregation\n");
+	printf("\n[MAINDB] -- Calculating similarity of carry aggregation\n");
 	calculateSimilarity_size(name, stat_carry, simTable);
-	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
+	printf("\n[MAINDB] -- Calculating similarity of combined carry aggregation\n");
 	calculateSimilarity_size(name, stat_carryAgg, simTable);
+	
+	printf("\n[MAINDB] -- Calculating similarity of parity tree aggregation\n");
+	calculateSimilarity_size(name, stat_parity, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M0\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential block M0\n");
 	calculateSimilarity_size(name, stat_blockFFM0, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M1\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential block M1\n");
 	calculateSimilarity_size(name, stat_blockFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M2\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential block M2\n");
 	calculateSimilarity_size(name, stat_blockFFM2, simTable);
 	
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 1\n");
 	calculateSimilarity_size(name, stat_cascadeFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 2\n");
 	calculateSimilarity_size(name, stat_cascadeFFM2, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
+	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 3\n");
 	calculateSimilarity_size(name, stat_cascadeFFM3, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Counter identification: 3\n");
+	printf("\n[MAINDB] -- Calculating similarity of Counter identification: 3\n");
 	calculateSimilarity_size(name, stat_counter, simTable);
 
 	printf("Excel Format Size\n");
@@ -1137,16 +1143,20 @@ void calculateSimilarity(std::vector<std::string>& name,
 	std::vector<std::map<unsigned, unsigned> >& fingerprint,
 	std::vector<std::vector< std::vector<double> > >& simTable){
 
+/*
 	printf("%-10s", "Circuits");
 	for(unsigned int i = 0; i < name.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 	}
 	printf("\n");
+	*/
 
 	for(unsigned int i = 0; i < name.size(); i++){
+		/*
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		*/
 
 		for(unsigned int k = 0; k < name.size(); k++){
 
@@ -1157,9 +1167,9 @@ void calculateSimilarity(std::vector<std::string>& name,
 				sim = SIMILARITY::tanimotoWindow(fingerprint[i], fingerprint[k]);
 
 			simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
+			//printf("%10.3f", sim*100);
 		}
-		printf("\n");
+		//printf("\n");
 	}
 }
 

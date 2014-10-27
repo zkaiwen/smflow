@@ -20,11 +20,23 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 
 	//Find all adder bitslices 
 	std::vector<unsigned long long> xorFunction;
+	std::vector<unsigned long long> parity3;
+	std::vector<unsigned long long> parity4;
+	std::vector<unsigned long long> parity5;
+	std::vector<unsigned long long> parity6;
 	printf(" * Parsing function database for half adder components...\n");
 
 	for(it = hmap.begin(); it!=hmap.end(); it++){
 		if(it->second.find("xor") != std::string::npos)
 			xorFunction.push_back(it->first);
+		if(it->second.find("Tree3") != std::string::npos)
+			parity3.push_back(it->first);
+		if(it->second.find("Tree4") != std::string::npos)
+			parity4.push_back(it->first);
+		if(it->second.find("Tree5") != std::string::npos)
+			parity5.push_back(it->first);
+		if(it->second.find("Tree6") != std::string::npos)
+			parity6.push_back(it->first);
 	}
 
 
@@ -35,53 +47,158 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	cf->getPortMap(pmap);
 	
+	/*
+	printf("\nTREE3\n");
+	printIO(pmap, parity3);
+	printf("\nTREE4\n");
+	printIO(pmap, parity4);
+	printf("\nTREE5\n");
+	printIO(pmap, parity5);
+	printf("\nTREE6\n");
+	printIO(pmap, parity6);
+	printf("\nXOR\n");
+	printIO(pmap, xorFunction);
+	*/
+	
 
-	std::map<unsigned, InOut*> outInMap;
-	std::map<unsigned, InOut*>::iterator iMap;
-	for(unsigned int i = 0; i < xorFunction.size(); i++){
-		iPMAP = pmap.find(xorFunction[i]);
+	std::map<unsigned, std::list<InOut*> > outInMap;
+	std::map<unsigned, std::list<InOut*> >::iterator iMap;
+	for(unsigned int i = 0; i < parity6.size(); i++){
+		iPMAP = pmap.find(parity6[i]);
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++)
-				outInMap[iPMAP->second[j]->output] = iPMAP->second[j];
+				outInMap[iPMAP->second[j]->output].push_back(iPMAP->second[j]);
 		}
 	}
 
+	std::set<unsigned> curmarked;
+	for(unsigned int i = 0; i < parity5.size(); i++){
+		iPMAP = pmap.find(parity5[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+				int outnode = iPMAP->second[j]->output;
+					outInMap[outnode].push_back(iPMAP->second[j]);
+			}
+		}
+	}
+	curmarked.clear();
+
+	for(unsigned int i = 0; i < parity4.size(); i++){
+		iPMAP = pmap.find(parity4[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+				int outnode = iPMAP->second[j]->output;
+					outInMap[outnode].push_back(iPMAP->second[j]);
+			}
+		}
+	}
+	curmarked.clear();
+
+	for(unsigned int i = 0; i < parity3.size(); i++){
+		iPMAP = pmap.find(parity3[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+				int outnode = iPMAP->second[j]->output;
+					outInMap[outnode].push_back(iPMAP->second[j]);
+			}
+		}
+	}
+	curmarked.clear();
+
+	for(unsigned int i = 0; i < xorFunction.size(); i++){
+		iPMAP = pmap.find(xorFunction[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+				int outnode = iPMAP->second[j]->output;
+					outInMap[outnode].push_back(iPMAP->second[j]);
+			}
+		}
+	}
+	curmarked.clear();
+
+
+
+
+
 
 	std::set<unsigned>::iterator iSet;
+	std::list<InOut*>::iterator iList;
+	/*
 	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
-		printf("OUTPUT: %3d\t\tINPUT: ", iMap->first);
-		for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++){
-			printf("%d ", *iSet);
+		printf("OUTPUT: %3d\n", iMap->first);
+		for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
+			printf("\tINPUT: ");
+			for(iSet = (*iList)->input.begin(); iSet != (*iList)->input.end(); iSet++){
+				printf("%d ", *iSet);
+			}
+			printf("\n");
+
 		}
-		printf("\n");
+	}
+	*/
+	
+	
+	std::map<unsigned, std::set<unsigned> > outInMapReduce;
+	std::map<unsigned, std::set<unsigned> >::iterator iMapR;
+	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+		if(iMap->second.size() > 1){
+			std::set<unsigned> inputSet;
+			for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
+				for(iSet = (*iList)->input.begin(); iSet != (*iList)->input.end(); iSet++)
+					inputSet.insert(*iSet);
+			}
+			std::set<unsigned> inputSet_orig = inputSet;
+			std::map<unsigned, std::set<unsigned> > inputNodeTable;
+			reduceInputContainment(aig, inputSet, inputNodeTable);
+
+
+
+/*
+			printf("OUTPUT: %3d\n", iMap->first);
+			printf("\tREDUCE INPUT: ");
+			for(iSet = inputSet.begin(); iSet != inputSet.end(); iSet++){
+				printf("%d ", *iSet);
+				if(inputSet_orig.find(*iSet) == inputSet_orig.end()){
+					printf("\nUnknown input\n");
+				}
+			}
+			printf("\n");
+			*/
+
+			outInMapReduce[iMap->first] = inputSet;
+		}
+		else
+			outInMapReduce[iMap->first] = iMap->second.front()->input;
 	}
 
 
 
 	std::map<unsigned, unsigned>::iterator iResult;
-	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+	for(iMapR = outInMapReduce.begin(); iMapR != outInMapReduce.end(); iMapR++){
 		std::set<unsigned> inputParity;
-		DFS_parity(outInMap, iMap->first, inputParity);
+		DFS_parity(outInMapReduce, iMapR->first, inputParity);
 
 		if(inputParity.size()>2){
-			printf("POSSIBLE PARITY TREE: SIZE: %3d:\tOUTPUT: %3d\t",(int) inputParity.size(), iMap->first);
+			/*
+			printf("POSSIBLE PARITY TREE: SIZE: %3d:\tOUTPUT: %3d\t",(int) inputParity.size(), iMapR->first);
 			for(iSet = inputParity.begin(); iSet != inputParity.end(); iSet++)
 				printf("%d ", *iSet);
 			printf("\n");
+			*/
 
-			result.find(inputParity.size());
+			iResult = result.find(inputParity.size());
 			if(iResult == result.end()) result[inputParity.size()] = 1;
-			else iResult->second++;
+			else iResult->second = iResult->second + 1;
 		}
 	}
 }
 
-void AGGREGATION::DFS_parity(std::map<unsigned, InOut*>& outInMap, unsigned start, std::set<unsigned>& inputParity){
-	std::map<unsigned, InOut*>::iterator iMap;
+void AGGREGATION::DFS_parity(std::map<unsigned, std::set<unsigned> >& outInMap, unsigned start, std::set<unsigned>& inputParity){
+	std::map<unsigned, std::set<unsigned> >::iterator iMap;
 	iMap = outInMap.find(start);
 
 	std::set<unsigned>::iterator iSet;
-	for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++){
+	for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++){
 		//See if the input is another xor gate	
 		if(outInMap.find(*iSet) != outInMap.end()){
 			DFS_parity(outInMap, *iSet, inputParity);
@@ -678,7 +795,7 @@ bool AGGREGATION::adderAggregation3_verify(AIG* aig,
 	while(iListOut != addOut.end()){
 		if(!verify_adder_set(aig, sumNodes, *iListIn, *iListOut)){
 			printf("VERIFICATION FAILED\n");
-			exit(1);
+			//exit(1);
 			return false;
 		}
 
@@ -2765,16 +2882,21 @@ void AGGREGATION::findMux2(CutFunction* cf, AIG* aigraph, std::map<unsigned,std:
 			   printf("\n");
 			 */
 
-			if(sizeCountMap[iStats->first].find(iCount->second) == sizeCountMap[iStats->first].end())
-				sizeCountMap[iStats->first][iCount->second] = 1;
-			else
-				sizeCountMap[iStats->first][iCount->second]++;
+			if(iCount->second > 1){
+				if(sizeCountMap[iStats->first].find(iCount->second) == sizeCountMap[iStats->first].end())
+					sizeCountMap[iStats->first][iCount->second] = 1;
+				else
+					sizeCountMap[iStats->first][iCount->second]++;
+			}
 		}
+
+		if(sizeCountMap[iStats->first].size() == 0)
+			sizeCountMap.erase(iStats->first);
 	}
 
+	/*
 	std::map<unsigned,std::map<unsigned, unsigned> >::iterator iMapM;
 	std::map<unsigned,unsigned>::iterator iMap;
-	/*
 	   for(iMapM = sizeCountMap.begin(); iMapM != sizeCountMap.end(); iMapM++){
 
 	   printf("\t%d-1 MUX:\n", iMapM->first);
