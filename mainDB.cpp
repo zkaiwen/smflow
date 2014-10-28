@@ -129,7 +129,6 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned int> stat_numFFFeedback;
 
 	//Mux Type (2-1, 4-1), mux size (2bit, 4bit), count
-	std::vector<std::map<unsigned, std::map<unsigned, unsigned> > >  stat_muxAgg;
 	std::vector<std::map<unsigned, unsigned> >  stat_decAgg;
 	std::vector<std::vector<unsigned> >  stat_addAgg;
 
@@ -137,6 +136,10 @@ int main( int argc, char *argv[] )
 	std::vector<float> stat_fingerprintTime;
 
 	//size/count
+	std::vector<std::map<unsigned, unsigned> > stat_mux2;
+	std::vector<std::map<unsigned, unsigned> > stat_mux3;
+	std::vector<std::map<unsigned, unsigned> > stat_mux4;
+
 	std::vector<std::map<unsigned, unsigned> > stat_reg;
 	std::vector<std::map<unsigned, unsigned> > stat_counter;
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountFF; 
@@ -490,19 +493,26 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> parityResult;
 		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
 		stat_parity.push_back(parityResult);
+		
+		std::map<unsigned, unsigned> gateResult;
+		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
 
 
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
-		//4-1         8 bit       2 of them
-		//mux size, array size, count 
-		std::map<unsigned,std::map<unsigned, unsigned> > muxResult;
-		AGGREGATION::findMux2(functionCalc, aigraph, muxResult);
+
+		//mux size, count 
+		std::map<unsigned, unsigned> muxResult2;
+		std::map<unsigned, unsigned> muxResult3;
+		std::map<unsigned, unsigned> muxResult4;
+		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4);
 
 		//std::vector<unsigned int> muxResult1;
 		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
 		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
 		gettimeofday(&mux_e, NULL);//------------------------------------------
-		stat_muxAgg.push_back(muxResult);		
+		stat_mux2.push_back(muxResult2);		
+		stat_mux3.push_back(muxResult3);		
+		stat_mux4.push_back(muxResult4);		
 
 
 
@@ -644,49 +654,50 @@ int main( int argc, char *argv[] )
 
 		int totalMux = 0;
 		int totalReg = 0;
-		for(iMapM = stat_muxAgg[i].begin(); iMapM != stat_muxAgg[i].end(); iMapM++){
-
-			printf("\t%d-1 MUX:\n", iMapM->first);
-			for(iMap = iMapM->second.begin(); iMap != iMapM->second.end(); iMap++){
-				printf("\t\t%4d-Bit Mux %7d\n", iMap->first, iMap->second);
-				totalMux+=iMap->second;
-			}
+		printf("\n2-1 MUX:\n");
+		std::map<unsigned, unsigned>::iterator iMap;
+		for(iMap = stat_mux2[i].begin(); iMap != stat_mux2[i].end(); iMap++){
+			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
+			totalMux+=iMap->second;
+		}
+		printf("\n3-1 MUX:\n");
+		for(iMap = stat_mux3[i].begin(); iMap != stat_mux3[i].end(); iMap++){
+			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
+			totalMux+=iMap->second;
+		}
+		printf("\n4-1 MUX:\n");
+		for(iMap = stat_mux4[i].begin(); iMap != stat_mux4[i].end(); iMap++){
+			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
+			totalMux+=iMap->second;
 		}
 
-		for(iMap = stat_reg[i].begin(); iMap != stat_reg[i].end(); iMap++)
-		{
+		printf("\nregisters\n");
+		for(iMap = stat_reg[i].begin(); iMap != stat_reg[i].end(); iMap++){
 			printf("\t%d-bit Reg %7d\n", iMap->first, iMap->second);
 			totalReg+=iMap->second;
 		}
 
 		printf("\nDecoders\n");
-		std::map<unsigned, unsigned>::iterator iMap;
-		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++){
+		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++)
 			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
-		}
 
 		printf("\nAdders\n");
-		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++){
+		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-		}
 		printf("\nAdderAgg\n");
-		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++){
+		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-		}
 
 		printf("\nCarry\n");
-		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++){
+		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-		}
 		printf("\nCarryAgg\n");
-		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++){
+		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-		}
 		
 		printf("\nParity\n");
-		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++){
+		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++)
 			printf("\t%d-Bit parity tree...\t\t%d\n", iMap->first, iMap->second);
-		}
 
 /*
 		std::map<unsigned, unsigned>::iterator iCount;
@@ -789,126 +800,48 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- Print similarity results 
 	//**************************************************************************
-	printf("\nMULTIPLEXOR SIMILARITY MATRIX 2-1\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim;
-			if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() && stat_muxAgg[k].find(2)== stat_muxAgg[k].end())
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() || stat_muxAgg[k].find(2)== stat_muxAgg[k].end()){
-				sim = 0.00;
-			}
-			else
-				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
-
-			simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
-
-	printf("\nMULTIPLEXOR SIMILARITY MATRIX 3-1\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim; 
-			if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() && stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() || stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
-				sim = 0.00;
-			else
-				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
-
-			simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
-
-	printf("\nMULTIPLEXOR SIMILARITY MATRIX 4-1\n");
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-
-	for(unsigned int i = 0; i < name.size(); i++){
-
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim;
-			if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() && stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() || stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
-				sim = 0.00;
-			else
-				sim = SIMILARITY::tanimotoWindow(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
-
-			simTable[i][k].push_back(sim);
-			printf("%10.3f", sim*100);
-		}
-		printf("\n");
-	}
+	printf("[MAINDB] -- Calculating similarity for 2-1 Multiplexors\n");
+	calculateSimilarity(name, stat_mux2, simTable);
+	printf("[MAINDB] -- Calculating similarity for 3-1 Multiplexors\n");
+	calculateSimilarity(name, stat_mux3, simTable);
+	printf("[MAINDB] -- Calculating similarity for 4-1 Multiplexors\n");
+	calculateSimilarity(name, stat_mux4, simTable);
 
 	//printf("\n[MAINDB] -- Calculating similarity for Register fingerprint\n");
 	//calculateSimilarity(name, stat_reg, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
+	printf("[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
-	printf("\n[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
+	printf("[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountFF, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Adder aggregation\n");
+	printf("[MAINDB] -- Calculating similarity Adder aggregation\n");
 	calculateSimilarity(name, stat_adder, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
+	printf("[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
 	calculateSimilarity(name, stat_adderAgg, simTable);
-	printf("\n[MAINDB] -- Calculating similarity carry aggregation\n");
+	printf("[MAINDB] -- Calculating similarity carry aggregation\n");
 	calculateSimilarity(name, stat_carry, simTable);
-	printf("\n[MAINDB] -- Calculating similarity combined carry aggregation\n");
+	printf("[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
 	
-	printf("\n[MAINDB] -- Calculating similarity of parity tree aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity(name, stat_parity, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M0\n");
+	printf("[MAINDB] -- Calculating similarity Sequential block M0\n");
 	calculateSimilarity(name, stat_blockFFM0, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M1\n");
+	printf("[MAINDB] -- Calculating similarity Sequential block M1\n");
 	calculateSimilarity(name, stat_blockFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential block M2\n");
+	printf("[MAINDB] -- Calculating similarity Sequential block M2\n");
 	calculateSimilarity(name, stat_blockFFM2, simTable);
 	
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
+	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
 	calculateSimilarity(name, stat_cascadeFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
+	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
 	calculateSimilarity(name, stat_cascadeFFM2, simTable);
 	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
 	calculateSimilarity(name, stat_cascadeFFM3, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity Counter identification: 3\n");
+	printf("[MAINDB] -- Calculating similarity Counter identification: 3\n");
 	calculateSimilarity(name, stat_counter, simTable);
 
 	printf("\n***********************************************************************\n");
@@ -969,82 +902,45 @@ int main( int argc, char *argv[] )
 		std::vector<std::vector<double> > sim(name.size());
 		simTable.push_back(sim);
 	}
-	
-	for(unsigned int i = 0; i < name.size(); i++){
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim;
-			if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() && stat_muxAgg[k].find(2)== stat_muxAgg[k].end())
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(2) == stat_muxAgg[i].end() || stat_muxAgg[k].find(2)== stat_muxAgg[k].end()){
-				sim = 0.00;
-			}
-			else
-				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(2), stat_muxAgg[k].at(2));
+	printf("[MAINDB] -- Calculating similarity for 2-1 Multiplexors\n");
+	calculateSimilarity_size(name, stat_mux2, simTable);
+	printf("[MAINDB] -- Calculating similarity for 3-1 Multiplexors\n");
+	calculateSimilarity_size(name, stat_mux3, simTable);
+	printf("[MAINDB] -- Calculating similarity for 4-1 Multiplexors\n");
+	calculateSimilarity_size(name, stat_mux4, simTable);
 
-			simTable[i][k].push_back(sim);
-		}
-	}
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim; 
-			if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() && stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(3) == stat_muxAgg[i].end() || stat_muxAgg[k].find(3)== stat_muxAgg[k].end())
-				sim = 0.00;
-			else
-				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(3), stat_muxAgg[k].at(3));
-
-			simTable[i][k].push_back(sim);
-		}
-	}
-
-	for(unsigned int i = 0; i < name.size(); i++){
-		for(unsigned int k = 0; k < name.size(); k++){
-			double sim;
-			if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() && stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
-				sim = 1.00;
-			else if(stat_muxAgg[i].find(4) == stat_muxAgg[i].end() || stat_muxAgg[k].find(4)== stat_muxAgg[k].end() )
-				sim = 0.00;
-			else
-				sim = SIMILARITY::tanimotoWindow_size(stat_muxAgg[i].at(4), stat_muxAgg[k].at(4));
-
-			simTable[i][k].push_back(sim);
-		}
-	}
-
-	printf("\n[MAINDB] -- Calculating similarity for of Output Output input dependency size\n");
+	printf("[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity_size(name, stat_spCutCountOut, simTable);
-	printf("\n[MAINDB] -- Calculating similarity for of FF FF input dependency size\n");
+	printf("[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
 	calculateSimilarity_size(name, stat_spCutCountFF, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity of Adder aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adder, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of Combined Adder aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of Combined Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adderAgg, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of carry aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of carry aggregation\n");
 	calculateSimilarity_size(name, stat_carry, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of combined carry aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of combined carry aggregation\n");
 	calculateSimilarity_size(name, stat_carryAgg, simTable);
 	
-	printf("\n[MAINDB] -- Calculating similarity of parity tree aggregation\n");
+	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity_size(name, stat_parity, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity of Sequential block M0\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential block M0\n");
 	calculateSimilarity_size(name, stat_blockFFM0, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of Sequential block M1\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential block M1\n");
 	calculateSimilarity_size(name, stat_blockFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of Sequential block M2\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential block M2\n");
 	calculateSimilarity_size(name, stat_blockFFM2, simTable);
 	
-	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 1\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 1\n");
 	calculateSimilarity_size(name, stat_cascadeFFM1, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 2\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 2\n");
 	calculateSimilarity_size(name, stat_cascadeFFM2, simTable);
-	printf("\n[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 3\n");
+	printf("[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 3\n");
 	calculateSimilarity_size(name, stat_cascadeFFM3, simTable);
 
-	printf("\n[MAINDB] -- Calculating similarity of Counter identification: 3\n");
+	printf("[MAINDB] -- Calculating similarity of Counter identification: 3\n");
 	calculateSimilarity_size(name, stat_counter, simTable);
 
 	printf("Excel Format Size\n");

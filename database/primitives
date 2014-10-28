@@ -7,11 +7,11 @@ circuits/g/primitive/haSum3bit.g
 circuits/g/primitive/haCarry3bit.g
 circuits/g/primitive/faSum3bit_CuT.g
 circuits/g/primitive/xor2.g
-circuits/g/primitive/or2.g
-circuits/g/primitive/or3.g
-circuits/g/primitive/or4.g
-circuits/g/primitive/or5.g
-circuits/g/primitive/or6.g
+circuits/g/primitive/and2.g
+circuits/g/primitive/and3.g
+circuits/g/primitive/and4.g
+circuits/g/primitive/and5.g
+circuits/g/primitive/and6.g
 circuits/g/primitive/parityTree3.g
 circuits/g/primitive/parityTree4.g
 circuits/g/primitive/parityTree5.g

@@ -115,7 +115,11 @@ namespace AGGREGATION{
 	 * 	 MUX AGGREGATION 
 	 *
 	 *#############################################################################*/
-	void findMux2(CutFunction* , AIG* , std::map<unsigned,std::map<unsigned, unsigned> >& );
+void findMux2(CutFunction* cf, 
+			AIG* aigraph, 
+			std::map<unsigned, unsigned>& result2, 
+			std::map<unsigned, unsigned>& result3, 
+			std::map<unsigned, unsigned>& result4);
 	unsigned int findMux_Orig(CutFunction* , AIG* , std::vector<unsigned int>& );
 	unsigned int findMux(CutFunction* , AIG* , std::vector<unsigned int>& );
 
@@ -124,12 +128,18 @@ namespace AGGREGATION{
 
 	/*#############################################################################
 	 *
-	 * 	 MUX AGGREGATION 
+	 * 	 PARITY AGGREGATION 
 	 *
 	 *#############################################################################*/
 	void findParityTree(CutFunction*, AIG*, std::map<unsigned, unsigned>&);
-	void DFS_parity(std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
+	void DFS_agg(std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
 
+	/*#############################################################################
+	 *
+	 * 	 GATE FUNCTION AGGREGATION 
+	 *
+	 *#############################################################################*/
+	void findGateFunction(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
 }
 
 
