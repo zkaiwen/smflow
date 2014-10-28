@@ -4,3 +4,6 @@ circuits/raw
 circuits/temp/b*
 circuits/g/*.g
 circuits/netlist
+database/db_*
+.*
+*.o
