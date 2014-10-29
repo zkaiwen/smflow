@@ -120,18 +120,65 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 		iMapR2 = iMapR;
 		iMapR2++;
 
+		//Set of nodes that are shared, list of iterators that need to be deleted
+		std::map<std::set<unsigned>, std::list<std::map<unsigned, std::set<unsigned> >::reverse_iterator> > singleMismatch;
+		std::map<std::set<unsigned>, std::list<std::map<unsigned, std::set<unsigned> >::reverse_iterator> >::iterator iMMisM;
+		std::list<std::map<unsigned, std::set<unsigned> >::reverse_iterator>::iterator iLMisM;
 		for(; iMapR2 != outInMapReduce.rend(); iMapR2++){
+			printf("COMPARING %d to %d\n", iMapR->first, iMapR2->first);
 			if(tobedeleted.find(iMapR2->first) != tobedeleted.end()) continue;
 
 			bool contained = true;
-			for(iSet = iMapR2->second.begin(); iSet != iMapR2->second.end(); iSet++)
+			int multipleMismatch= 0;
+			iMMisM = singleMismatch.find(iMapR2->second);
+			if(iMMisM != singleMismatch.end()){
+				for(iLMisM = iMMisM->second.begin(); iLMisM != iMMisM->second.end(); iLMisM++){
+					tobedeleted.insert((*iLMisM)->first);
+					printf("Delete: %d\n", (*iLMisM)->first);
+				}
+				tobedeleted.insert(iMapR->first);
+				printf("Delete: %d\n", iMapR->first);
+				continue;
+			}
+
+			std::set<unsigned> sameNodes;
+			for(iSet = iMapR2->second.begin(); iSet != iMapR2->second.end(); iSet++){
 				if(iMapR->second.find(*iSet) == iMapR->second.end()){
+					multipleMismatch++;
+					if(multipleMismatch > (int)iMapR->second.size()/2){
+						multipleMismatch = -1;
+						break;
+					}
+
 					contained = false;
+				}
+				else
+					sameNodes.insert(*iSet);
+			}
+
+			if(contained){
+				if(singleMismatch.size() == 0)	{
+					printf("Delete FULLY CONTAINED: %d\n", iMapR2->first);
+					tobedeleted.insert(iMapR2->first);
+
+				}
+				else{
+					for(iMMisM = singleMismatch.begin(); iMMisM != singleMismatch.begin(); iMMisM++){
+						for(iLMisM = iMMisM->second.begin(); iLMisM != iMMisM->second.end(); iLMisM++){
+							tobedeleted.insert((*iLMisM)->first);
+							printf("Delete: %d\n", (*iLMisM)->first);
+						}
+					}
+					tobedeleted.insert(iMapR->first);
+						printf("Delete: %d\n", iMapR->first);
+					
 					break;
 				}
-
-			if(contained)
-				tobedeleted.insert(iMapR2->first);
+			}
+			else if(multipleMismatch > 0) {
+				printf("here node %d\n", iMapR2->first);
+				singleMismatch[sameNodes].push_back(iMapR2);
+			}
 		}
 	}
 	
