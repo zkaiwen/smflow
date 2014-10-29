@@ -1,12 +1,12 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-  @
-  @      aig.hpp
-  @      
-  @      @AUTHOR:Kevin Zeng
-  @      Copyright 2012 – 2013 
-  @      Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@      aig.hpp
+	@      
+	@      @AUTHOR:Kevin Zeng
+	@      Copyright 2012 – 2013 
+	@      Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 #ifndef AIG_GUARD
 #define AIG_GUARD
@@ -25,10 +25,10 @@ extern "C"{
 
 //Use to compare keys for "HASH TABLE"
 /*
-   struct cmp
-   {
-   bool operator()(int const *a, int const *b)
-   {
+	 struct cmp
+	 {
+	 bool operator()(int const *a, int const *b)
+	 {
 //printf("A: %d B:%d\nA:%d B:%d\n", a[0], b[0], a[1], b[1]);
 if(b[0] < a[0] )
 return true;
@@ -87,8 +87,8 @@ class AIG{
 		std::vector<unsigned> findNode(unsigned, unsigned );
 		//See if there is another node with * as a child
 		bool hasChild(unsigned, unsigned);
-		void getParents(unsigned, std::vector<unsigned>&);
-	void getSiblings(unsigned, std::vector<unsigned>& );
+		void getParents(unsigned, std::list<unsigned>&);
+		void getSiblings(unsigned, std::vector<unsigned>& );
 
 
 		//Setters

@@ -194,10 +194,11 @@ unsigned AIG::getChild2(unsigned index){
 
 
 
-void AIG::getParents(unsigned source, std::vector<unsigned>& parents){
+void AIG::getParents(unsigned source, std::list<unsigned>& parents){
 	source = source & 0xFFFFFFFE;
+	int startSearch = source/2+1-getInputSize();
 
-	for(unsigned int i = 0; i < m_Aiger->num_ands; i++){
+	for(unsigned int i = startSearch; i < m_Aiger->num_ands; i++){
 		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
 			parents.push_back(m_Aiger->ands[i].lhs);
 		else if((m_Aiger->ands[i].rhs1 & 0xFFFFFFFE)== source)
@@ -209,7 +210,7 @@ void AIG::getParents(unsigned source, std::vector<unsigned>& parents){
 void AIG::getSiblings(unsigned source, std::vector<unsigned>& siblings){
 	source = source & 0xFFFFFFFE;
 
-	for(unsigned int i = 0; i < m_Aiger->num_ands; i++){
+	for(unsigned int i = source/2+1; i < m_Aiger->num_ands; i++){
 		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
 			siblings.push_back(m_Aiger->ands[i].rhs1);
 		else if((m_Aiger->ands[i].rhs1 & 0xFFFFFFFE)== source)

@@ -154,21 +154,22 @@ int main( int argc, char *argv[] )
 				child2 = aig->getChild2(source);
 
 
-				node1 = child1 & 0xFFFFFFFE;
-				node2 = child2 & 0xFFFFFFFE;
-				printf("CHILD1: %3d\tCHILD2: %3d\n", node1, node2);
+				//node1 = child1 & 0xFFFFFFFE;
+				//node2 = child2 & 0xFFFFFFFE;
+				//printf("CHILD1: %3d\tCHILD2: %3d\n", node1, node2);
+				printf("CHILD1: %3d\tCHILD2: %3d\n", child1, child2);
 			}
-
-
 		}
 		else if(command == "parent"){
 			unsigned source;
 			std::cin >> source;
-			std::vector<unsigned> parentNodes;
+			std::list<unsigned> parentNodes;
+			std::list<unsigned>::iterator iList;
 			aig->getParents(source,parentNodes);
 			printf("PARENT NODES OF %d: ", source);
 			for(unsigned int i = 0; i < parentNodes.size(); i++)
-				printf("%d ", parentNodes[i]);
+			for(iList = parentNodes.begin(); iList != parentNodes.end(); iList++)
+				printf("%d ", *iList);
 			printf("\n");
 		}
 		else if(command == "sib"){
