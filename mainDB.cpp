@@ -158,6 +158,7 @@ int main( int argc, char *argv[] )
 	
 	std::vector<std::map<unsigned, unsigned> > stat_parity;
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
+	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -501,6 +502,7 @@ int main( int argc, char *argv[] )
 		
 		std::map<unsigned, unsigned> equalResult;
 		AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
+		stat_equal.push_back(equalResult);
 
 
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
@@ -707,6 +709,9 @@ int main( int argc, char *argv[] )
 		printf("\nGate\n");
 		for(iMap = stat_gate[i].begin(); iMap != stat_gate[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
+		printf("\nequal\n");
+		for(iMap = stat_equal[i].begin(); iMap != stat_equal[i].end(); iMap++)
+			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 
 /*
 		std::map<unsigned, unsigned>::iterator iCount;
@@ -837,6 +842,8 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_parity, simTable);
 	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
 	calculateSimilarity(name, stat_gate, simTable);
+	printf("[MAINDB] -- Calculating similarity of equality function aggregation\n");
+	calculateSimilarity(name, stat_equal, simTable);
 
 	printf("[MAINDB] -- Calculating similarity Sequential block M0\n");
 	calculateSimilarity(name, stat_blockFFM0, simTable);
@@ -938,6 +945,8 @@ int main( int argc, char *argv[] )
 	calculateSimilarity_size(name, stat_parity, simTable);
 	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
 	calculateSimilarity_size(name, stat_gate, simTable);
+	printf("[MAINDB] -- Calculating similarity of equality function aggregation\n");
+	calculateSimilarity_size(name, stat_equal, simTable);
 
 	printf("[MAINDB] -- Calculating similarity of Sequential block M0\n");
 	calculateSimilarity_size(name, stat_blockFFM0, simTable);
