@@ -196,7 +196,9 @@ unsigned AIG::getChild2(unsigned index){
 
 void AIG::getParents(unsigned source, std::list<unsigned>& parents){
 	source = source & 0xFFFFFFFE;
-	int startSearch = source/2+1-getInputSize();
+	int startSearch = source/2-getInputSize()-1;
+	if(startSearch < 0) startSearch = 0;
+	else assert(source == m_Aiger->ands[startSearch].lhs);
 
 	for(unsigned int i = startSearch; i < m_Aiger->num_ands; i++){
 		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
@@ -209,8 +211,9 @@ void AIG::getParents(unsigned source, std::list<unsigned>& parents){
 
 void AIG::getSiblings(unsigned source, std::vector<unsigned>& siblings){
 	source = source & 0xFFFFFFFE;
+	int startSearch = source/2+1-getInputSize();
 
-	for(unsigned int i = source/2+1; i < m_Aiger->num_ands; i++){
+	for(unsigned int i = startSearch; i < m_Aiger->num_ands; i++){
 		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
 			siblings.push_back(m_Aiger->ands[i].rhs1);
 		else if((m_Aiger->ands[i].rhs1 & 0xFFFFFFFE)== source)
@@ -1013,11 +1016,11 @@ void AIG::printHash(){
  ********************************************************/
 void AIG::print(){
 	printf("[AIG] Data structure\n");
-	printf("\nInputs:\n");
+	printf("\nInputs: %d\n", m_Aiger->num_inputs);
 	for(unsigned int i = 0; i < m_Aiger->num_inputs; i++){
 		printf("%u ", m_Aiger->inputs[i].lit);	
 	}
-	printf("\nOutputs:\n");
+	printf("\nOutputs: %d\n", m_Aiger->num_outputs);
 	for(unsigned int i = 0; i < m_Aiger->num_outputs; i++){
 		printf("%u ", m_Aiger->outputs[i].lit);	
 	}

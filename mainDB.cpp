@@ -157,6 +157,7 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM2;
 	
 	std::vector<std::map<unsigned, unsigned> > stat_parity;
+	std::vector<std::map<unsigned, unsigned> > stat_gate;
 
 	std::vector<unsigned > stat_f1;
 	std::vector<unsigned > stat_f2;
@@ -496,6 +497,10 @@ int main( int argc, char *argv[] )
 		
 		std::map<unsigned, unsigned> gateResult;
 		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
+		stat_gate.push_back(gateResult);
+		
+		std::map<unsigned, unsigned> equalResult;
+		AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
 
 
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
@@ -698,6 +703,10 @@ int main( int argc, char *argv[] )
 		printf("\nParity\n");
 		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++)
 			printf("\t%d-Bit parity tree...\t\t%d\n", iMap->first, iMap->second);
+		
+		printf("\nGate\n");
+		for(iMap = stat_gate[i].begin(); iMap != stat_gate[i].end(); iMap++)
+			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 
 /*
 		std::map<unsigned, unsigned>::iterator iCount;
@@ -826,6 +835,8 @@ int main( int argc, char *argv[] )
 	
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity(name, stat_parity, simTable);
+	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
+	calculateSimilarity(name, stat_gate, simTable);
 
 	printf("[MAINDB] -- Calculating similarity Sequential block M0\n");
 	calculateSimilarity(name, stat_blockFFM0, simTable);
@@ -925,6 +936,8 @@ int main( int argc, char *argv[] )
 	
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity_size(name, stat_parity, simTable);
+	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
+	calculateSimilarity_size(name, stat_gate, simTable);
 
 	printf("[MAINDB] -- Calculating similarity of Sequential block M0\n");
 	calculateSimilarity_size(name, stat_blockFFM0, simTable);

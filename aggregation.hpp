@@ -142,6 +142,14 @@ void findMux2(CutFunction* cf,
 	void findGateFunction(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
 	void findInputSign(AIG* , unsigned , std::set<unsigned>&, std::list<unsigned>&, std::list<unsigned>& );
 	void DFS_gate(AIG*, std::map<unsigned, InOut* >& , unsigned , std::set<unsigned>& );
+
+
+	/*#############################################################################
+	 *
+	 * 	 EQUALITY FUNCTION AGGREGATION 
+	 *
+	 *#############################################################################*/
+void findEquality(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
 }
 
 

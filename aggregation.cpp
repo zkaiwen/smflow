@@ -11,6 +11,135 @@
 
 
 #include "aggregation.hpp"
+
+
+void AGGREGATION::findEquality(CutFunction* cf, AIG* aig,  std::map<unsigned, unsigned>& result){
+	printf("[AGG] -- SEARCHING FOR EQUALITY AGGREGATIONS-------------------------------\n");
+	//Get the hashmap of circuit names to function tt
+	std::map<unsigned long long, std::string>::iterator it;
+	std::map<unsigned long long, std::string> hmap;
+	cf->getHashMap(hmap);
+
+	//Find all adder bitslices 
+	std::vector<unsigned long long> equal;
+	std::vector<unsigned long long> xorf;
+	printf(" * Parsing function database for equal components...\n");
+
+	for(it = hmap.begin(); it!=hmap.end(); it++){
+		if(it->second.find("equal") != std::string::npos)
+			equal.push_back(it->first);
+		if(it->second.find("xor") != std::string::npos)
+			xorf.push_back(it->first);
+	}
+
+
+
+	//Get the map for function tt and every set of input and output with that function
+	//Function, Vector of every set of inputs with that function. Last item is the output node
+	std::map<unsigned long long, std::vector<InOut*> > pmap;
+	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
+	cf->getPortMap(pmap);
+	
+	printf("\nxor\n");
+	printIO(pmap, xorf);
+	/*
+	printf("\nTREE4\n");
+	printIO(pmap, parity4);
+	printf("\nTREE5\n");
+	printIO(pmap, parity5);
+	printf("\nTREE6\n");
+	printIO(pmap, parity6);
+	printf("\nXOR\n");
+	printIO(pmap, xorFunction);
+	*/
+	std::map<unsigned, InOut*> outInMap;
+	std::map<unsigned, InOut*>::iterator iMap;
+	for(unsigned int i = 0; i < equal.size(); i++){
+		iPMAP = pmap.find(equal[i]);
+		if(iPMAP != pmap.end()){
+			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
+				iMap = outInMap.find(iPMAP->second[j]->output);
+				if(iMap == outInMap.end())
+					outInMap[iPMAP->second[j]->output] = (iPMAP->second[j]);
+				else{
+					if(iMap->second->input.size() < iPMAP->second[j]->input.size())
+						iMap->second->input= iPMAP->second[j]->input;
+				}
+			}
+		}
+	}
+
+	std::set<unsigned>::iterator iSet;
+	std::list<InOut*>::iterator iList;
+	/*
+	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+		printf("OUTPUT: %3d\t\t", iMap->first);
+		printf("\tINPUT: ");
+		for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++)
+			printf("%d ", *iSet);
+		printf("\n");
+	}
+	*/
+	
+	std::map<unsigned, std::set<unsigned> > outInMapReduce;
+	std::map<unsigned, std::set<unsigned> >::reverse_iterator iMapR;
+	std::map<unsigned, std::set<unsigned> >::reverse_iterator iMapR2;
+	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
+		outInMapReduce[iMap->first] = iMap->second->input;
+	}
+
+	printf("TOTAL AGG FOUND: %d\n", (int)outInMapReduce.size());
+	printf("SIMPLIFYING CONTAINMENT\n");
+	std::set<unsigned> tobedeleted;
+	for(iMapR = outInMapReduce.rbegin(); iMapR != outInMapReduce.rend(); iMapR++){
+		if(tobedeleted.find(iMapR->first) != tobedeleted.end()) continue;
+
+		iMapR2 = iMapR;
+		iMapR2++;
+
+		//Set of nodes that are shared, list of iterators that need to be deleted
+		for(; iMapR2 != outInMapReduce.rend(); iMapR2++){
+			//printf("COMPARING %d to %d\n", iMapR->first, iMapR2->first);
+			if(tobedeleted.find(iMapR2->first) != tobedeleted.end()) continue;
+
+			std::set<unsigned> sameNodes;
+			bool contained = true;
+			for(iSet = iMapR2->second.begin(); iSet != iMapR2->second.end(); iSet++){
+				if(iMapR->second.find(*iSet) == iMapR->second.end()){
+					contained = false;
+					break;
+				}
+			}
+
+			if(contained && iMapR->second.size() != iMapR2->second.size()){
+				tobedeleted.insert(iMapR2->first);
+			}
+		}
+	}
+	
+	printf("Deleting redundant gates\n");
+	for(iSet = tobedeleted.begin(); iSet != tobedeleted.end(); iSet++)
+		outInMapReduce.erase(*iSet);
+	
+	printf("result:\n");
+	for(iMapR = outInMapReduce.rbegin(); iMapR != outInMapReduce.rend(); iMapR++){
+			
+			printf("OUT: %d\tIS: %2d\t", iMapR->first, (int)iMapR->second.size());
+			for(iSet = iMapR->second.begin(); iSet != iMapR->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			
+	}
+	printf("TOTAL AGG FOUND: %d\n", (int)outInMapReduce.size());
+
+}
+
+
+
+
+
+
+
 void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned, unsigned>& result){
 	printf("[AGG] -- SEARCHING FOR GATE AGGREGATIONS-------------------------------\n");
 	//Get the hashmap of circuit names to function tt
@@ -100,15 +229,25 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 		int outnode = iMap->first;
 		std::set<unsigned> input;
 
-		//printf("Running DFS gate\n");
+		//printf("\n\nRunning DFS gate: %d\n", outnode);
 		DFS_gate(aig, outInMap, outnode, input);
 		if(input.size() > 5){
+			/*
 			printf("OUT: %d\tIS: %2d\t", outnode, (int)input.size());
 			for(iSet = input.begin(); iSet != input.end(); iSet++)
 				printf("%d ", *iSet);
 			printf("\n");
+			*/
+			
 			outInMapReduce[iMap->first] = input;
 		}
+	}
+
+	for(iMapR = outInMapReduce.rbegin(); iMapR != outInMapReduce.rend(); iMapR++){
+			printf("OUT: %d\tIS: %2d\t", iMapR->first, (int)iMapR->second.size());
+			for(iSet = iMapR->second.begin(); iSet != iMapR->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
 	}
 
 	printf("TOTAL AGG FOUND: %d\n", (int)outInMapReduce.size());
@@ -125,22 +264,32 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 		std::map<std::set<unsigned>, std::list<std::map<unsigned, std::set<unsigned> >::reverse_iterator> >::iterator iMMisM;
 		std::list<std::map<unsigned, std::set<unsigned> >::reverse_iterator>::iterator iLMisM;
 		for(; iMapR2 != outInMapReduce.rend(); iMapR2++){
+			//printf("COMPARING %d to %d\n", iMapR->first, iMapR2->first);
+			if(tobedeleted.find(iMapR2->first) != tobedeleted.end()) continue;
+
+			std::set<unsigned> sameNodes;
+			bool contained = true;
+			for(iSet = iMapR2->second.begin(); iSet != iMapR2->second.end(); iSet++){
+				if(iMapR->second.find(*iSet) == iMapR->second.end()){
+					contained = false;
+					break;
+				}
+			}
+
+			if(contained){
+					//printf("Delete FULLY CONTAINED: %d\n", iMapR2->first);
+					tobedeleted.insert(iMapR2->first);
+
+			}
+		}
+	}
+		/*
+		for(; iMapR2 != outInMapReduce.rend(); iMapR2++){
 			printf("COMPARING %d to %d\n", iMapR->first, iMapR2->first);
 			if(tobedeleted.find(iMapR2->first) != tobedeleted.end()) continue;
 
 			bool contained = true;
 			int multipleMismatch= 0;
-			iMMisM = singleMismatch.find(iMapR2->second);
-			if(iMMisM != singleMismatch.end()){
-				for(iLMisM = iMMisM->second.begin(); iLMisM != iMMisM->second.end(); iLMisM++){
-					tobedeleted.insert((*iLMisM)->first);
-					printf("Delete: %d\n", (*iLMisM)->first);
-				}
-				tobedeleted.insert(iMapR->first);
-				printf("Delete: %d\n", iMapR->first);
-				continue;
-			}
-
 			std::set<unsigned> sameNodes;
 			for(iSet = iMapR2->second.begin(); iSet != iMapR2->second.end(); iSet++){
 				if(iMapR->second.find(*iSet) == iMapR->second.end()){
@@ -152,8 +301,9 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 
 					contained = false;
 				}
-				else
+				else if(iMapR->second.size() == iMapR2->second.size()){
 					sameNodes.insert(*iSet);
+				}
 			}
 
 			if(contained){
@@ -181,25 +331,26 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 			}
 		}
 	}
+	*/
 	
 	printf("Deleting redundant gates\n");
 	for(iSet = tobedeleted.begin(); iSet != tobedeleted.end(); iSet++)
 		outInMapReduce.erase(*iSet);
 
+	std::map<unsigned, unsigned>::iterator iResult;
 	for(iMapR = outInMapReduce.rbegin(); iMapR != outInMapReduce.rend(); iMapR++){
 			
 			printf("OUT: %d\tIS: %2d\t", iMapR->first, (int)iMapR->second.size());
 			for(iSet = iMapR->second.begin(); iSet != iMapR->second.end(); iSet++)
 				printf("%d ", *iSet);
 			printf("\n");
+			
+			iResult = result.find(iMapR->second.size());
+			if(iResult == result.end()) result[iMapR->second.size()] = 1;
+			else iResult->second = iResult->second + 1;
 
 	}
 	printf("TOTAL AGG FOUND: %d\n", (int)outInMapReduce.size());
-
-
-
-
-
 
 }
 
@@ -214,24 +365,41 @@ void AGGREGATION::DFS_gate(AIG* aig, std::map<unsigned, InOut* >& outInMap, unsi
 
 	std::list<unsigned> posInputs;
 	std::list<unsigned> negInputs;
+	std::set<unsigned>::iterator iSet;
+	/*
+	printf("INPUT: ");
+	for(iSet = iMap->second->input.begin(); iSet != iMap->second->input.end(); iSet++)
+		printf("%d ", *iSet);
+	printf("\n");
+	*/
 	findInputSign(aig, start, iMap->second->input, posInputs, negInputs);
 	inputs.insert(negInputs.begin(), negInputs.end());
 	std::list<unsigned>::iterator iList;
+/*	
+	printf("NEG: ");
+	for(iList = negInputs.begin(); iList != negInputs.end(); iList++)
+		printf("%d ", *iList);
+	printf("\n");
+	*/
+
 	for(iList = posInputs.begin(); iList != posInputs.end(); iList++){
+		//printf("Checking Pos Input %d...", *iList);
 		//If it is a input node, skip
 		if(*iList <= aig->getInputSize()*2) {
 			inputs.insert(*iList);
+			//printf("input\n");
 			continue;
 		}
 		
 		std::list<unsigned> parents;
 		aig->getParents(*iList, parents);
 		if(parents.size() > 1){
+			//printf("multiparent\n");
 			inputs.insert(*iList);
 			continue;
 		}
 		
-		//printf("Traversing\n");
+		//printf("Traversing POS node: %d\n", *iList);
 		DFS_gate(aig, outInMap, *iList, inputs);
 	}
 }
