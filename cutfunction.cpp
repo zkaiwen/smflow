@@ -164,9 +164,11 @@ void CutFunction::preProcessLibrary(std::string fileName){
 			//Permutation of indexes
 			unsigned int* permutation = setPermutation(inputSize);
 			unsigned entriesAdded = 0;
+			unsigned entriesOverlap= 0;
 			std::vector<unsigned>output;
 			m_AIG->getOutputs(output);
 			m_PrimInputSize[file] = inputSize;
+			std::set<std::string> overlappingFunctions;
 
 			do{
 				/*printf("Permutation:\n");
@@ -201,8 +203,10 @@ void CutFunction::preProcessLibrary(std::string fileName){
 					//Make sure function is unique
 					if(iHash != m_HashTable.end()){
 						if(iHash->second != file){
-							printf("Output currently already has a function assigned\n");
-							printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  iHash->second.c_str());
+							//printf("Output currently already has a function assigned\n");
+							//printf("Current Function: %s\tFUNCTION: %s\n",file.c_str(),  iHash->second.c_str());
+							entriesOverlap++;
+							overlappingFunctions.insert(iHash->second.c_str());
 							continue;
 							//exit(1);
 						}
@@ -214,7 +218,12 @@ void CutFunction::preProcessLibrary(std::string fileName){
 					//printf("OUTPUT: %llx\n", m_NodeValue[output[i]]);
 				}
 			}while(std::next_permutation(permutation, permutation+inputSize));
+
 			printf(" * %d functions added to Hashtable\n", entriesAdded);
+			printf(" * %d functions overlapped\n", entriesOverlap);
+			std::set<std::string>::iterator iSet;
+			for(iSet = overlappingFunctions.begin(); iSet != overlappingFunctions.end(); iSet++)
+				printf(" * -- %s\n", iSet->c_str());
 
 			delete [] permutation;
 		}
