@@ -166,6 +166,7 @@ void AGGREGATION::findEquality(CutFunction* cf, AIG* aig,  std::map<unsigned, un
 		*/
 
 		if(iMapR->second.size() > 5){
+			
 			iResult = result.find(iMapR->second.size());
 			if(iResult == result.end()) result[iMapR->second.size()] = 1;
 			else iResult->second = iResult->second + 1;
@@ -3827,10 +3828,69 @@ bool AGGREGATION::isInputNeg(AIG* aigraph, unsigned out, unsigned in){
 
 
 
+/*#############################################################################
+ *
+ * DFS 
+ *  Perform DFS to see if the traversal is contained within the input 
+ *  If it hits an input or is not contained, it returns false 
+ *
+ *  Returns 1 if all it the fanin cone hits all the nodes in found
+ *
+ *#############################################################################*/
+bool AGGREGATION::DFS_verify(AIG* aig, unsigned start, std::set<unsigned>& input, std::set<unsigned>& marked){
+	start = start& 0xFFFFFFFE;
+	marked.insert(start);
+	
+	if(input.find(start) != input.end()) return true;
+
+	if(start <= aig->getInputSize()*2)
+		return false;
+
+	unsigned node1 = aig->getChild1(start) & 0xFFFFFFFE;
+	unsigned node2 = aig->getChild2(start) & 0xFFFFFFFE;
+
+	if(marked.find(node1) == marked.end()){
+		bool result = DFS_verify(aig, node1, input, marked);
+		if(!result) return false;
+	}
+
+	if(marked.find(node2) == marked.end()){
+		bool result = DFS_verify(aig, node2, input, marked);
+		return result;
+	}
+
+	return true;
+}
 
 
+bool AGGREGATION::verifyContainment(AIG* aig, 
+		std::set<unsigned>& inputs,
+		unsigned outNode){
+
+	//Go through each output and make sure it all hits the inputs
+	std::set<unsigned> marked;
+	//printf("Checking output: %d....", outNode);
+	return DFS_verify(aig, outNode, inputs, marked);
+
+}
 
 
+bool AGGREGATION::verifyContainment(AIG* aig, 
+		std::set<unsigned>& inputs,
+		std::set<unsigned>& outputs){
+
+	std::set<unsigned>::iterator iSet;	
+
+	//Go through each output and make sure it all hits the inputs
+	for(iSet = outputs.begin(); iSet != outputs.end(); iSet++){
+		bool result = verifyContainment(aig, inputs, *iSet);
+
+		if(!result) return false;
+	}
+
+	return true;
+
+}
 
 
 

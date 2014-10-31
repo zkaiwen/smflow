@@ -115,7 +115,7 @@ namespace AGGREGATION{
 	 * 	 MUX AGGREGATION 
 	 *
 	 *#############################################################################*/
-void findMux2(CutFunction* cf, 
+	void findMux2(CutFunction* cf, 
 			AIG* aigraph, 
 			std::map<unsigned, unsigned>& result2, 
 			std::map<unsigned, unsigned>& result3, 
@@ -149,8 +149,15 @@ void findMux2(CutFunction* cf,
 	 * 	 EQUALITY FUNCTION AGGREGATION 
 	 *
 	 *#############################################################################*/
-void findEquality(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
-}
+	void findEquality(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
+
+
+
+	bool DFS_verify(AIG* , unsigned , std::set<unsigned>& , std::set<unsigned>& );
+	bool verifyContainment(AIG*, std::set<unsigned>&,	unsigned );
+	bool verifyContainment(AIG*, std::set<unsigned>&,	std::set<unsigned>& );
+
+	}
 
 
 #endif

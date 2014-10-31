@@ -672,7 +672,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		if(handleFF(ffList[i]->first, ckt))
 			toBeDeleted.push_back(ffList[i]->first);
 	}
-	printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
+	//printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 	
 	/*
 	printf("OUTINPUTSET: ");
@@ -734,7 +734,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		else{
 			unsigned int input= create_input();
 			m_GateMap[vLevel[0][i]->getID()] = input; 
-			printf("INPUT:  %d\tAIG: %u NAME: %s\n", vLevel[0][i]->getID(),input, vLevel[0][i]->getName().c_str());
+			//PRINT 
+			//printf("INPUT:  %d\tAIG: %u NAME: %s\n", vLevel[0][i]->getID(),input, vLevel[0][i]->getName().c_str());
 		}
 	}
 
@@ -787,10 +788,12 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 					//m_Outputs.push_back(m_GateMap[vertexID]);
 					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
 					std::string outname = ckt->isOutput(vertexID).c_str();
+					/*
 					if(outname != "")
 					printf("OUTPUT: GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
 					else
 					printf("OUTPUT,FF : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->getVertex(vertexID)->getName().c_str());
+					*/
 
 				}
 				continue;
@@ -806,7 +809,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 				//printf("NO OUTPUT\n");
 				m_Outputs.push_back(m_GateMap[vertex->getID()]);
 				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
-				printf("OUTPUT : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
+				//printf("OUTPUT : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
 			}
 			//printf("\n");
 		}
