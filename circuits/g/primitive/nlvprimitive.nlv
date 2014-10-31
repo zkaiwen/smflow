@@ -1,0 +1,104 @@
+load symbol BUF v1 BUF \
+	port O1 out \
+	port I in
+load symbol INV v1 INV \
+	port O1 out \
+	port I in
+load symbol NOR2 v1 NOR \
+	port O out \
+	port I0 in \
+	port I1 in
+load symbol NOR3 v1 NOR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in
+load symbol NOR4 v1 NOR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in 
+load symbol NOR5 v1 NOR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in \
+	port I4 in 
+load symbol AND2 v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in
+load symbol AND3 v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in 
+load symbol AND4 v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in 
+load symbol AND5 v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in \
+	port I4 in
+load symbol AND8 v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in \
+	port I4 in \
+	port I5 in \
+	port I6 in \
+	port I7 in
+load symbol NAND2 v1 NAND \
+	port O out \
+	port I0 in \
+	port I1 in
+load symbol NAND3 v1 NAND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in 
+load symbol NAND4 v1 NAND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in 
+load symbol NAND5 v1 NAND \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in \
+	port I4 in
+load symbol OR2 v1 OR \
+	port O out \
+	port I0 in \
+	port I1 in
+load symbol OR3 v1 OR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in
+load symbol OR4 v1 OR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in
+load symbol OR5 v1 OR \
+	port O out \
+	port I0 in \
+	port I1 in \
+	port I2 in \
+	port I3 in \
+	port I4 in
