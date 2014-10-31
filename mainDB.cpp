@@ -1,12 +1,12 @@
 /*@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@
-  @
-  @  MAINDB.cpp
-  @  
-  @  @AUTHOR:Kevin Zeng
-  @  Copyright 2012 – 2013 
-  @  Virginia Polytechnic Institute and State University
-  @
-  @#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
+	@
+	@  MAINDB.cpp
+	@  
+	@  @AUTHOR:Kevin Zeng
+	@  Copyright 2012 – 2013 
+	@  Virginia Polytechnic Institute and State University
+	@
+	@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@*/
 
 
 #ifndef MAINDB_GUARD
@@ -50,12 +50,12 @@ void printStatement(std::string statement){
 }
 
 void calculateSimilarity(std::vector<std::string>& name, 
-	std::vector<std::map<unsigned, unsigned> >& fingerprint,
-	std::vector<std::vector< std::vector<double> > >& simTable);
+		std::vector<std::map<unsigned, unsigned> >& fingerprint,
+		std::vector<std::vector< std::vector<double> > >& simTable);
 
 void calculateSimilarity_size(std::vector<std::string>& name, 
-	std::vector<std::map<unsigned, unsigned> >& fingerprint,
-	std::vector<std::vector< std::vector<double> > >& simTable);
+		std::vector<std::map<unsigned, unsigned> >& fingerprint,
+		std::vector<std::vector< std::vector<double> > >& simTable);
 
 
 int main( int argc, char *argv[] )
@@ -148,14 +148,14 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_adderAgg;
 	std::vector<std::map<unsigned, unsigned> > stat_carry;
 	std::vector<std::map<unsigned, unsigned> > stat_carryAgg;
-	
+
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM1;
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM2;
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM3;
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM0;
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM1;
 	std::vector<std::map<unsigned, unsigned> > stat_blockFFM2;
-	
+
 	std::vector<std::map<unsigned, unsigned> > stat_parity;
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
@@ -295,10 +295,10 @@ int main( int argc, char *argv[] )
 		gettimeofday(&count_e, NULL); //--------------------------------------------
 
 		/*
-		   std::map<int,int>::iterator mscit;
-		   for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
-		   printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
-		   }
+			 std::map<int,int>::iterator mscit;
+			 for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
+			 printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
+			 }
 		 */
 
 
@@ -351,15 +351,15 @@ int main( int argc, char *argv[] )
 		stat_blockFFM1.push_back(blockFFM1);
 		stat_blockFFM2.push_back(blockFFM2);
 		stat_counter.push_back(counters);
-		
+
 
 		//Begin conversion to AIG
 		AIG* aigraph = new AIG();
 		/*aigraph->convertGraph2AIG(ckt, true);
-		  int lastSlashIndex = file.find_last_of("/") + 1;
-		  std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
-		  ckt->exportGraphSDFV3000(cname, sdfid);
-		  sdfid++;
+			int lastSlashIndex = file.find_last_of("/") + 1;
+			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
+			ckt->exportGraphSDFV3000(cname, sdfid);
+			sdfid++;
 		 */
 
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
@@ -375,19 +375,19 @@ int main( int argc, char *argv[] )
 
 
 		/*
-		   std::list<unsigned> out;
-		   std::set<unsigned> in;
-		   in.insert(2);
-		   in.insert(4);
-		   in.insert(6);
-		   in.insert(8);
-		   in.insert(10);
-		   in.insert(12);
-		   in.insert(14);
-		   in.insert(16);
-		   out.push_back(204);
-		   aigraph->printSubgraph(out, in);
-		   out.clear();
+			 std::list<unsigned> out;
+			 std::set<unsigned> in;
+			 in.insert(2);
+			 in.insert(4);
+			 in.insert(6);
+			 in.insert(8);
+			 in.insert(10);
+			 in.insert(12);
+			 in.insert(14);
+			 in.insert(16);
+			 out.push_back(204);
+			 aigraph->printSubgraph(out, in);
+			 out.clear();
 		 */
 
 
@@ -470,13 +470,21 @@ int main( int argc, char *argv[] )
 
 
 
+
+
+		/***************************************************************************
+		 *
+		 * Start aggregation
+		 *
+		 ***************************************************************************/
+		//DECODER AGGREGATION
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> decoderResult;
 		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
 
-		aigraph->printOutputs();
+		//ADDER AGGREGATION
 		std::map<unsigned, unsigned> addResult;
 		std::map<unsigned, unsigned> addAggResult;
 		std::map<unsigned, unsigned> carryResult;
@@ -485,42 +493,45 @@ int main( int argc, char *argv[] )
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
-		
+
 		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult);
 		stat_carry.push_back(carryResult);
 		stat_carryAgg.push_back(carryAggResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
+		//PARITY AGGREGATION
 		std::map<unsigned, unsigned> parityResult;
 		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
 		stat_parity.push_back(parityResult);
-		
+
+		//GATE FUNCTION AGGREGATION
 		std::map<unsigned, unsigned> gateResult;
 		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
 		stat_gate.push_back(gateResult);
-		
+
+		//EQUALITY FUNCTION AGGREGATION
 		std::map<unsigned, unsigned> equalResult;
 		AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
 		stat_equal.push_back(equalResult);
 
 
+		//MULTIPLEXOR AGGREGATION
 		gettimeofday(&mux_b, NULL); //-----------------------------------------------
-
 		//mux size, count 
 		std::map<unsigned, unsigned> muxResult2;
 		std::map<unsigned, unsigned> muxResult3;
 		std::map<unsigned, unsigned> muxResult4;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4);
 
-		//std::vector<unsigned int> muxResult1;
-		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
-		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
-		gettimeofday(&mux_e, NULL);//------------------------------------------
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		
 		stat_mux4.push_back(muxResult4);		
+		gettimeofday(&mux_e, NULL);//------------------------------------------
 
+		//std::vector<unsigned int> muxResult1;
+		//AGGREGATION::findMux_Orig(functionCalc, aigraph, muxResult1);
+		//AGGREGATION::findMux(functionCalc, aigraph, muxResult1);
 
 
 
@@ -530,11 +541,11 @@ int main( int argc, char *argv[] )
 		functionCalc->getFunctionCount(functionCount);
 		count.push_back(functionCount.size());
 		/*
-		   outdb<< file << "\n";
-		   outdb<< functionCount.size() << "\n";
-		   for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
-		   outdb<< fcit->first << " " << fcit->second << "\n";
-		   }
+			 outdb<< file << "\n";
+			 outdb<< functionCount.size() << "\n";
+			 for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
+			 outdb<< fcit->first << " " << fcit->second << "\n";
+			 }
 		 */
 
 
@@ -623,7 +634,7 @@ int main( int argc, char *argv[] )
 		printf("%-20s\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 		printf("================================================================================\n");
 
-/*
+		/*
 		//Get fingerprint for mux
 		gettimeofday(&fgp_b, NULL);//------------------------------------------
 		std::vector<unsigned long long> fingerprintMux;
@@ -635,7 +646,7 @@ int main( int argc, char *argv[] )
 
 		std::vector<unsigned long long> fingerprint;
 		for(unsigned int k = 0; k < fingerprintMux.size(); k++)
-			fingerprint.push_back(fingerprintMux[k]);
+		fingerprint.push_back(fingerprintMux[k]);
 
 		gettimeofday(&fgp_e, NULL);//------------------------------------------
 		elapsedTime = (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
@@ -651,13 +662,13 @@ int main( int argc, char *argv[] )
 		fpRegs.push_back(fingerprintReg);
 
 		for(unsigned int k = 0; k < fingerprintReg.size(); k++)
-			fingerprint.push_back(fingerprintReg[k]);
+		fingerprint.push_back(fingerprintReg[k]);
 		fingerprintList.push_back(fingerprint);
 
 		gettimeofday(&fgp_e, NULL);//------------------------------------------
 		elapsedTime += (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
 		elapsedTime += (fgp_e.tv_usec - fgp_b.tv_usec) / 1000.0;
-		*/
+		 */
 
 		int totalMux = 0;
 		int totalReg = 0;
@@ -701,11 +712,11 @@ int main( int argc, char *argv[] )
 		printf("\nCarryAgg\n");
 		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-		
+
 		printf("\nParity\n");
 		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++)
 			printf("\t%d-Bit parity tree...\t\t%d\n", iMap->first, iMap->second);
-		
+
 		printf("\nGate\n");
 		for(iMap = stat_gate[i].begin(); iMap != stat_gate[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
@@ -713,17 +724,17 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_equal[i].begin(); iMap != stat_equal[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 
-/*
-		std::map<unsigned, unsigned>::iterator iCount;
-		printf("Special Cut FF Input size Count\n");
-		for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
-			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
-		}
-		printf("Special Cut Out Input size Count\n");
-		for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
-			printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
-		}
-		*/
+		/*
+			 std::map<unsigned, unsigned>::iterator iCount;
+			 printf("Special Cut FF Input size Count\n");
+			 for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
+			 printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
+			 }
+			 printf("Special Cut Out Input size Count\n");
+			 for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
+			 printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
+			 }
+		 */
 
 
 
@@ -732,17 +743,17 @@ int main( int argc, char *argv[] )
 		stat_fingerprintTime.push_back(elapsedTime);
 
 		/*
-		   printf("\nMux Fingerprint:\t");
-		   for(unsigned int i =  0; i < fingerprintMux.size(); i++){
-		   printf("%llx ", fingerprintMux[i]);
-		   }
-		   printf("\n");
+			 printf("\nMux Fingerprint:\t");
+			 for(unsigned int i =  0; i < fingerprintMux.size(); i++){
+			 printf("%llx ", fingerprintMux[i]);
+			 }
+			 printf("\n");
 
-		   printf("Register fingerprint:\t");
-		   for(unsigned int i =  0; i < fingerprintReg.size(); i++){
-		   printf("%llx ", fingerprintReg[i]);
-		   }
-		   printf("\n");
+			 printf("Register fingerprint:\t");
+			 for(unsigned int i =  0; i < fingerprintReg.size(); i++){
+			 printf("%llx ", fingerprintReg[i]);
+			 }
+			 printf("\n");
 		 */
 	}
 	printf("\n\n");
@@ -837,7 +848,7 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
-	
+
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity(name, stat_parity, simTable);
 	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
@@ -851,7 +862,7 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_blockFFM1, simTable);
 	printf("[MAINDB] -- Calculating similarity Sequential block M2\n");
 	calculateSimilarity(name, stat_blockFFM2, simTable);
-	
+
 	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 1\n");
 	calculateSimilarity(name, stat_cascadeFFM1, simTable);
 	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
@@ -940,7 +951,7 @@ int main( int argc, char *argv[] )
 	calculateSimilarity_size(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity of combined carry aggregation\n");
 	calculateSimilarity_size(name, stat_carryAgg, simTable);
-	
+
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity_size(name, stat_parity, simTable);
 	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
@@ -954,7 +965,7 @@ int main( int argc, char *argv[] )
 	calculateSimilarity_size(name, stat_blockFFM1, simTable);
 	printf("[MAINDB] -- Calculating similarity of Sequential block M2\n");
 	calculateSimilarity_size(name, stat_blockFFM2, simTable);
-	
+
 	printf("[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 1\n");
 	calculateSimilarity_size(name, stat_cascadeFFM1, simTable);
 	printf("[MAINDB] -- Calculating similarity of Sequential cascading block OFF: 2\n");
@@ -1030,8 +1041,8 @@ int main( int argc, char *argv[] )
 			totalTime[k]+=stat_time[i][k];
 		}
 
-	//	printf("%-12.3f", stat_fingerprintTime[i]);
-	//	totalTime[stat_time[i].size()]+=stat_fingerprintTime[i];
+		//	printf("%-12.3f", stat_fingerprintTime[i]);
+		//	totalTime[stat_time[i].size()]+=stat_fingerprintTime[i];
 		printf("\n");
 	}
 
@@ -1058,23 +1069,23 @@ int main( int argc, char *argv[] )
 
 
 void calculateSimilarity(std::vector<std::string>& name, 
-	std::vector<std::map<unsigned, unsigned> >& fingerprint,
-	std::vector<std::vector< std::vector<double> > >& simTable){
+		std::vector<std::map<unsigned, unsigned> >& fingerprint,
+		std::vector<std::vector< std::vector<double> > >& simTable){
 
-/*
-	printf("%-10s", "Circuits");
-	for(unsigned int i = 0; i < name.size(); i++){
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-	}
-	printf("\n");
-	*/
+	/*
+		 printf("%-10s", "Circuits");
+		 for(unsigned int i = 0; i < name.size(); i++){
+		 int lastSlashIndex = name[i].find_last_of("/") + 1;
+		 printf("%10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		 }
+		 printf("\n");
+	 */
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		/*
-		int lastSlashIndex = name[i].find_last_of("/") + 1;
-		printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
-		*/
+			 int lastSlashIndex = name[i].find_last_of("/") + 1;
+			 printf("%-10s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		 */
 
 		for(unsigned int k = 0; k < name.size(); k++){
 
@@ -1095,8 +1106,8 @@ void calculateSimilarity(std::vector<std::string>& name,
 
 
 void calculateSimilarity_size(std::vector<std::string>& name, 
-	std::vector<std::map<unsigned, unsigned> >& fingerprint,
-	std::vector<std::vector< std::vector<double> > >& simTable){
+		std::vector<std::map<unsigned, unsigned> >& fingerprint,
+		std::vector<std::vector< std::vector<double> > >& simTable){
 
 	for(unsigned int i = 0; i < name.size(); i++){
 		for(unsigned int k = 0; k < name.size(); k++){
