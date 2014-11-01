@@ -847,6 +847,10 @@ void Graph::getInputs(std::vector<int>& input){
 	}
 }
 
+void Graph::getInputs(std::map<std::string, int>& input){
+	input = m_Inputs;
+}
+
 
 
 /***************************************************************************

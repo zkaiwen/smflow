@@ -70,6 +70,7 @@ class Graph
 		Vertex* getVertex(int);
 		void getNumType(std::map<std::string, std::vector<Vertex*> >&);
 		void getInputs(std::vector<int>&);
+		void getInputs(std::map<std::string, int>&);
 		void getOutputs(std::vector<int>&);
 		void getOutputs(std::map<std::string, int>&);
 		unsigned int getNumVertex();
