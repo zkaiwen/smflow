@@ -45,18 +45,7 @@ CutFunction::CutFunction(){
  *    Deletes allocated space.
  ********************************************************/
 CutFunction::~CutFunction(){
-	std::map<unsigned long long, std::vector<InOut*> >::iterator it;
-	for(it = m_PortMap.begin(); it != m_PortMap.end(); it++){
-		for(unsigned int i = 0; i < it->second.size(); i++){
-			delete it->second[i];
-		}
-	}
-	
-	for(it = m_PortMap_DC.begin(); it != m_PortMap_DC.end(); it++){
-		for(unsigned int i = 0; i < it->second.size(); i++){
-			delete it->second[i];
-		}
-	}
+	reset();
 	delete [] m_Xval;
 }
 
@@ -84,14 +73,8 @@ CutFunction::~CutFunction(){
 void CutFunction::setParams(CutEnumeration* ce, AIG* aig){
 	m_CutEnumeration = ce;
 	m_AIG = aig;
-
-	m_FunctionCount.clear();
-	m_NodeValue.clear();
-	m_NodeFunction.clear();
-	m_PortMap.clear();
-	m_PortMap_DC.clear();
-
-
+	
+	reset();
 }
 
 
@@ -1197,6 +1180,19 @@ void CutFunction::getFunctionCount(std::map<unsigned long long, int>& fc){
 
 
 void CutFunction::reset(){
+	std::map<unsigned long long, std::vector<InOut*> >::iterator it;
+	for(it = m_PortMap.begin(); it != m_PortMap.end(); it++){
+		for(unsigned int i = 0; i < it->second.size(); i++){
+			delete it->second[i];
+		}
+	}
+	
+	for(it = m_PortMap_DC.begin(); it != m_PortMap_DC.end(); it++){
+		for(unsigned int i = 0; i < it->second.size(); i++){
+			delete it->second[i];
+		}
+	}
+
 	m_NodeValue.clear();
 	m_NodeValueIn.clear();
 	m_FunctionCount.clear();
@@ -1204,8 +1200,6 @@ void CutFunction::reset(){
 	m_PortMap.clear();
 	m_PortMap_DC.clear();
 	m_UniqueFunction.clear();
-
-
 }
 
 

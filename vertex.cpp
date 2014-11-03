@@ -176,6 +176,9 @@ void Vertex::getOutput(std::vector<Vertex*> &v){
 			v.push_back(it->second[i]);
 	}
 }
+void Vertex::getOutput(std::map<std::string, std::vector<Vertex*> >& output){
+	output = m_Output;
+}
 
 void Vertex::getInput(std::vector<Vertex*> &v){
 	v = m_Input;

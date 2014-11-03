@@ -41,14 +41,24 @@ with open(circuitName, 'r') as fs:
 		nlv = nlv + primitive + "\n";
 		nlvPrimitiveFS.close();
 		
-	tmpfs = fs;
+	idNameMap = {};
+	idTypeMap= {};
+	idOutMap= {};
+
 	for line in fs:
 		lineList = line.split();	
-		lineList.pop(0);
-		if lineList[0] == 'IN':
-			continue;
 		print "load inst " + lineList[1] + " " + lineList[0];
-		nlv = nlv + "load inst " + lineList[1] + " " + lineList[0];
+
+		vID = int(line[0]);
+		idNameMap[vID] = line[2];
+		idTypeMap[vID] = line[1];
+
+		numInputs = int(line[3]);
+		numOutStartIndex = 3 + 1 + numInputs * 2;
+		numOutputs = int(line[numOutStartIndex]);
+
+		# Form output list
+
 
 	fs.close();
 

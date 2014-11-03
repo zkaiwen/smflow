@@ -946,8 +946,8 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
 			 */
 
 			if(checkContainment(*small, *iList)){
-				iMap->second.erase(small);
 				ffs.insert(ffMap[*small].front());
+				iMap->second.erase(small);
 				//printf("CONTAINED!\n");
 				cascade(iMap2, iList, cascadeGap, ffs, ffMap);
 				return true;

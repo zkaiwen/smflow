@@ -11,8 +11,8 @@
 
 #ifndef MAINDB_GUARD
 #define MAINDB_GUARD
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/vf2_sub_graph_iso.hpp>
+//#include <boost/graph/adjacency_list.hpp>
+//#include <boost/graph/vf2_sub_graph_iso.hpp>
 
 #include <fstream>
 #include <stdlib.h>
@@ -32,7 +32,7 @@
 #include "aggregation.hpp"
 #include "similarity.hpp"
 
-using namespace boost;
+//using namespace boost;
 
 //Flags
 bool verbose;
@@ -480,7 +480,7 @@ int main( int argc, char *argv[] )
 		//DECODER AGGREGATION
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> decoderResult;
-		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
+		//AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
 
@@ -490,11 +490,11 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> carryResult;
 		std::map<unsigned, unsigned> carryAggResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult);
+		//AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
 
-		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult);
+		//AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult);
 		stat_carry.push_back(carryResult);
 		stat_carryAgg.push_back(carryAggResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
@@ -502,17 +502,17 @@ int main( int argc, char *argv[] )
 
 		//PARITY AGGREGATION
 		std::map<unsigned, unsigned> parityResult;
-		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
+		//AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
 		stat_parity.push_back(parityResult);
 
 		//GATE FUNCTION AGGREGATION
 		std::map<unsigned, unsigned> gateResult;
-		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
+		//AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
 		stat_gate.push_back(gateResult);
 
 		//EQUALITY FUNCTION AGGREGATION
 		std::map<unsigned, unsigned> equalResult;
-		AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
+		//AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
 		stat_equal.push_back(equalResult);
 
 
@@ -522,7 +522,7 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> muxResult2;
 		std::map<unsigned, unsigned> muxResult3;
 		std::map<unsigned, unsigned> muxResult4;
-		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4);
+		//AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4);
 
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		
@@ -602,6 +602,7 @@ int main( int argc, char *argv[] )
 		delete ckt;
 		functionCalc->reset();
 	}
+	delete functionCalc;
 
 	outdb << "END\n";
 	outdb.close();
@@ -757,6 +758,7 @@ int main( int argc, char *argv[] )
 		 */
 	}
 	printf("\n\n");
+
 
 
 

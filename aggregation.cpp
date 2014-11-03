@@ -487,13 +487,13 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 	 */
 
 
-	std::map<unsigned, std::list<InOut*> > outInMap;
-	std::map<unsigned, std::list<InOut*> >::iterator iMap;
+	std::map<unsigned, std::list<std::set<unsigned> > >  outInMap;
+	std::map<unsigned, std::list<std::set<unsigned> > > ::iterator iMap;
 	for(unsigned int i = 0; i < parity6.size(); i++){
 		iPMAP = pmap.find(parity6[i]);
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++)
-				outInMap[iPMAP->second[j]->output].push_back(iPMAP->second[j]);
+				outInMap[iPMAP->second[j]->output].push_back(iPMAP->second[j]->input);
 		}
 	}
 
@@ -503,7 +503,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 				int outnode = iPMAP->second[j]->output;
-				outInMap[outnode].push_back(iPMAP->second[j]);
+				outInMap[outnode].push_back(iPMAP->second[j]->input);
 			}
 		}
 	}
@@ -514,7 +514,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 				int outnode = iPMAP->second[j]->output;
-				outInMap[outnode].push_back(iPMAP->second[j]);
+				outInMap[outnode].push_back(iPMAP->second[j]->input);
 			}
 		}
 	}
@@ -525,7 +525,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 				int outnode = iPMAP->second[j]->output;
-				outInMap[outnode].push_back(iPMAP->second[j]);
+				outInMap[outnode].push_back(iPMAP->second[j]->input);
 			}
 		}
 	}
@@ -536,7 +536,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
 				int outnode = iPMAP->second[j]->output;
-				outInMap[outnode].push_back(iPMAP->second[j]);
+				outInMap[outnode].push_back(iPMAP->second[j]->input);
 			}
 		}
 	}
@@ -548,7 +548,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 
 
 	std::set<unsigned>::iterator iSet;
-	std::list<InOut*>::iterator iList;
+	std::list<std::set<unsigned> >::iterator iList;
 	/*
 		 for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
 		 printf("OUTPUT: %3d\n", iMap->first);
@@ -570,7 +570,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 		if(iMap->second.size() > 1){
 			std::set<unsigned> inputSet;
 			for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
-				for(iSet = (*iList)->input.begin(); iSet != (*iList)->input.end(); iSet++)
+				for(iSet = iList->begin(); iSet != iList->end(); iSet++)
 					inputSet.insert(*iSet);
 			}
 			std::set<unsigned> inputSet_orig = inputSet;
@@ -587,9 +587,9 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 					//store the two input set
 					bool is2inputFound = false;
 					for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
-						if((*iList)->input.size() == 2){
+						if(iList->size() == 2){
 							if(!is2inputFound)
-								outInMapReduce[iMap->first] = (*iList)->input;
+								outInMapReduce[iMap->first] = *iList;
 							else{
 								printf("2 input set found\n");
 								exit(1);
@@ -607,7 +607,7 @@ void AGGREGATION::findParityTree(CutFunction* cf, AIG* aig,  std::map<unsigned, 
 				outInMapReduce[iMap->first] = inputSet;
 		}
 		else
-			outInMapReduce[iMap->first] = iMap->second.front()->input;
+			outInMapReduce[iMap->first] = iMap->second.front();
 	}
 
 
