@@ -39,7 +39,7 @@ namespace SEQUENTIAL{
 	unsigned findNumMismatch(std::set<unsigned>& , std::set<unsigned>& , unsigned );
 
 	bool cascade(std::map<unsigned, std::list<std::set<unsigned> > >::iterator , 
-			std::list<std::set<unsigned> >::iterator , 
+			std::list<std::set<unsigned> >::iterator, 
 			unsigned , std::set<unsigned>& , 
 			std::map<std::set<unsigned>, std::list<unsigned> >& );
 

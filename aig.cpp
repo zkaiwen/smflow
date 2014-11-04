@@ -421,12 +421,16 @@ void AIG::writeAiger(std::string filename, bool isBinary){
 
 	//File
 	FILE* file;
-	file= fopen(filename.c_str(), "w");
+	file = fopen(filename.c_str(), "w");
 
 	//Return code is zero if error
 	int returnCode = aiger_write_to_file(m_Aiger, mode, file);
 	if(returnCode == 0)
 		printf("[AIG] -- Error with writing to file...\n");
+		
+	if (fclose(file) != 0){
+		printf("[ERROR] -- AIG::writeAiger: File not closed successfully\n");
+	}
 }
 
 

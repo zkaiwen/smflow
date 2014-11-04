@@ -419,7 +419,7 @@ void CutFunction::processAIGCuts(bool np){
 			}
 
 			m_NodeValue.clear();
-			delete permutation;
+			delete [] permutation;
 		}
 	}
 }
@@ -516,7 +516,7 @@ void CutFunction::processAIGCutsX(bool np){
 				m_PortMap[function].push_back(inout);
 			}
 
-			delete permutation;
+			delete [] permutation;
 
 
 			//***************************************************************************
@@ -626,7 +626,7 @@ void CutFunction::processAIGCutsX(bool np){
 
 			}
 			//printf("END DONT CARE COMPUTATION\n\n");
-			delete permutation;
+			delete [] permutation;
 		}
 	}
 

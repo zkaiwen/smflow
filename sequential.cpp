@@ -913,7 +913,7 @@ unsigned SEQUENTIAL::findNumMismatch(std::set<unsigned>& small, std::set<unsigne
  *
  *#############################################################################*/
 bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap, 
-		std::list<std::set<unsigned> >::iterator small, 
+		std::list<std::set<unsigned> >::iterator  small, 
 		unsigned cascadeGap, 
 		std::set<unsigned>& ffs, 
 		std::map<std::set<unsigned>, std::list<unsigned> >& ffMap){
@@ -924,7 +924,7 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
 		 for(iSet = small->begin(); iSet != small->end(); iSet++)
 		 printf("%d ", *iSet);
 		 printf("\n");
-	 */
+		 */
 
 
 	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap2;
@@ -937,33 +937,36 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
 
 		//Go through each one of the sizes and see 
 		//if the smaller is fully contained in the larger
-		for(iList = iMap2->second.begin(); iList != iMap2->second.end(); iList++){
+		iList = iMap2->second.begin();
+		while(iList != iMap2->second.end()){
 
-			/*
-				 for(iSet = iList->begin(); iSet != iList->end(); iSet++)
-				 printf("%d ", *iSet);
-				 printf("\n");
-			 */
+/*
+			for(iSet = iList->begin(); iSet != iList->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			*/
 
 			if(checkContainment(*small, *iList)){
-				ffs.insert(ffMap[*small].front());
-				iMap->second.erase(small);
 				//printf("CONTAINED!\n");
-				cascade(iMap2, iList, cascadeGap, ffs, ffMap);
+				if(cascade(iMap2, iList, cascadeGap, ffs, ffMap)){
+					ffs.insert(ffMap[*iList].front());
+					iMap->second.erase(iList);
+				}
 				return true;
 			}
 			/*
-				 else
-				 printf("NOT CONTAINED\n");
-			 */
+			else
+				printf("NOT CONTAINED\n");
+				*/
+			iList++;
 		}
 	}
 	/*
-		 else
-		 printf("NONE HIGHER\n");
+	else
+		printf("NONE HIGHER\n");
 
-		 printf("DONE!!!!!!!!!\n\n");
-	 */
+	printf("DONE!!!!!!!!!\n\n");
+	*/
 	return false;
 }
 
@@ -989,7 +992,7 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
  *
  *#############################################################################*/
 void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned, unsigned>& result){
-	printf("[SEQ] -- Searching for cascading FF structure\n");
+	printf("[SEQ] -- Searching for cascading FF structure...GAP: %d\n", cascadeGap);
 
 	//map of <ff id label, vid in the graph>
 	std::map<int, Vertex*>::iterator it;
@@ -1016,6 +1019,7 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
 			DFS_FF(mark, ffFound, ckt->getVertex(dport));
 
 			if(ffFound.find(it->second->getID()) != ffFound.end()){
+				//Order by size
 				orderedFF[ffFound.size()].push_back(ffFound);
 				ffMap[ffFound].push_back(it->second->getID());
 			}
@@ -1025,16 +1029,17 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
 	std::set<unsigned>::iterator iSet;
 	std::set<unsigned>::iterator iSet2;
 	std::list<std::set<unsigned> >::iterator iList;
-	/*
-		 for(iMap = orderedFF.begin(); iMap != orderedFF.end(); iMap++){
-		 printf("SIZE: %d\n", iMap->first);
-		 for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
-		 for(iSet = iList->begin(); iSet != iList->end(); iSet++)
-		 printf("%d ", *iSet);
-		 printf("\n");
-		 }
-		 }
-	 */
+
+/*
+	for(iMap = orderedFF.begin(); iMap != orderedFF.end(); iMap++){
+		printf("SIZE: %d\n", iMap->first);
+		for(iList = iMap->second.begin(); iList != iMap->second.end(); iList++){
+			for(iSet = iList->begin(); iSet != iList->end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
+	}
+	*/
 
 
 
@@ -1042,6 +1047,8 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
 	//printf("Cascading structure:\n");
 	//cascade size (Depth), count;
 	std::map<unsigned, unsigned>::iterator iRes;
+
+	//Go through each FF based on the size of the input dependence
 	for(iMap = orderedFF.begin(); iMap != orderedFF.end(); iMap++){
 		iMap2 = iMap;
 		iMap2++;
@@ -1055,14 +1062,14 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
 			while(iList != iMap->second.end()){
 				std::set<unsigned> ffs;
 				if(cascade(iMap, iList, cascadeGap, ffs, ffMap)){
+					ffs.insert(ffMap[*iList].front());
+					iList = iMap->second.erase(iList);
+
 					//printf("Cascade size: %d\n", (int)ffs.size());
 					if(result.find(ffs.size()) == result.end()) result[ffs.size()] = 1;
 					else result[ffs.size()]++;
 
 					if(iMap->second.size() == 0) break;
-					else
-						iList = iMap->second.begin();
-
 				}
 				else
 					iList++;
@@ -1295,23 +1302,23 @@ void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>&
 	std::set<unsigned>::iterator iSet;
 	std::set<unsigned>::iterator iSet2;
 	/*
-	for(iMap = ffDependence.begin(); iMap != ffDependence.end(); iMap++){
-		printf("FF %3d SZ: %3d\t", iMap->first, (int)iMap->second.size()) ;
-		printf(" * ");
-		for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++){
-			printf("%d ", *iSet);
-		}
-		printf("\n");
+		 for(iMap = ffDependence.begin(); iMap != ffDependence.end(); iMap++){
+		 printf("FF %3d SZ: %3d\t", iMap->first, (int)iMap->second.size()) ;
+		 printf(" * ");
+		 for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++){
+		 printf("%d ", *iSet);
+		 }
+		 printf("\n");
 
-	}
+		 }
 
 
-	printf("POSSIBLE STARTING NODES FOR COUNTER: "); 
-	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
-		printf("%d ", iMap2->first);
-	}
-	printf("\n");
-	*/
+		 printf("POSSIBLE STARTING NODES FOR COUNTER: "); 
+		 for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
+		 printf("%d ", iMap2->first);
+		 }
+		 printf("\n");
+	 */
 
 
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
@@ -1325,15 +1332,15 @@ void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>&
 	}
 
 
-/*
-	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
-		printf("START NODE: %d\t\t", iMap2->first);
-		for(iSet = iMap2->second.begin(); iSet != iMap2->second.end(); iSet++){
-			printf("%d ", *iSet);
-		}
-		printf("\n");
-	}
-	*/
+	/*
+		 for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
+		 printf("START NODE: %d\t\t", iMap2->first);
+		 for(iSet = iMap2->second.begin(); iSet != iMap2->second.end(); iSet++){
+		 printf("%d ", *iSet);
+		 }
+		 printf("\n");
+		 }
+	 */
 
 
 	//Go through each of the possible FF counters
@@ -1416,7 +1423,7 @@ void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>&
 				printf("%d ", *iSet);
 			}
 			printf("\n");
-	
+
 			iResult = result.find(iMap2->second.size());
 			if(iResult == result.end()) result[iMap2->second.size()] = 1;
 			else iResult->second++;
