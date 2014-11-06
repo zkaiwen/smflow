@@ -836,7 +836,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	cktname = cktname.substr(index, cktname.length()-index-3);
 	//printf("FILE NAME: %s\n", cktname.c_str());
 	writeAiger("aiger/" + cktname + "aag", false);
-	printf("END\n");
+	printf("[AIG] -- Exported AIGER file: %s\n", (cktname + "aag").c_str());
 	}
 
 	

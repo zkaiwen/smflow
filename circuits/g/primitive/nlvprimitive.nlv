@@ -1,9 +1,93 @@
+load symbol MUXCY v1 MUX \
+	port O out.right \
+	port CI in.left \
+	port DI in.left \
+	port S in.top 
+load symbol MUXF7 v1 MUX \
+	port O out.right \
+	port I1 in.left \
+	port I0 in.left \
+	port S in.top 
+load symbol MUXF8 v1 MUX \
+	port O out.right \
+	port I1 in.left \
+	port I0 in.left \
+	port S in.top 
+load symbol LUT1 v1 BOX \
+	port I0 in.left \
+	port O out.right
+load symbol LUT2 v1 BOX \
+	port I0 in.left \
+	port I1 in.left \
+	port O out.right
+load symbol LUT3 v1 BOX \
+	port I0 in.left \
+	port I1 in.left \
+	port I2 in.left \
+	port O out.right
+load symbol LUT4 v1 BOX \
+	port I0 in.left \
+	port I1 in.left \
+	port I2 in.left \
+	port I3 in.left \
+	port O out.right
+load symbol LUT5 v1 BOX \
+	port I0 in.left \
+	port I1 in.left \
+	port I2 in.left \
+	port I3 in.left \
+	port I4 in.left \
+	port O out.right
+load symbol LUT6 v1 BOX \
+	port I0 in.left \
+	port I1 in.left \
+	port I2 in.left \
+	port I3 in.left \
+	port I4 in.left \
+	port I5 in.left \
+	port O out.right
+load symbol FD v1 GEN port Q output \
+	port D input port CLK input.clk
+load symbol FD v1 GEN port Q output \
+	port D input port CK input.clk
+load symbol FD v1 GEN port Q output \
+	port D input port C input.clk
+load symbol FD v1 GEN port Q output \
+	port D input port RESET input port CK input.clk
+load symbol FDR v1 GEN port Q output \
+	port D input port R input port C input.clk
+load symbol FDCE v1 GEN port Q output \
+	port D input port CE input port CLR input port C input.clk
+load symbol FDC v1 GEN port Q output \
+	port D input port CLR input port C input.clk
 load symbol BUF v1 BUF \
-	port O1 out \
+	port O out \
+	port I in
+load symbol BUF v1 BUF \
+	port O out \
+	port I0 in
+load symbol INV v1 INV \
+	port O out \
 	port I in
 load symbol INV v1 INV \
-	port O1 out \
-	port I in
+	port O out \
+	port I0 in
+load symbol XORCY v1 XOR \
+	port O out \
+	port LI in \
+	port CI in
+load symbol XOR v1 XOR \
+	port O out \
+	port IO in \
+	port I1 in
+load symbol XOR2 v1 XOR \
+	port O out \
+	port IO in \
+	port I1 in
+load symbol NOR v1 NOR \
+	port O out \
+	port I0 in \
+	port I1 in
 load symbol NOR2 v1 NOR \
 	port O out \
 	port I0 in \
@@ -25,7 +109,11 @@ load symbol NOR5 v1 NOR \
 	port I1 in \
 	port I2 in \
 	port I3 in \
-	port I4 in 
+	port I4 in
+load symbol AND v1 AND \
+	port O out \
+	port I0 in \
+	port I1 in
 load symbol AND2 v1 AND \
 	port O out \
 	port I0 in \
@@ -58,6 +146,10 @@ load symbol AND8 v1 AND \
 	port I5 in \
 	port I6 in \
 	port I7 in
+load symbol NAND v1 NAND \
+	port O out \
+	port I0 in \
+	port I1 in
 load symbol NAND2 v1 NAND \
 	port O out \
 	port I0 in \
@@ -80,6 +172,10 @@ load symbol NAND5 v1 NAND \
 	port I2 in \
 	port I3 in \
 	port I4 in
+load symbol OR v1 OR \
+	port O out \
+	port I0 in \
+	port I1 in
 load symbol OR2 v1 OR \
 	port O out \
 	port I0 in \

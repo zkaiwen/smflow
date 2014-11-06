@@ -25,7 +25,9 @@
 namespace SEQUENTIAL{
 
 	void getFFList(Graph* , std::list<Vertex*>& );
-	int getNumFFFeedback(Graph* , std::list<Vertex*>& );
+	void getFFFeedbackList(Graph* , std::list<InOut*>& );
+	void deleteFFFeedbackList(std::list<InOut*>& );
+
 	void findRegisterGroup(std::list<Vertex*>& , std::map<unsigned, unsigned>& );
 
 	void findFSM(Graph* );
@@ -38,14 +40,14 @@ namespace SEQUENTIAL{
 	bool checkContainment(std::set<unsigned>& , std::set<unsigned>& );
 	unsigned findNumMismatch(std::set<unsigned>& , std::set<unsigned>& , unsigned );
 
-	bool cascade(std::map<unsigned, std::list<std::set<unsigned> > >::iterator , 
-			std::list<std::set<unsigned> >::iterator, 
-			unsigned , std::set<unsigned>& , 
-			std::map<std::set<unsigned>, std::list<unsigned> >& );
+	bool cascade(std::map<unsigned, std::list<InOut*> >::iterator , 
+			std::list<InOut* >::iterator, 
+			unsigned , std::set<unsigned>&);
 
-	void cascadingFF(Graph* , unsigned , std::map<unsigned, unsigned>& );
-	void blockFF(Graph* , unsigned , std::map<unsigned, unsigned>& );
-	void counterIdentification(Graph*, std::map<unsigned, unsigned>&);
+	void cascadingFF(Graph*, std::list<InOut*>&, unsigned, std::map<unsigned, unsigned>& );
+	void blockFF(Graph*, std::list<InOut*>&,  unsigned, std::map<unsigned, unsigned>& );
+
+	void counterIdentification(Graph*, std::list<InOut*>&,  std::map<unsigned, unsigned>&);
 
 }
 

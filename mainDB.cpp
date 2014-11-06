@@ -95,7 +95,8 @@ int main( int argc, char *argv[] )
 	timeval igraph_b, igraph_e;
 	timeval count_b, count_e;
 	timeval fb_b, fb_e;
-	timeval reg_b, reg_e;
+	timeval cas_b, cas_e;
+	timeval blk_b, blk_e;
 	timeval mux_b, mux_e;
 	timeval dec_b, dec_e;
 	//timeval fgp_b, fgp_e;
@@ -290,8 +291,6 @@ int main( int argc, char *argv[] )
 		}
 
 
-		std::list<Vertex*> ffList;
-		SEQUENTIAL::getFFList(ckt, ffList);
 		gettimeofday(&count_e, NULL); //--------------------------------------------
 
 		/*
@@ -302,26 +301,28 @@ int main( int argc, char *argv[] )
 		 */
 
 
-		stat_compCount.push_back(compCount);
-		stat_ffSize.push_back(ffList.size());
-		stat_dspSize.push_back(dspcount);
-		stat_numXorcy.push_back(xorcycount);
-		stat_numMuxcy.push_back(muxcycount);
-
 
 
 		//Count the number of feed back flip flops	
+		/**********************************************************************
+		 *
+		 * Searching for sequential layout/patterns
+		 *
+		 **********************************************************************/
+		std::list<Vertex*> ffList;
+		//SEQUENTIAL::getFFList(ckt, ffList);
+		std::list<InOut*> ffFeedbackList;
+		SEQUENTIAL::getFFFeedbackList(ckt, ffFeedbackList);
+
 		gettimeofday(&fb_b, NULL); //--------------------------------------------
-		stat_numFFFeedback.push_back(SEQUENTIAL::getNumFFFeedback(ckt, ffList));
+		stat_numFFFeedback.push_back(ffFeedbackList.size());
 		gettimeofday(&fb_e, NULL); //--------------------------------------------
 
 
 		//Count the number of enable based registers
-		gettimeofday(&reg_b, NULL); //--------------------------------------------
-		std::map<unsigned, unsigned> rgcount;
-		SEQUENTIAL::findRegisterGroup(ffList, rgcount);
-		stat_reg.push_back(rgcount);
-		gettimeofday(&reg_e, NULL); //--------------------------------------------
+		//std::map<unsigned, unsigned> rgcount;
+		//SEQUENTIAL::findRegisterGroup(ffList, rgcount);
+		//stat_reg.push_back(rgcount);
 
 
 		stat_numCktInput.push_back(ckt->getNumInputs());
@@ -329,20 +330,27 @@ int main( int argc, char *argv[] )
 
 		//FIND COUNTERS
 		//SEQUENTIAL::counterIdentification(ckt);
-		std::map<unsigned,unsigned> casFFM1;
-		std::map<unsigned,unsigned> casFFM2;
+		std::map<unsigned,unsigned> casFFM1; std::map<unsigned,unsigned> casFFM2;
 		std::map<unsigned,unsigned> casFFM3;
 		std::map<unsigned,unsigned> blockFFM0;
 		std::map<unsigned,unsigned> blockFFM1;
 		std::map<unsigned,unsigned> blockFFM2;
 		std::map<unsigned,unsigned> counters;
-		SEQUENTIAL::cascadingFF(ckt, 1, casFFM1);
-		SEQUENTIAL::cascadingFF(ckt, 2, casFFM2);
-		SEQUENTIAL::cascadingFF(ckt, 3, casFFM3);
-		SEQUENTIAL::blockFF(ckt, 0, blockFFM0);
-		SEQUENTIAL::blockFF(ckt, 1, blockFFM1);
-		SEQUENTIAL::blockFF(ckt, 2, blockFFM2);
-		SEQUENTIAL::counterIdentification(ckt, counters);
+		gettimeofday(&cas_b, NULL); //--------------------------------------------
+		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList, 1, casFFM1);
+		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList,  2, casFFM2);
+		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList, 3, casFFM3);
+		gettimeofday(&cas_e, NULL); //--------------------------------------------
+
+		gettimeofday(&blk_b, NULL); //--------------------------------------------
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 0, blockFFM0);
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 1, blockFFM1);
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 2, blockFFM2);
+		gettimeofday(&blk_e, NULL); //--------------------------------------------
+
+		SEQUENTIAL::counterIdentification(ckt, ffFeedbackList, counters);
+
+		SEQUENTIAL::deleteFFFeedbackList(ffFeedbackList);
 
 		stat_cascadeFFM1.push_back(casFFM1);
 		stat_cascadeFFM2.push_back(casFFM2);
@@ -351,6 +359,15 @@ int main( int argc, char *argv[] )
 		stat_blockFFM1.push_back(blockFFM1);
 		stat_blockFFM2.push_back(blockFFM2);
 		stat_counter.push_back(counters);
+	
+
+
+
+		stat_compCount.push_back(compCount);
+		stat_dspSize.push_back(dspcount);
+		stat_numXorcy.push_back(xorcycount);
+		stat_numMuxcy.push_back(muxcycount);
+		stat_ffSize.push_back(ffList.size());
 
 
 		//Begin conversion to AIG
@@ -567,8 +584,18 @@ int main( int argc, char *argv[] )
 		elapsedTime += (func_e.tv_usec - func_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
 
+/*
 		elapsedTime = (reg_e.tv_sec - reg_b.tv_sec) * 1000.0;
 		elapsedTime += (reg_e.tv_usec - reg_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+		*/
+
+		elapsedTime = (cas_e.tv_sec - cas_b.tv_sec) * 1000.0;
+		elapsedTime += (cas_e.tv_usec - cas_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+		
+		elapsedTime = (blk_e.tv_sec - blk_b.tv_sec) * 1000.0;
+		elapsedTime += (blk_e.tv_usec - blk_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
 
 		elapsedTime = (fb_e.tv_sec - fb_b.tv_sec) * 1000.0;
@@ -689,12 +716,13 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
 			totalMux+=iMap->second;
 		}
-
+/*
 		printf("\nregisters\n");
 		for(iMap = stat_reg[i].begin(); iMap != stat_reg[i].end(); iMap++){
 			printf("\t%d-bit Reg %7d\n", iMap->first, iMap->second);
 			totalReg+=iMap->second;
 		}
+		*/
 
 		printf("\nDecoders\n");
 		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++)
@@ -780,7 +808,6 @@ int main( int argc, char *argv[] )
 	printf("%8s", "|AIG|");
 	printf("%8s", "|FF|");
 	printf("%8s", "|MUX|");
-	printf("%8s", "|REG|");
 	printf("%8s", "|DSP|");
 	printf("%8s", "|FFL|");
 	printf("%8s", "|MCY|");
@@ -799,7 +826,7 @@ int main( int argc, char *argv[] )
 		printf("%8d", stat_aigSize[i]);
 		printf("%8d", stat_ffSize[i]);
 		printf("%8d", stat_numMux[i]);
-		printf("%8d", stat_numReg[i]);
+		//printf("%8d", stat_numReg[i]);
 		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numFFFeedback[i]);
 		printf("%8d", stat_numMuxcy[i]);
@@ -1022,8 +1049,9 @@ int main( int argc, char *argv[] )
 	printf("%-12s", "I AIG");
 	printf("%-12s", "CE");
 	printf("%-12s", "CF");
-	printf("%-12s", "REG");
-	printf("%-12s", "F-FF");
+	printf("%-12s", "FF-CAS");
+	printf("%-12s", "FF-BLK");
+	printf("%-12s", "FF-FB");
 	printf("%-12s", "C-Count");
 	printf("%-12s", "LUT RPLC");
 	printf("%-12s", "MUX AGG");

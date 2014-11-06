@@ -239,7 +239,7 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 	for(iMap = outInMap.begin(); iMap != outInMap.end(); iMap++){
 		int outnode = iMap->first;
 		std::set<unsigned> input;
-
+		//printf("START DFS CALL\n");
 		DFS_gate(aig, outInMap, outnode, input);
 		if(input.size() > 5)
 			outInMap[iMap->first] = input;
@@ -328,6 +328,10 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 void AGGREGATION::DFS_gate(AIG* aig, std::map<unsigned, std::set<unsigned> >& outInMap, unsigned start, std::set<unsigned>& inputs){
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
 	iMap = outInMap.find(start);
+	if(iMap == outInMap.end()){
+		inputs.insert(start);
+		return;
+	}
 
 	std::list<unsigned> posInputs;
 	std::list<unsigned> negInputs;
@@ -1504,7 +1508,7 @@ void AGGREGATION::adderAggregation3_heuristic(AIG* aig,
 				 printf("%d ", *iSet);
 				 printf("\n");
 			 */
-			adderAggregation3_verify(aig, sumNodes, addIn, addOut);
+			//adderAggregation3_verify(aig, sumNodes, addIn, addOut);
 		}
 
 		else if(containment == false ){
@@ -1793,7 +1797,7 @@ void AGGREGATION::adderAggregation3_cleanup(AIG* aig,
 				 printf("\n\n");
 
 			 */
-			adderAggregation3_verify(aig, sumNodes, addIn, addOut);
+			//adderAggregation3_verify(aig, sumNodes, addIn, addOut);
 		}
 
 		/*
@@ -2419,7 +2423,7 @@ void AGGREGATION::findCarry(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 	}
 
 	adderAggregation3_cleanup(aigraph, sumNodes, addInputList, addOutputList);
-	adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
+	//adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
 
 
 
@@ -2463,18 +2467,11 @@ void AGGREGATION::findAdder(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 	cf->getHashMap(hmap);
 
 	//Find all adder bitslices 
-	std::vector<unsigned long long> xorFunction;
-	std::vector<unsigned long long> andFunction;
-	std::vector<unsigned long long> faCarry_f;
 	std::vector<unsigned long long> faSum_f;
-	std::vector<unsigned long long> faCarry2_f;
 	std::vector<unsigned long long> faSum2_f;
 	std::vector<unsigned long long> faSum3_f;
-	std::vector<unsigned long long> haCarry2_f;
 	std::vector<unsigned long long> haSum2_f;
-	std::vector<unsigned long long> haCarry3_f;
 	std::vector<unsigned long long> haSum3_f;
-	std::vector<unsigned long long> cla3_f;
 	printf(" * Parsing function database for half adder components...\n");
 
 	for(it = hmap.begin(); it!=hmap.end(); it++){
@@ -2498,13 +2495,13 @@ void AGGREGATION::findAdder(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 	//Get the map for function tt and every set of input and output with that function
 	//Function, Vector of every set of inputs with that function. Last item is the output node
 	std::map<unsigned long long, std::vector<InOut*> > pmap;
-	std::map<unsigned long long, std::vector<InOut*> > pmap_dc;
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	cf->getPortMap(pmap);
-	cf->getPortMap_DC(pmap_dc);
 
 
 	/*
+	std::map<unsigned long long, std::vector<InOut*> > pmap_dc;
+	cf->getPortMap_DC(pmap_dc);
 		 printf("\n\nHASUM2 FUNCTIONS: \n");
 		 printIO(pmap, haSum2_f);
 		 printf("\n\nHASUM3 FUNCTIONS: \n");
@@ -2613,9 +2610,9 @@ void AGGREGATION::findAdder(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 		iList2++;
 	}
 
-	adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
+	//adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
 	adderAggregation3_cleanup(aigraph, sumNodes, addInputList, addOutputList);
-	adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
+	//adderAggregation3_verify(aigraph, sumNodes, addInputList, addOutputList);
 
 
 

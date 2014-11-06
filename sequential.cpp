@@ -32,43 +32,47 @@ void SEQUENTIAL::getFFList(Graph* ckt, std::list<Vertex*>& ffList){
 
 
 
-
 /*****************************************************************************
  * getNumFFFeedback 
  *   FInd the number of FF with feed back loops from Q to D.  
  *
  * @PARAMS: ffList- List of flip flops 
  *****************************************************************************/
-int SEQUENTIAL::getNumFFFeedback(Graph* ckt, std::list<Vertex*>& ffList){
-	printf("[SEQ] -- Finding Number of Latches with Feedback from Q to D\n");
-	std::list<Vertex*>::iterator iList;
-	int possibleFF = 0;
+void SEQUENTIAL::getFFFeedbackList(Graph* ckt, std::list<InOut*>& ffList){
+	//Find all the flip flops in a circuit
+	std::map<int, Vertex*>::iterator it;
+	for(it = ckt->begin(); it != ckt->end(); it++){
+		if(it->second->getType().find("FD") != std::string::npos){
+			Vertex* ff = it->second;
 
-	//Finding input output loop for each FF
-	for(iList = ffList.begin(); iList != ffList.end(); iList++){
-		Vertex* ff = *iList;
+			//Check to see if Q loops back to D (Possible counter)		
+			std::set<unsigned> mark;
+			std::set<unsigned> ffFound;
 
-		//Check to see if Q loops back to D (Possible counter)
-		if(ff->getOVSize() == 0)
-			continue;
+			int dport = ff->getInputPortID("D");
+			DFS_FF(mark, ffFound, ckt->getVertex(dport));
 
-		std::set<int> mark;
-		int vID = ff->getID();
-		int dport = ff->getInputPortID("D");
+			//Check to see if current FF is in the input list (FEEDBACK)
+			if(ffFound.find(ff->getID()) != ffFound.end()){
+				InOut* inout = new InOut;
+				inout->output = ff->getID();
+				inout->input = ffFound;
+				ffList.push_back(inout);
+			}
 
-		//Make sure FF's have a D port
-		assert(dport != -1);
-		Vertex* dInput = ckt->getVertex(dport);
-
-		int found = ckt->DFS_FSM_S(mark, vID, dInput);
-		if(found == 1){
-			//printf("Loop back FF: %d\n", vID);
-			possibleFF++;
 		}
 	}
-
-	return possibleFF;
 }
+
+
+void SEQUENTIAL::deleteFFFeedbackList(std::list<InOut*>& ffList){
+	std::list<InOut*>::iterator it;
+
+	for(it = ffList.begin(); it != ffList.end(); it++)
+		delete *it;
+
+}
+
 
 
 
@@ -912,11 +916,10 @@ unsigned SEQUENTIAL::findNumMismatch(std::set<unsigned>& small, std::set<unsigne
  *    Looks for possible cascading input dependence
  *
  *#############################################################################*/
-bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap, 
-		std::list<std::set<unsigned> >::iterator  small, 
+bool SEQUENTIAL::cascade(std::map<unsigned, std::list<InOut* > >::iterator iMap, 
+		std::list<InOut*>::iterator  small, 
 		unsigned cascadeGap, 
-		std::set<unsigned>& ffs, 
-		std::map<std::set<unsigned>, std::list<unsigned> >& ffMap){
+		std::set<unsigned>& ffs){
 
 	std::set<unsigned>::iterator iSet;
 	/*
@@ -927,8 +930,8 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
 		 */
 
 
-	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap2;
-	std::list<std::set<unsigned> >::iterator iList;
+	std::map<unsigned, std::list<InOut* > >::iterator iMap2;
+	std::list<InOut*>::iterator iList;
 	iMap2 = iMap;
 	iMap2++;
 
@@ -946,10 +949,10 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
 			printf("\n");
 			*/
 
-			if(checkContainment(*small, *iList)){
+			if(checkContainment((*small)->input, (*iList)->input)){
 				//printf("CONTAINED!\n");
-				if(cascade(iMap2, iList, cascadeGap, ffs, ffMap)){
-					ffs.insert(ffMap[*iList].front());
+				if(cascade(iMap2, iList, cascadeGap, ffs)){
+					ffs.insert((*iList)->output);
 					iMap->second.erase(iList);
 				}
 				return true;
@@ -991,44 +994,23 @@ bool SEQUENTIAL::cascade(std::map<unsigned, std::list<std::set<unsigned> > >::it
  *    Looks for possible cascading input dependence
  *
  *#############################################################################*/
-void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned, unsigned>& result){
+void SEQUENTIAL::cascadingFF(Graph* ckt, std::list<InOut*>& ffList,  unsigned cascadeGap, std::map<unsigned, unsigned>& result){
 	printf("[SEQ] -- Searching for cascading FF structure...GAP: %d\n", cascadeGap);
 
-	//map of <ff id label, vid in the graph>
-	std::map<int, Vertex*>::iterator it;
-
-
 	//size, set of ff input dependence
-	std::map<unsigned, std::list<std::set<unsigned> > > orderedFF;
-	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap;
-	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap2;
+	std::map<unsigned, std::list<InOut*> > orderedFF;
+	std::map<unsigned, std::list<InOut*> >::iterator iMap;
+	std::map<unsigned, std::list<InOut*> >::iterator iMap2;
 
-	//FFSet, FF	
-	std::map<std::set<unsigned>, std::list<unsigned> > ffMap;
-
-	//Find all the flip flops in the circuit
-	std::set<unsigned> marked; 
-	//printf("[SEQ] -- Finding possible counter FF\n");
-	for(it = ckt->begin(); it != ckt->end(); it++){
-		if(it->second->getType().find("FD") != std::string::npos){
-			//Check to see if Q loops back to D (Possible counter)		
-			std::set<unsigned> mark;
-			std::set<unsigned> ffFound;
-
-			int dport = it->second->getInputPortID("D");
-			DFS_FF(mark, ffFound, ckt->getVertex(dport));
-
-			if(ffFound.find(it->second->getID()) != ffFound.end()){
-				//Order by size
-				orderedFF[ffFound.size()].push_back(ffFound);
-				ffMap[ffFound].push_back(it->second->getID());
-			}
-		}
+	std::list<InOut*>::iterator iListFF;
+	for(iListFF = ffList.begin(); iListFF != ffList.end(); iListFF++){
+			orderedFF[(*iListFF)->input.size()].push_back(*iListFF);
 	}
 
 	std::set<unsigned>::iterator iSet;
 	std::set<unsigned>::iterator iSet2;
-	std::list<std::set<unsigned> >::iterator iList;
+	std::list<InOut*>::iterator iList;
+
 
 /*
 	for(iMap = orderedFF.begin(); iMap != orderedFF.end(); iMap++){
@@ -1061,8 +1043,8 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
 			iList = iMap->second.begin();
 			while(iList != iMap->second.end()){
 				std::set<unsigned> ffs;
-				if(cascade(iMap, iList, cascadeGap, ffs, ffMap)){
-					ffs.insert(ffMap[*iList].front());
+				if(cascade(iMap, iList, cascadeGap, ffs)){
+					ffs.insert((*iList)->output);
 					iList = iMap->second.erase(iList);
 
 					//printf("Cascade size: %d\n", (int)ffs.size());
@@ -1095,39 +1077,20 @@ void SEQUENTIAL::cascadingFF(Graph* ckt, unsigned cascadeGap, std::map<unsigned,
  *    Looks for possible blocks of FF with input dependence
  *
  *#############################################################################*/
-void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, unsigned>& result){
+void SEQUENTIAL::blockFF(Graph* ckt, std::list<InOut*>& ffList,  unsigned maxMismatch, std::map<unsigned, unsigned>& result){
 	printf("[SEQ] -- Searching for Block FF structure\n");
 	printf(" * Mismatch set: %d\n", maxMismatch);
 
-	//map of <ff id label, vid in the graph>
-	std::map<int, Vertex*>::iterator it;
-
-
 	//size, set of ff input dependence
-	std::map<unsigned, std::list<std::set<unsigned> > > orderedFF;
-	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap;
-	std::map<unsigned, std::list<std::set<unsigned> > >::iterator iMap2;
+	std::map<unsigned, std::list<InOut*> > orderedFF;
+	std::map<unsigned, std::list<InOut*> >::iterator iMap;
+	std::map<unsigned, std::list<InOut*> >::iterator iMap2;
 
-	//FFSet, FF	
-	std::map<std::set<unsigned>, std::list<unsigned> > ffMap;
 
-	//Find all the flip flops in the circuit
-	std::set<unsigned> marked; 
 	//printf("[SEQ] -- Finding possible counter FF\n");
-	for(it = ckt->begin(); it != ckt->end(); it++){
-		if(it->second->getType().find("FD") != std::string::npos){
-			//Check to see if Q loops back to D (Possible counter)		
-			std::set<unsigned> mark;
-			std::set<unsigned> ffFound;
-
-			int dport = it->second->getInputPortID("D");
-			DFS_FF(mark, ffFound, ckt->getVertex(dport));
-
-			if(ffFound.find(it->second->getID()) != ffFound.end()){
-				orderedFF[ffFound.size()].push_back(ffFound);
-				ffMap[ffFound].push_back(it->second->getID());
-			}
-		}
+	std::list<InOut*>::iterator iListFF;
+	for(iListFF = ffList.begin(); iListFF != ffList.end(); iListFF++){
+			orderedFF[(*iListFF)->input.size()].push_back(*iListFF);
 	}
 
 	/*
@@ -1147,8 +1110,8 @@ void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, un
 	std::map<std::set<unsigned>, unsigned> resultTemp;
 	std::map<std::set<unsigned>, unsigned>::iterator iTemp;
 	std::set<unsigned>::iterator iSet;
-	std::list<std::set<unsigned> >::iterator iList;
-	std::list<std::set<unsigned> >::iterator iList2;
+	std::list<InOut*>::iterator iList;
+	std::list<InOut*>::iterator iList2;
 
 	for(iMap = orderedFF.begin(); iMap != orderedFF.end(); iMap++){
 		if(iMap->second.size() == 1) continue;
@@ -1170,15 +1133,15 @@ void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, un
 
 
 			while(iList2 != iMap->second.end()){
-				unsigned mismatch = findNumMismatch(*iList, *iList2, maxMismatch);
+				unsigned mismatch = findNumMismatch((*iList)->input, (*iList2)->input, maxMismatch);
 
 				//Makes sure the mismatch of a specific block remains the same throughout
 				//Don't mix mismatches
 
 				//Handle mismatches in the FF blocks
 				if(mismatch == maxMismatch){
-					if(resultTemp.find(*iList) == resultTemp.end()) resultTemp[*iList] = 1;
-					else resultTemp[*iList]++;
+					if(resultTemp.find((*iList)->input) == resultTemp.end()) resultTemp[(*iList)->input] = 1;
+					else resultTemp[(*iList)->input]++;
 
 					found = true;
 					iList2 = iMap->second.erase(iList2);
@@ -1245,6 +1208,7 @@ void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, un
 
 	for(iRes = result.begin(); iRes != result.end(); iRes++)
 		printf("Complete block size M0 SIZE(L): %3d\t\tblock size(H): %3d\n", (int)iRes->first, iRes->second);
+	
 
 }
 
@@ -1263,11 +1227,8 @@ void SEQUENTIAL::blockFF(Graph* ckt, unsigned maxMismatch, std::map<unsigned, un
  *    Looks for possible counters 	
  *
  *#############################################################################*/
-void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>& result){
+void SEQUENTIAL::counterIdentification(Graph* ckt, std::list<InOut*>& ffList,  std::map<unsigned, unsigned>& result){
 	printf("[SEQ] -- Counter Identification\n");
-
-	//map of <ff id label, vid in the graph>
-	std::map<int, Vertex*>::iterator it;
 
 	//FF, set of ff input dependence
 	std::map<unsigned, std::set<unsigned> > ffDependence;
@@ -1275,26 +1236,11 @@ void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>&
 	//Possible FF start, possible counter aggregation
 	std::map<unsigned, std::set<unsigned> > possibleStart;
 
-	//Find all the flip flops in the circuit
-	std::set<unsigned> marked; 
-	//printf("[SEQ] -- Finding possible counter FF\n");
-	for(it = ckt->begin(); it != ckt->end(); it++){
-		if(it->second->getType().find("FD") != std::string::npos){
-			//Check to see if Q loops back to D (Possible counter)		
-			std::set<unsigned> mark;
-			std::set<unsigned> ffFound;
-
-			int dport = it->second->getInputPortID("D");
-			DFS_FF(mark, ffFound, ckt->getVertex(dport));
-
-			if(ffFound.find(it->second->getID()) != ffFound.end()){
-				ffDependence[it->second->getID()] = ffFound;
-				if(ffFound.size() == 1){
-					possibleStart[it->second->getID()];
-					marked.insert(it->second->getID());
-				}
-			}
-		}
+	std::list<InOut*>::iterator iListFF;
+	for(iListFF = ffList.begin(); iListFF != ffList.end(); iListFF++){
+		ffDependence[(*iListFF)->output] = (*iListFF)->input;
+		if((*iListFF)->input.size() == 1)
+			possibleStart[(*iListFF)->output];
 	}
 
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
@@ -1343,7 +1289,8 @@ void SEQUENTIAL::counterIdentification(Graph* ckt, std::map<unsigned, unsigned>&
 	 */
 
 
-	//Go through each of the possible FF counters
+	//Go through each of the possible FF counter
+	std::set<unsigned> marked;
 	for(iMap2 = possibleStart.begin(); iMap2 != possibleStart.end(); iMap2++){
 		//printf("START NODE: %d\t\t", iMap2->first);
 
