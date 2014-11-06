@@ -370,6 +370,8 @@ void CutFunction::processAIGCuts(bool np){
 				pIndex++;		
 				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 			}
+			
+			delete [] permutation;
 			/*
 				 printf("\nCUT: ");
 				 for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++)
@@ -419,7 +421,6 @@ void CutFunction::processAIGCuts(bool np){
 			}
 
 			m_NodeValue.clear();
-			delete [] permutation;
 		}
 	}
 }
@@ -469,6 +470,8 @@ void CutFunction::processAIGCutsX(bool np){
 				//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
 			}
 
+			delete [] permutation;
+
 			//Calculate the output at each node up to the current node
 			calculate(node);
 			unsigned long long functionVal = m_NodeValue[node];
@@ -516,7 +519,6 @@ void CutFunction::processAIGCutsX(bool np){
 				m_PortMap[function].push_back(inout);
 			}
 
-			delete [] permutation;
 
 
 			//***************************************************************************
