@@ -597,6 +597,10 @@ void CutEnumeration::printStat(){
 		numCuts+=m_Cuts[i].size();
 	}
 	printf("Number of Cuts:\t\t%d\n\n", numCuts);	
+	printf("--------------------------------------------\n");
+	printf("Number of AND Gates: %d\n", m_AIGraph->getSize());
+	printf("Number of PI       : %d\n", m_AIGraph->getInputSize());
+	printf("Number of PO       : %d\n", m_AIGraph->getOutputSize());
 }
 
 

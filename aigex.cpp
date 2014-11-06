@@ -20,6 +20,7 @@
 #include <list>
 
 #include "aig.hpp"
+#include "cutenumeration.hpp"
 
 
 #ifndef GE_GUARD
@@ -183,6 +184,34 @@ int main( int argc, char *argv[] )
 			printf("\n");
 
 
+		}
+		else if(command == "aiger"){
+			std::string cktname = argv[1];
+			int index = cktname.rfind("/")+1;
+			cktname = cktname.substr(index, cktname.length()-index-4);
+			std::string type;
+			std::cin>>type;
+			if(type == "b"){
+				aig->writeAiger("aiger/" + cktname + "_binary.aag", true);
+				printf("Exiting due to reencode from aiger when writing to binary\n");
+				break;
+			}
+			else if(type == "a"){
+				aig->writeAiger("aiger/" + cktname + "_ascii.aag", true);
+				printf("ASCII AIGER file exported\n");
+			}
+
+		}
+		else if(command == "stats"){
+			printf("Number of AND Gates: %d\n", aig->getSize());
+			printf("Number of PI       : %d\n", aig->getInputSize());
+			printf("Number of PO       : %d\n", aig->getOutputSize());
+		}
+		else if(command == "cut"){
+			CutEnumeration* cut = new CutEnumeration (aig);
+			cut->findKFeasibleCuts(6);
+			cut->printStat();
+			delete cut;
 		}
 
 

@@ -1,2 +1,4 @@
 circuits/g/primitive/
-circuits/temp/b22_og.cnl
+circuits/netlist/s344_og.cnl
+circuits/netlist/s344_c.cnl
+circuits/netlist/s349_og.cnl

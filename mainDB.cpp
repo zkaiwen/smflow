@@ -11,8 +11,6 @@
 
 #ifndef MAINDB_GUARD
 #define MAINDB_GUARD
-//#include <boost/graph/adjacency_list.hpp>
-//#include <boost/graph/vf2_sub_graph_iso.hpp>
 
 #include <fstream>
 #include <stdlib.h>
@@ -31,11 +29,6 @@
 #include "sequential.hpp"
 #include "aggregation.hpp"
 #include "similarity.hpp"
-
-//using namespace boost;
-
-//Flags
-bool verbose;
 
 //Special Print Function
 void printStatement(std::string statement){
@@ -93,13 +86,18 @@ int main( int argc, char *argv[] )
 	timeval func_b, func_e;
 	timeval rlut_b, rlut_e ;
 	timeval igraph_b, igraph_e;
-	timeval count_b, count_e;
 	timeval fb_b, fb_e;
 	timeval cas_b, cas_e;
-	timeval blk_b, blk_e;
 	timeval mux_b, mux_e;
+	timeval blk_b, blk_e;
+	timeval outc_b, outc_e;
+	timeval ffc_b, ffc_e;
 	timeval dec_b, dec_e;
-	//timeval fgp_b, fgp_e;
+	timeval lib_b, lib_e;
+	timeval cnt_b, cnt_e;
+	timeval eq_b, eq_e;
+	timeval gate_b, gate_e;
+	timeval par_b, par_e;
 	timeval add_b, add_e;
 
 	float elapsedTime;
@@ -117,24 +115,18 @@ int main( int argc, char *argv[] )
 	std::vector<unsigned int> stat_wienerIndex;
 	std::vector<unsigned int> stat_aigSize;
 	std::vector<unsigned int> stat_ffSize;
-	std::vector<unsigned int> stat_dspSize;
 	std::vector<unsigned int> stat_numInput;
 	std::vector<unsigned int> stat_numCktInput;
 	std::vector<unsigned int> stat_numCktOutput;
 	std::vector<unsigned int> stat_numOutput;
 	std::vector<unsigned int> stat_numMux;
-	std::vector<unsigned int> stat_numReg;
 	std::vector<unsigned int> stat_numLUTs;
-	std::vector<unsigned int> stat_numMuxcy;
-	std::vector<unsigned int> stat_numXorcy;
 	std::vector<unsigned int> stat_numFFFeedback;
 
 	//Mux Type (2-1, 4-1), mux size (2bit, 4bit), count
 	std::vector<std::map<unsigned, unsigned> >  stat_decAgg;
 	std::vector<std::vector<unsigned> >  stat_addAgg;
-
 	std::vector< std::vector<float> > stat_time;
-	std::vector<float> stat_fingerprintTime;
 
 	//size/count
 	std::vector<std::map<unsigned, unsigned> > stat_mux2;
@@ -161,12 +153,6 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
-	std::vector<unsigned > stat_f1;
-	std::vector<unsigned > stat_f2;
-	std::vector<unsigned > stat_f1f2;
-
-
-
 
 
 
@@ -175,11 +161,6 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	if(argc == 5) 
 		option = argv[4];
-
-	verbose = false;
-	if(option.find("v") != std::string::npos)
-		verbose = true;
-
 
 
 
@@ -202,9 +183,11 @@ int main( int argc, char *argv[] )
 	//*************************************************************************
 	//*  Preprocess library for boolean matching 
 	//**************************************************************************
+	gettimeofday(&lib_b, NULL); //--------------------------------------------
 	printStatement("Performing Library preprocessing");
 	CutFunction* functionCalc = new CutFunction();
 	functionCalc->preProcessLibrary(primBase);
+	gettimeofday(&lib_e, NULL); //--------------------------------------------
 	//functionCalc->printLibrary();
 
 
@@ -219,229 +202,156 @@ int main( int argc, char *argv[] )
 	//int sdfid = 100183;
 
 
+	//*************************************************************************
+	//*  Process Data base file and extract features from circuits
+	//**************************************************************************
 	while(getline(infile, file)){
 		//Handles empty lines in files
 		if(file == "\n")
 			continue;
 
-		std::vector<float> time;
-		time.reserve(10);
 
 		printStatement("[MAIN] -- Processing File: " +  file);
 		name.push_back(file);
 
-		//Import circuit and convert to AIG
+	//*************************************************************************
+	//* Import circuits and convert to AIG 
+	//**************************************************************************
 		gettimeofday(&igraph_b, NULL); //--------------------------------------------
 		Graph* ckt = new Graph(file);
 		ckt->importGraph(file, 0);
+		stat_numCktInput.push_back(ckt->getNumInputs());
+		stat_numCktOutput.push_back(ckt->getNumOutputs());
 		gettimeofday(&igraph_e, NULL); //--------------------------------------------
 
 
 
-		//Replace all the luts with combinational logic
+
+	//*************************************************************************
+	//* Replace LUT with combinational logic 
+	//**************************************************************************
 		gettimeofday(&rlut_b, NULL); //--------------------------------------------
 		unsigned int numLUTs = SEQUENTIAL::replaceLUTs(ckt);
-		gettimeofday(&rlut_e, NULL); //--------------------------------------------
-		printf(" * Replaced %d LUTs\n", numLUTs);
 		stat_numLUTs.push_back(numLUTs);
+		printf(" * Replaced %d LUTs\n", numLUTs);
+		gettimeofday(&rlut_e, NULL); //--------------------------------------------
 
 
 
-		//Count the number of specific components
-		std::map<int, Vertex*>::iterator cktit;
-		std::map<std::string, int> compCount;   //Component, count
-		unsigned int dspcount = 0;
-		unsigned int muxcycount = 0;
-		unsigned int xorcycount = 0;
-		//select bit, count
-		std::map<int,int> muxSelCount;
-
-		gettimeofday(&count_b, NULL); //--------------------------------------------
-		for(cktit = ckt->begin(); cktit != ckt->end(); cktit++){
-			if(compCount.find(cktit->second->getType()) != compCount.end())
-				compCount[cktit->second->getType()]++;
-			else
-				compCount[cktit->second->getType()] = 1; 
-
-			std::string type = cktit->second->getType();
-			if (type.find("MUXCY") != std::string::npos){
-				muxcycount++;
-				std::vector<Vertex*> input;
-				std::vector<std::string> inputPort;
-
-				cktit->second->getInput(input);
-				cktit->second->getInputPorts(inputPort);
-
-				assert(input.size() == 3);
-				for(unsigned int i = 0; i < input.size(); i++){
-					//printf("%s:%d   ", inputPort[i].c_str(), input[i]->getID());
-					if(inputPort[i] == "S"){
-						if(muxSelCount.find(input[i]->getID()) == muxSelCount.end())
-							muxSelCount[input[i]->getID()] = 1;
-						else
-							muxSelCount[input[i]->getID()]++;
-					}
-				}
-			}
-			else if (type.find("XORCY") != std::string::npos)
-				xorcycount++;
-			else if (type.find("DSP") != std::string::npos)
-				dspcount++;
-
-		}
-
-
-		gettimeofday(&count_e, NULL); //--------------------------------------------
-
-		/*
-			 std::map<int,int>::iterator mscit;
-			 for(mscit = muxSelCount.begin(); mscit != muxSelCount.end(); mscit++){
-			 printf("SELECT BIT: %d\tCOUNT: %d\n", mscit->first, mscit->second);
-			 }
-		 */
-
-
-
-
-		//Count the number of feed back flip flops	
-		/**********************************************************************
-		 *
-		 * Searching for sequential layout/patterns
-		 *
-		 **********************************************************************/
-		std::list<Vertex*> ffList;
-		//SEQUENTIAL::getFFList(ckt, ffList);
-		std::list<InOut*> ffFeedbackList;
-		SEQUENTIAL::getFFFeedbackList(ckt, ffFeedbackList);
-
-		gettimeofday(&fb_b, NULL); //--------------------------------------------
-		stat_numFFFeedback.push_back(ffFeedbackList.size());
-		gettimeofday(&fb_e, NULL); //--------------------------------------------
-
-
+	//*************************************************************************
+	//*  Searching for sequential layout/patterns
+	//**************************************************************************
 		//Count the number of enable based registers
 		//std::map<unsigned, unsigned> rgcount;
 		//SEQUENTIAL::findRegisterGroup(ffList, rgcount);
 		//stat_reg.push_back(rgcount);
+	
+		//Count number of FF
+		std::list<Vertex*> ffList;
+		SEQUENTIAL::getFFList(ckt, ffList);
+		stat_ffSize.push_back(ffList.size());
 
+		//Count the number of feed back flip flops	
+		gettimeofday(&fb_b, NULL); //--------------------------------------------
+		std::list<InOut*> ffFeedbackList;
+		SEQUENTIAL::getFFFeedbackList(ckt, ffFeedbackList);
+		stat_numFFFeedback.push_back(ffFeedbackList.size());
+		gettimeofday(&fb_e, NULL); //--------------------------------------------
 
-		stat_numCktInput.push_back(ckt->getNumInputs());
-		stat_numCktOutput.push_back(ckt->getNumOutputs());
-
-		//FIND COUNTERS
-		//SEQUENTIAL::counterIdentification(ckt);
-		std::map<unsigned,unsigned> casFFM1; std::map<unsigned,unsigned> casFFM2;
-		std::map<unsigned,unsigned> casFFM3;
-		std::map<unsigned,unsigned> blockFFM0;
-		std::map<unsigned,unsigned> blockFFM1;
-		std::map<unsigned,unsigned> blockFFM2;
-		std::map<unsigned,unsigned> counters;
+		//Look for cascading FF input structure
 		gettimeofday(&cas_b, NULL); //--------------------------------------------
+		std::map<unsigned,unsigned> casFFM1; 
+		std::map<unsigned,unsigned> casFFM2;
+		std::map<unsigned,unsigned> casFFM3;
 		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList, 1, casFFM1);
 		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList,  2, casFFM2);
 		SEQUENTIAL::cascadingFF(ckt, ffFeedbackList, 3, casFFM3);
-		gettimeofday(&cas_e, NULL); //--------------------------------------------
-
-		gettimeofday(&blk_b, NULL); //--------------------------------------------
-		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 0, blockFFM0);
-		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 1, blockFFM1);
-		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 2, blockFFM2);
-		gettimeofday(&blk_e, NULL); //--------------------------------------------
-
-		SEQUENTIAL::counterIdentification(ckt, ffFeedbackList, counters);
-
-		SEQUENTIAL::deleteFFFeedbackList(ffFeedbackList);
-
 		stat_cascadeFFM1.push_back(casFFM1);
 		stat_cascadeFFM2.push_back(casFFM2);
 		stat_cascadeFFM3.push_back(casFFM3);
+		gettimeofday(&cas_e, NULL); //--------------------------------------------
+
+		//Look for Block FF input structure
+		gettimeofday(&blk_b, NULL); //--------------------------------------------
+		std::map<unsigned,unsigned> blockFFM0;
+		std::map<unsigned,unsigned> blockFFM1;
+		std::map<unsigned,unsigned> blockFFM2;
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 0, blockFFM0);
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 1, blockFFM1);
+		SEQUENTIAL::blockFF(ckt, ffFeedbackList, 2, blockFFM2);
 		stat_blockFFM0.push_back(blockFFM0);
 		stat_blockFFM1.push_back(blockFFM1);
 		stat_blockFFM2.push_back(blockFFM2);
+		gettimeofday(&blk_e, NULL); //--------------------------------------------
+
+		//Look for possible counters based on strcutural features
+		gettimeofday(&cnt_b, NULL); //--------------------------------------------
+		std::map<unsigned,unsigned> counters;
+		SEQUENTIAL::counterIdentification(ckt, ffFeedbackList, counters);
 		stat_counter.push_back(counters);
+		gettimeofday(&cnt_e, NULL); //--------------------------------------------
+
+		SEQUENTIAL::deleteFFFeedbackList(ffFeedbackList);
+
 	
 
 
 
-		stat_compCount.push_back(compCount);
-		stat_dspSize.push_back(dspcount);
-		stat_numXorcy.push_back(xorcycount);
-		stat_numMuxcy.push_back(muxcycount);
-		stat_ffSize.push_back(ffList.size());
-
-
-		//Begin conversion to AIG
-		AIG* aigraph = new AIG();
 		/*aigraph->convertGraph2AIG(ckt, true);
+			//USING OPEN BABEL TO CHECK SIMILARITY
 			int lastSlashIndex = file.find_last_of("/") + 1;
 			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
 			ckt->exportGraphSDFV3000(cname, sdfid);
 			sdfid++;
 		 */
 
+	//*************************************************************************
+	//* AIG Translation 
+	//**************************************************************************
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
+		AIG* aigraph = new AIG();
 		aigraph->convertGraph2AIG(ckt, false);
-		//aigraph->printMap();
-		//aigraph->print();
-		gettimeofday(&iaig_e, NULL);
-
 		stat_aigSize.push_back(aigraph->getSize());
 		stat_numInput.push_back(ckt->getNumInputs());
 		stat_numOutput.push_back(ckt->getNumOutputs());
-
-
-
-		/*
-			 std::list<unsigned> out;
-			 std::set<unsigned> in;
-			 in.insert(2);
-			 in.insert(4);
-			 in.insert(6);
-			 in.insert(8);
-			 in.insert(10);
-			 in.insert(12);
-			 in.insert(14);
-			 in.insert(16);
-			 out.push_back(204);
-			 aigraph->printSubgraph(out, in);
-			 out.clear();
-		 */
+		//aigraph->printMap();
+		//aigraph->print();
+		gettimeofday(&iaig_e, NULL);//--------------------------------------------
 
 
 
 
 
 
-
-		//PERFORM K CUT ENUMERATION
+	//*************************************************************************
+	//* K Cut Enumeration 
+	//**************************************************************************
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
-		//cut->print();
+		gettimeofday(&ce_e, NULL); //------------------------------------------------
 
 
 
-		/**********************************************************************
-		 *
-		 * Searching for output/FF input cut correspondence
-		 *
-		 **********************************************************************/
-
+	
+	
+	//*************************************************************************
+	//* Input correspondence 
+	//**************************************************************************
 		//Find input cut for FF nodes----------------------------
+		gettimeofday(&outc_b, NULL); //------------------------------------------------
 		std::vector<unsigned> nodes;
-
-		//Cut input size, count
 		aigraph->getFFInput(nodes);
-		cut->findInputCut(nodes);
+		cut->findInputCut(nodes);  	//This stores the result in Cut2
+
+		//Node, Set of inputs to the node
+		std::map<unsigned, std::set<unsigned> > cutIn;
+		cut->getCut2(cutIn);
 
 		//Cut input size, count
 		std::map<unsigned, unsigned> cutCountFF;
 
-		//Node, Set of inputs to the node
-		std::map<unsigned, std::set<unsigned> > cutIn;
 		std::map<unsigned, std::set<unsigned> >::iterator iCut;
-		cut->getCut2(cutIn);
-
 		for(iCut = cutIn.begin(); iCut != cutIn.end(); iCut++){
 			if(cutCountFF.find(iCut->second.size()) == cutCountFF.end())
 				cutCountFF[iCut->second.size()] = 1;
@@ -449,10 +359,13 @@ int main( int argc, char *argv[] )
 				cutCountFF[iCut->second.size()]++; 
 		}
 		stat_spCutCountFF.push_back(cutCountFF);
+		gettimeofday(&outc_e, NULL); //------------------------------------------------
 
 
-		//Find input cut for out nodes----------------------------
+		//Find Input cut for output nodes
+		gettimeofday(&ffc_b, NULL); //------------------------------------------------
 		nodes.clear();
+		cutIn.clear();
 		aigraph->getOutInput(nodes);  
 		cut->findInputCut(nodes);	//Sets the result in cut2
 
@@ -466,71 +379,78 @@ int main( int argc, char *argv[] )
 				cutCountOut[iCut->second.size()]++; 
 		}
 		stat_spCutCountOut.push_back(cutCountOut);
+		gettimeofday(&ffc_e, NULL); //------------------------------------------------
 
 
 
 
 
-		gettimeofday(&ce_e, NULL); //------------------------------------------------
-
-
-
-
-		//PERFORM BOOLEAN MATCHING
+	//*************************************************************************
+	//* Calculate Function based on K-Cuts 
+	//**************************************************************************
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
 		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
-		functionCalc->printUniqueFunctionStat();
 
 
 
 
 
 
-		/***************************************************************************
-		 *
-		 * Start aggregation
-		 *
-		 ***************************************************************************/
+	//*************************************************************************
+	//* Aggregate similar functions 
+	//**************************************************************************
 		//DECODER AGGREGATION
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> decoderResult;
-		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult);
+		std::map<unsigned, std::set<unsigned> > decoderIOResult;
+		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult, decoderIOResult);
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
 
 		//ADDER AGGREGATION
 		std::map<unsigned, unsigned> addResult;
 		std::map<unsigned, unsigned> addAggResult;
+		std::map<unsigned, std::set<unsigned> > addIOResult;
 		std::map<unsigned, unsigned> carryResult;
 		std::map<unsigned, unsigned> carryAggResult;
+		std::map<unsigned, std::set<unsigned> > carryIOResult;
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
-		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult);
+		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
 
-		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult);
+		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
 		stat_carry.push_back(carryResult);
 		stat_carryAgg.push_back(carryAggResult);
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
 		//PARITY AGGREGATION
+		gettimeofday(&par_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> parityResult;
-		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult);
+		std::map<unsigned, std::set<unsigned> > parityIOResult;
+		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult, parityIOResult);
 		stat_parity.push_back(parityResult);
+		gettimeofday(&par_e, NULL); //-----------------------------------------------
 
 		//GATE FUNCTION AGGREGATION
+		gettimeofday(&gate_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> gateResult;
-		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult);
+		std::map<unsigned, std::set<unsigned> > gateIOResult;
+		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult, gateIOResult);
 		stat_gate.push_back(gateResult);
+		gettimeofday(&gate_e, NULL); //-----------------------------------------------
 
 		//EQUALITY FUNCTION AGGREGATION
+		gettimeofday(&eq_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> equalResult;
-		AGGREGATION::findEquality(functionCalc, aigraph, equalResult);
+		std::map<unsigned, std::set<unsigned> > equalIOResult;
+		AGGREGATION::findEquality(functionCalc, aigraph, equalResult, equalIOResult);
 		stat_equal.push_back(equalResult);
+		gettimeofday(&eq_e, NULL); //-----------------------------------------------
 
 
 		//MULTIPLEXOR AGGREGATION
@@ -539,7 +459,8 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> muxResult2;
 		std::map<unsigned, unsigned> muxResult3;
 		std::map<unsigned, unsigned> muxResult4;
-		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4);
+		std::map<unsigned, std::set<unsigned> > muxIOResult;
+		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4, muxIOResult);
 
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		
@@ -554,10 +475,10 @@ int main( int argc, char *argv[] )
 
 
 
+		/*
 		std::map<unsigned long long, int> functionCount;
 		functionCalc->getFunctionCount(functionCount);
 		count.push_back(functionCount.size());
-		/*
 			 outdb<< file << "\n";
 			 outdb<< functionCount.size() << "\n";
 			 for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
@@ -567,7 +488,12 @@ int main( int argc, char *argv[] )
 
 
 
-		//Calculate elapsed time
+	//*************************************************************************
+	//* Calculate Elapsed Time 
+	//**************************************************************************
+		std::vector<float> time;
+		time.reserve(20);
+		
 		elapsedTime = (igraph_e.tv_sec - igraph_b.tv_sec) * 1000.0;
 		elapsedTime += (igraph_e.tv_usec - igraph_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
@@ -579,16 +505,19 @@ int main( int argc, char *argv[] )
 		elapsedTime = (ce_e.tv_sec - ce_b.tv_sec) * 1000.0;     
 		elapsedTime += (ce_e.tv_usec - ce_b.tv_usec) / 1000.0;  
 		time.push_back(elapsedTime/1000);
+		
+		elapsedTime = (outc_e.tv_sec - outc_b.tv_sec) * 1000.0;     
+		elapsedTime += (outc_e.tv_usec - outc_b.tv_usec) / 1000.0;  
+		time.push_back(elapsedTime/1000);
+
+
+		elapsedTime = (ffc_e.tv_sec - ffc_b.tv_sec) * 1000.0;     
+		elapsedTime += (ffc_e.tv_usec - ffc_b.tv_usec) / 1000.0;  
+		time.push_back(elapsedTime/1000);
 
 		elapsedTime = (func_e.tv_sec - func_b.tv_sec) * 1000.0;
 		elapsedTime += (func_e.tv_usec - func_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-
-/*
-		elapsedTime = (reg_e.tv_sec - reg_b.tv_sec) * 1000.0;
-		elapsedTime += (reg_e.tv_usec - reg_b.tv_usec) / 1000.0;
-		time.push_back(elapsedTime/1000);
-		*/
 
 		elapsedTime = (cas_e.tv_sec - cas_b.tv_sec) * 1000.0;
 		elapsedTime += (cas_e.tv_usec - cas_b.tv_usec) / 1000.0;
@@ -601,13 +530,25 @@ int main( int argc, char *argv[] )
 		elapsedTime = (fb_e.tv_sec - fb_b.tv_sec) * 1000.0;
 		elapsedTime += (fb_e.tv_usec - fb_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-
-		elapsedTime = (count_e.tv_sec - count_b.tv_sec) * 1000.0;
-		elapsedTime += (count_e.tv_usec - count_b.tv_usec) / 1000.0;
+		
+		elapsedTime = (cnt_e.tv_sec - cnt_b.tv_sec) * 1000.0;     
+		elapsedTime += (cnt_e.tv_usec - cnt_b.tv_usec) / 1000.0;  
 		time.push_back(elapsedTime/1000);
 
 		elapsedTime = (rlut_e.tv_sec - rlut_b.tv_sec) * 1000.0;
 		elapsedTime += (rlut_e.tv_usec - rlut_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+
+		elapsedTime = (par_e.tv_sec - par_b.tv_sec) * 1000.0;
+		elapsedTime += (par_e.tv_usec - par_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+		
+		elapsedTime = (gate_e.tv_sec - gate_b.tv_sec) * 1000.0;
+		elapsedTime += (gate_e.tv_usec - gate_b.tv_usec) / 1000.0;
+		time.push_back(elapsedTime/1000);
+	
+		elapsedTime = (eq_e.tv_sec - eq_b.tv_sec) * 1000.0;
+		elapsedTime += (eq_e.tv_usec - eq_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
 
 		elapsedTime = (mux_e.tv_sec - mux_b.tv_sec) * 1000.0;
@@ -621,7 +562,6 @@ int main( int argc, char *argv[] )
 		elapsedTime = (add_e.tv_sec - add_b.tv_sec) * 1000.0;
 		elapsedTime += (add_e.tv_usec - add_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-
 		stat_time.push_back(time);
 
 		delete aigraph;
@@ -629,12 +569,40 @@ int main( int argc, char *argv[] )
 		delete ckt;
 		functionCalc->reset();
 	}
+
 	delete functionCalc;
 
 	outdb << "END\n";
 	outdb.close();
 	printStatement("Build Database Complete");
 	printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
+		
+	
+	
+	
+	//*************************************************************************
+	//* Form the timing label 
+	//**************************************************************************
+	std::vector<std::string> tLabel;
+	tLabel.reserve(20);
+		tLabel.push_back("GRP-IM");
+		tLabel.push_back("AIG-CN");
+		tLabel.push_back("CUT");
+		tLabel.push_back("OUT-C");
+		tLabel.push_back("FF-C");
+		tLabel.push_back("CUT-F");
+		tLabel.push_back("FF-CAS");
+		tLabel.push_back("FF-BLK");
+		tLabel.push_back("FF-FB");
+		tLabel.push_back("CNT");
+		tLabel.push_back("LUT-R");
+		tLabel.push_back("PAR-A");
+		tLabel.push_back("GAT-A");
+		tLabel.push_back("EQ-A");
+		tLabel.push_back("MUX-A");
+		tLabel.push_back("DEC-A");
+		tLabel.push_back("ADD-A");
+
 
 
 
@@ -646,60 +614,13 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR-  Print intermediate results for each circuit 
 	//**************************************************************************
-	//Counting aggregated muxes
-	std::map<unsigned, std::map<unsigned, unsigned> >::iterator iMapM;
-	std::map<unsigned, unsigned>::iterator iMap;
-	std::vector<std::vector<unsigned long long> >fpRegs;
-	std::vector<std::vector<unsigned long long> >fpMuxes;
-	std::vector<std::vector<unsigned long long> >fingerprintList;
-	fpRegs.reserve(name.size());
-	fpMuxes.reserve(name.size());
-	fingerprintList.reserve(name.size());
-
 	for(unsigned int i = 0; i < name.size(); i++){
 		printf("\n================================================================================\n");
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-20s\n", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
 		printf("================================================================================\n");
 
-		/*
-		//Get fingerprint for mux
-		gettimeofday(&fgp_b, NULL);//------------------------------------------
-		std::vector<unsigned long long> fingerprintMux;
-		fingerprintMux.resize(12);
-		SIMILARITY::getMuxFingerprint_naive(stat_muxAgg[i], fingerprintMux);
-		// * 0-11 mux
-		// * 12-15 reg
-		fpMuxes.push_back(fingerprintMux);
-
-		std::vector<unsigned long long> fingerprint;
-		for(unsigned int k = 0; k < fingerprintMux.size(); k++)
-		fingerprint.push_back(fingerprintMux[k]);
-
-		gettimeofday(&fgp_e, NULL);//------------------------------------------
-		elapsedTime = (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
-		elapsedTime += (fgp_e.tv_usec - fgp_b.tv_usec) / 1000.0;
-
-
-
-
-		gettimeofday(&fgp_b, NULL);//------------------------------------------
-		std::vector<unsigned long long> fingerprintReg;
-		fingerprintReg.resize(4);
-		SIMILARITY::getRegFingerprint_naive(stat_reg[i], fingerprintReg);
-		fpRegs.push_back(fingerprintReg);
-
-		for(unsigned int k = 0; k < fingerprintReg.size(); k++)
-		fingerprint.push_back(fingerprintReg[k]);
-		fingerprintList.push_back(fingerprint);
-
-		gettimeofday(&fgp_e, NULL);//------------------------------------------
-		elapsedTime += (fgp_e.tv_sec - fgp_b.tv_sec) * 1000.0;
-		elapsedTime += (fgp_e.tv_usec - fgp_b.tv_usec) / 1000.0;
-		 */
-
 		int totalMux = 0;
-		int totalReg = 0;
 		printf("\n2-1 MUX:\n");
 		std::map<unsigned, unsigned>::iterator iMap;
 		for(iMap = stat_mux2[i].begin(); iMap != stat_mux2[i].end(); iMap++){
@@ -716,13 +637,6 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
 			totalMux+=iMap->second;
 		}
-/*
-		printf("\nregisters\n");
-		for(iMap = stat_reg[i].begin(); iMap != stat_reg[i].end(); iMap++){
-			printf("\t%d-bit Reg %7d\n", iMap->first, iMap->second);
-			totalReg+=iMap->second;
-		}
-		*/
 
 		printf("\nDecoders\n");
 		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++)
@@ -753,37 +667,7 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_equal[i].begin(); iMap != stat_equal[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 
-		/*
-			 std::map<unsigned, unsigned>::iterator iCount;
-			 printf("Special Cut FF Input size Count\n");
-			 for(iCount = stat_spCutCountFF[i].begin(); iCount != stat_spCutCountFF[i].end(); iCount++){
-			 printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
-			 }
-			 printf("Special Cut Out Input size Count\n");
-			 for(iCount = stat_spCutCountOut[i].begin(); iCount != stat_spCutCountOut[i].end(); iCount++){
-			 printf(" * Size: %3d\tCount: %3d\n", iCount->first, iCount->second);
-			 }
-		 */
-
-
-
 		stat_numMux.push_back(totalMux);
-		stat_numReg.push_back(totalReg);
-		stat_fingerprintTime.push_back(elapsedTime);
-
-		/*
-			 printf("\nMux Fingerprint:\t");
-			 for(unsigned int i =  0; i < fingerprintMux.size(); i++){
-			 printf("%llx ", fingerprintMux[i]);
-			 }
-			 printf("\n");
-
-			 printf("Register fingerprint:\t");
-			 for(unsigned int i =  0; i < fingerprintReg.size(); i++){
-			 printf("%llx ", fingerprintReg[i]);
-			 }
-			 printf("\n");
-		 */
 	}
 	printf("\n\n");
 
@@ -803,15 +687,10 @@ int main( int argc, char *argv[] )
 	printf("%5s", "CkPI");
 	printf("%5s", "In");
 	printf("%5s", "CkPO");
-	printf("%8s", "Func");
-	//printf("%8s", "Wiener");
 	printf("%8s", "|AIG|");
 	printf("%8s", "|FF|");
 	printf("%8s", "|MUX|");
-	printf("%8s", "|DSP|");
 	printf("%8s", "|FFL|");
-	printf("%8s", "|MCY|");
-	printf("%8s", "|XCY|");
 	printf("%8s", "|LUTs|");
 	printf("\n");
 	printf("--------------------------------------------------------------------------------\n");
@@ -821,16 +700,10 @@ int main( int argc, char *argv[] )
 		printf("%5d", stat_numCktInput[i]);
 		printf("%5d", stat_numInput[i]);
 		printf("%5d", stat_numCktOutput[i]);
-		printf("%8d", count[i]);
-		//printf("%8d", stat_wienerIndex[i]);
 		printf("%8d", stat_aigSize[i]);
 		printf("%8d", stat_ffSize[i]);
 		printf("%8d", stat_numMux[i]);
-		//printf("%8d", stat_numReg[i]);
-		printf("%8d", stat_dspSize[i]);
 		printf("%8d", stat_numFFFeedback[i]);
-		printf("%8d", stat_numMuxcy[i]);
-		printf("%8d", stat_numXorcy[i]);
 		printf("%8d", stat_numLUTs[i]);
 		printf("\n");
 	}
@@ -840,12 +713,6 @@ int main( int argc, char *argv[] )
 
 
 
-	std::vector<std::vector< std::vector<double> > > simTable;
-	simTable.reserve(name.size());
-	for(unsigned int i = 0; i < name.size(); i++){
-		std::vector<std::vector<double> > sim(name.size());
-		simTable.push_back(sim);
-	}
 
 
 
@@ -854,15 +721,19 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- Print similarity results 
 	//**************************************************************************
+	std::vector<std::vector< std::vector<double> > > simTable;
+	simTable.reserve(name.size());
+	for(unsigned int i = 0; i < name.size(); i++){
+		std::vector<std::vector<double> > sim(name.size());
+		simTable.push_back(sim);
+	}
+
 	printf("[MAINDB] -- Calculating similarity for 2-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux2, simTable);
 	printf("[MAINDB] -- Calculating similarity for 3-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux3, simTable);
 	printf("[MAINDB] -- Calculating similarity for 4-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux4, simTable);
-
-	//printf("\n[MAINDB] -- Calculating similarity for Register fingerprint\n");
-	//calculateSimilarity(name, stat_reg, simTable);
 
 	printf("[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
@@ -953,6 +824,9 @@ int main( int argc, char *argv[] )
 		printf("\n");
 	}
 	printf("\n");
+
+
+
 
 	simTable.clear();
 	simTable.reserve(name.size());
@@ -1045,34 +919,26 @@ int main( int argc, char *argv[] )
 
 
 	printf("%-20s", "Circuit");
-	printf("%-12s", "I Graph");
-	printf("%-12s", "I AIG");
-	printf("%-12s", "CE");
-	printf("%-12s", "CF");
-	printf("%-12s", "FF-CAS");
-	printf("%-12s", "FF-BLK");
-	printf("%-12s", "FF-FB");
-	printf("%-12s", "C-Count");
-	printf("%-12s", "LUT RPLC");
-	printf("%-12s", "MUX AGG");
-	printf("%-12s", "DEC AGG");
-	printf("%-12s", "ADD AGG");
-	printf("\n") ;
+	for(unsigned int i = 0; i < tLabel.size(); i++)
+		printf("%-10s", tLabel[i].c_str());
+	printf("%-10s", "TOTAL");
+	printf("\n");
 
 	std::vector<float> totalTime;
 	if(stat_time.size() != 0)
-		totalTime.resize(stat_time[0].size()+1, 0);
+		totalTime.resize(stat_time[0].size(), 0);
 
 	for(unsigned int i = 0; i < stat_time.size(); i++){
 		int lastSlashIndex = name[i].find_last_of("/") + 1;
 		printf("%-20s", name[i].substr(lastSlashIndex, name[i].length()-lastSlashIndex-4).c_str());
+		double cTotal = 0.00;
 		for(unsigned int k = 0; k < stat_time[i].size(); k++){
-			printf("%-12.3f", stat_time[i][k]);
+			printf("%-10.3f", stat_time[i][k]);
 			totalTime[k]+=stat_time[i][k];
+			cTotal += stat_time[i][k];
 		}
 
-		//	printf("%-12.3f", stat_fingerprintTime[i]);
-		//	totalTime[stat_time[i].size()]+=stat_fingerprintTime[i];
+		printf("%-10.3f", cTotal);
 		printf("\n");
 	}
 
@@ -1080,7 +946,7 @@ int main( int argc, char *argv[] )
 	printf("%-20s", "TOTAL:");
 	float totaltotal = 0.0;
 	for(unsigned int k = 0; k < totalTime.size(); k++){
-		printf("%-12.3f", totalTime[k]);
+		printf("%-10.3f", totalTime[k]);
 		totaltotal +=totalTime[k];
 	}
 	printf("\nTotal Time:  %f\n", totaltotal);

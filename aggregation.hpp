@@ -98,8 +98,8 @@ namespace AGGREGATION{
 			AIG* ,
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );
-	void findAdder(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>& );
-	void findCarry(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>& ); 
+	void findAdder(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > & );
+	void findCarry(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> >& ); 
 
 
 	/*#############################################################################
@@ -107,7 +107,7 @@ namespace AGGREGATION{
 	 * 	 DECODER AGGREGATION 
 	 *
 	 *#############################################################################*/
-	void findDecoder(CutFunction* , AIG* , std::map<unsigned, unsigned>& );
+	void findDecoder(CutFunction* , AIG* , std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > & );
 
 
 	/*#############################################################################
@@ -119,7 +119,8 @@ namespace AGGREGATION{
 			AIG* aigraph, 
 			std::map<unsigned, unsigned>& result2, 
 			std::map<unsigned, unsigned>& result3, 
-			std::map<unsigned, unsigned>& result4);
+			std::map<unsigned, unsigned>& result4, 
+			std::map<unsigned, std::set<unsigned> > &);
 	unsigned int findMux_Orig(CutFunction* , AIG* , std::vector<unsigned int>& );
 	unsigned int findMux(CutFunction* , AIG* , std::vector<unsigned int>& );
 
@@ -131,7 +132,7 @@ namespace AGGREGATION{
 	 * 	 PARITY AGGREGATION 
 	 *
 	 *#############################################################################*/
-	void findParityTree(CutFunction*, AIG*, std::map<unsigned, unsigned>&);
+	void findParityTree(CutFunction*, AIG*, std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > &);
 	void DFS_agg(std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
 
 	/*#############################################################################
@@ -139,7 +140,7 @@ namespace AGGREGATION{
 	 * 	 GATE FUNCTION AGGREGATION 
 	 *
 	 *#############################################################################*/
-	void findGateFunction(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
+	void findGateFunction(CutFunction* , AIG* ,  std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > & );
 	void findInputSign(AIG* , unsigned , std::set<unsigned>&, std::list<unsigned>&, std::list<unsigned>& );
 	void DFS_gate(AIG*, std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
 
@@ -149,7 +150,7 @@ namespace AGGREGATION{
 	 * 	 EQUALITY FUNCTION AGGREGATION 
 	 *
 	 *#############################################################################*/
-	void findEquality(CutFunction* , AIG* ,  std::map<unsigned, unsigned>& );
+	void findEquality(CutFunction* , AIG* ,  std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> >& );
 
 
 

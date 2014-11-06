@@ -75,10 +75,14 @@ testckt: testckt.cpp $(OBJ)
 	g++ -o testckt $(OBJ) testckt.cpp 
 
 aigex: aigex.cpp aig.o aiger.o graph.o vertex.o
-	g++ -o aigex aig.o aiger.o graph.o vertex.o aigex.cpp 
+	g++ -o aigex cutenumeration.o aig.o aiger.o graph.o vertex.o aigex.cpp 
 
 graphex: graphex.cpp graph.o vertex.o
 	g++ -o graphex graph.o vertex.o graphex.cpp
+
+aigABC: mainABC.cpp  graph.o vertex.o aig.o
+	g++ -I../abc/src/ -c mainABC.cpp -o mainABC.o
+	g++ -o aigABC graph.o vertex.o aig.o aiger.o mainABC.o -L. -labc -lm -ldl -rdynamic -lreadline -lpthread -lncurses -ltermcap -lrt
 
 clean:
 	rm -f *.o *fpgenius* *.out* *.in*  cnf testProgram cDatabase aigex testckt
