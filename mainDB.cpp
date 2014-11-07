@@ -402,11 +402,21 @@ int main( int argc, char *argv[] )
 	//*************************************************************************
 	//* Aggregate similar functions 
 	//**************************************************************************
+		std::map<unsigned, std::set<unsigned> >::iterator iMapS;
+		std::set<unsigned>::iterator iSet;
+
 		//DECODER AGGREGATION
 		gettimeofday(&dec_b, NULL); //-----------------------------------------------
 		std::map<unsigned, unsigned> decoderResult;
 		std::map<unsigned, std::set<unsigned> > decoderIOResult;
 		AGGREGATION::findDecoder(functionCalc, aigraph, decoderResult, decoderIOResult);
+		printf("DECODER\n");
+		for(iMapS = decoderIOResult.begin(); iMapS != decoderIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 		gettimeofday(&dec_e, NULL);//------------------------------------------
 		stat_decAgg.push_back(decoderResult);
 
@@ -421,6 +431,13 @@ int main( int argc, char *argv[] )
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
+		printf("ADD\n");
+		for(iMapS = addIOResult.begin(); iMapS != addIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 
 		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
 		stat_carry.push_back(carryResult);
@@ -433,6 +450,13 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> parityResult;
 		std::map<unsigned, std::set<unsigned> > parityIOResult;
 		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult, parityIOResult);
+		printf("PARITY\n");
+		for(iMapS = parityIOResult.begin(); iMapS != parityIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 		stat_parity.push_back(parityResult);
 		gettimeofday(&par_e, NULL); //-----------------------------------------------
 
@@ -441,6 +465,13 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> gateResult;
 		std::map<unsigned, std::set<unsigned> > gateIOResult;
 		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult, gateIOResult);
+		printf("GATE\n");
+		for(iMapS = gateIOResult.begin(); iMapS != gateIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 		stat_gate.push_back(gateResult);
 		gettimeofday(&gate_e, NULL); //-----------------------------------------------
 
@@ -449,6 +480,13 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> equalResult;
 		std::map<unsigned, std::set<unsigned> > equalIOResult;
 		AGGREGATION::findEquality(functionCalc, aigraph, equalResult, equalIOResult);
+		printf("EQUAL\n");
+		for(iMapS = equalIOResult.begin(); iMapS != equalIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 		stat_equal.push_back(equalResult);
 		gettimeofday(&eq_e, NULL); //-----------------------------------------------
 
@@ -461,6 +499,13 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> muxResult4;
 		std::map<unsigned, std::set<unsigned> > muxIOResult;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4, muxIOResult);
+		printf("MUX\n");
+		for(iMapS = muxIOResult.begin(); iMapS != muxIOResult.end(); iMapS++){
+			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+		}
 
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		

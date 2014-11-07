@@ -2699,12 +2699,9 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 
 	std::vector<unsigned long long> andInput;
 	//possible inputs for decoder, possible outputs for decoder 
-	std::map<std::vector<unsigned>, std::vector<unsigned> > agg;
-	std::map<std::vector<unsigned>, std::vector<unsigned> >::iterator iAgg;
+	std::map<std::set<unsigned>, std::set<unsigned> > agg;
+	std::map<std::set<unsigned>, std::set<unsigned> >::iterator iAgg;
 
-	//Final Result of Aggregation
-	std::list<std::vector<unsigned> > possibleDecoderIn;
-	std::list<std::vector<unsigned> > possibleDecoderOut;
 
 	//Find instances of or gates
 	printf(" * Parsing function database for decoder blocks...\n");
@@ -2717,26 +2714,25 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	std::set<unsigned>::iterator iSet;
+	std::set<unsigned>::iterator iSet2;
 
 	//Aggregate based on inputs of the and gates
 	for(unsigned int i = 0; i < andInput.size(); i++){
 		iPMAP = pmap.find(andInput[i]);
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-				std::vector<unsigned> ports;
-
-				for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
-					unsigned in = *iSet;
-					ports.push_back(in);
-				}
-
-				agg[ports].push_back(iPMAP->second[j]->output);
+				agg[iPMAP->second[j]->input].insert(iPMAP->second[j]->output);
 			}
 		}
 	}
 
 
 
+	
+	
+	//Final Result of Aggregation
+	std::list<std::set<unsigned> > possibleDecoderIn;
+	std::list<std::set<unsigned> > possibleDecoderOut;
 
 	for(iAgg = agg.begin(); iAgg!=agg.end(); iAgg++){
 		bool isDecoder = false;
@@ -2758,10 +2754,10 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 			if(outputSize == 2) continue;
 
 			//Check to see if at least one of the inputs is never negated
-			for(unsigned int i = 0; i < iAgg->first.size(); i++){
+			for(iSet = iAgg->first.begin(); iSet != iAgg->first.end(); iSet++){
 				bool isAInputNeg = false;
-				for(unsigned int k = 0; k < iAgg->second.size(); k++){
-					if(isInputNeg(aigraph, iAgg->second[k], iAgg->first[i])){
+				for(iSet2 = iAgg->second.begin(); iSet2 != iAgg->second.end(); iSet2++){
+					if(isInputNeg(aigraph, *iSet2, *iSet)){
 						isAInputNeg = true;;
 						break;
 					}
@@ -2783,10 +2779,10 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 	agg.clear();
 
 
-	std::list<std::vector<unsigned> >::iterator iPDI;
-	std::list<std::vector<unsigned> >::iterator iPDI2;
-	std::list<std::vector<unsigned> >::iterator iPDO;
-	std::list<std::vector<unsigned> >::iterator iPDO2;
+	std::list<std::set<unsigned> >::iterator iPDI;
+	std::list<std::set<unsigned> >::iterator iPDI2;
+	std::list<std::set<unsigned> >::iterator iPDO;
+	std::list<std::set<unsigned> >::iterator iPDO2;
 
 	/*
 		 printf("\n\n * POSSIBLE DECODERS: \n");
@@ -2810,7 +2806,6 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 	printf(" * REMOVING REDUNDANCIES\n");
 	iPDI = possibleDecoderIn.begin();
 	iPDO = possibleDecoderOut.begin();
-
 	while(iPDI != possibleDecoderIn.end()){
 		iPDI2 = iPDI;
 		iPDI2++;
@@ -2827,12 +2822,10 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 			}
 
 			unsigned int numMatch = 0; 
-			for(unsigned int i = 0; i < iPDI->size(); i++){
-				for(unsigned int k = 0; k < iPDI2->size(); k++){
-					if(iPDI->at(i) == iPDI2->at(k)){
-						numMatch++;	
-						break;
-					}
+			for(iSet = iPDI->begin(); iSet != iPDI->end(); iSet++){
+				if(iPDI2->find(*iSet) != iPDI2->end()){
+					numMatch++;	
+					break;
 				}
 			}
 
@@ -2862,63 +2855,39 @@ void AGGREGATION::findDecoder(CutFunction* cf, AIG* aigraph, std::map<unsigned, 
 	iPDI = possibleDecoderIn.begin();
 	iPDO = possibleDecoderOut.begin();
 
-	while(possibleDecoderIn.size() > 0){
+	while(iPDI != possibleDecoderIn.end()){
 		//size, count
 		if(result.find(iPDO->size()) == result.end()){
 			result[iPDO->size()] = 1;
 		}
 		else
 			result[iPDO->size()]++;
-		/*
-			 printf("IN: ");
-			 for(unsigned int i = 0; i < iPDI->size(); i++)
-			 printf("%d ", iPDI->at(i));
-			 printf("\t\tOUT:");
-			 for(unsigned int i = 0; i < iPDO->size(); i++)
-			 printf("%d ", iPDO->at(i));
-			 printf("\n");
-		 */
 
-		iPDI = possibleDecoderIn.erase(iPDI);
-		iPDO = possibleDecoderOut.erase(iPDO);
+		bool contained= verifyContainment(aigraph, *iPDI, *iPDO);
+		if(!contained) {
+			printf("Verify Containment Failed\n");
+			exit(1);
+		}
+
+		for(iSet = iPDO->begin(); iSet != iPDO->end(); iSet++)
+			ioResult[*iSet] = *iPDI;
+
+/*
+		printf("IN: ");
+		for(iSet = iPDI->begin(); iSet != iPDI->end(); iSet++)
+			printf("%d ", *iSet);
+
+		printf("\t\tOUT:");
+		for(iSet = iPDO->begin(); iSet != iPDO->end(); iSet++){
+			ioResult[*iSet] = *iPDI;
+			printf("%d ", *iSet);
+		}
+		printf("\n");
+		*/
+
+		iPDI++;
+		iPDO++;
 	}
-
-
-
-
-
-
-
-	/*
-		 printf("\nCOMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-		 printf("\n----------------------------------------------------------------\n");
-		 printf("Result Search:\n");
-		 printf("----------------------------------------------------------------\n");
-		 printf("----------------------------------------------------------------\n");
-		 std::list<unsigned> queue;
-		 queue.push_back(2496);
-		 queue.push_back(2480);
-		 queue.push_back(2488);
-		 queue.push_back(2472);
-		 queue.push_back(2492);
-		 queue.push_back(2476);
-		 queue.push_back(2484);
-		 queue.push_back(2468);
-		 queue.push_back(2400);
-		 queue.push_back(2392);
-		 queue.push_back(2388);
-		 queue.push_back(2398);
-		 queue.push_back(2390);
-		 queue.push_back(2394);
-		 queue.push_back(2384);
-		 queue.push_back(2396);
-		 std::set<unsigned> input;
-		 input.insert(254);
-		 input.insert(256);
-		 input.insert(258);
-		 input.insert(2196);
-		 aigraph->printSubgraph(queue, input);
-	 */
 
 	printf(" * -- Complete\n\n");
 }
@@ -2977,30 +2946,24 @@ void AGGREGATION::findMux2(CutFunction* cf,
 	}
 
 	//Store input and output of orgate functions found
-	std::list<std::vector<unsigned> > orIn;
-	std::list<std::vector<unsigned> >::iterator orinit;
-	std::list<std::vector<unsigned> >::iterator orinit2;
+	std::list<std::set<unsigned> > orIn;
+	std::list<std::set<unsigned> >::iterator orinit;
+	std::list<std::set<unsigned> >::iterator orinit2;
 	std::list<unsigned> orOut;
 	std::list<unsigned>::iterator  oroutit;
 	std::list<unsigned>::iterator  oroutit2;
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	std::set<unsigned>::iterator iSet;
+
 	for(unsigned int i = 0; i < orFunction.size(); i++){
 		iPMAP = pmap.find(orFunction[i]);
 		if(iPMAP != pmap.end()){
 			for(unsigned int j = 0; j < iPMAP->second.size(); j++){
-				//printf("\nINPUT: ");
-				std::vector<unsigned> ports;
-				for(iSet = iPMAP->second[j]->input.begin(); iSet != iPMAP->second[j]->input.end(); iSet++){
-					//	printf("%d ", pmap[orFunction[i]][j]->at(k));
-					ports.push_back(*iSet);
-				}
-				//printf("\nOUTPUT:\t%d", pmap[orFunction[i]][j]->at(k));
-
 				//If input is not contained in an already found, store. 
+
 				unsigned outnode = iPMAP->second[j]->output;
-				orIn.push_back(ports);
 				orOut.push_back(outnode);
+				orIn.push_back(iPMAP->second[j]->input);
 			}
 		}
 	}
@@ -3051,12 +3014,9 @@ void AGGREGATION::findMux2(CutFunction* cf,
 	//Remove or gates contained within another. 
 	printf(" * Searching for common signals\n");
 
-	//Mux size, selectbits, count
-	std::map<int, std::map<std::set<int>, int> >stats;
-	std::map<int, std::map<std::set<int>, int> >::iterator iStats;
 
 	//Orinit iterator, vector of select bits
-	std::map<std::vector<unsigned> , std::set<int> > selectBits;
+	std::map<std::set<unsigned> , std::set<int> > selectBits;
 	unsigned int aigInputLimit = (2 * aigraph->getInputSize()) + 1;
 	orinit = orIn.begin();
 	oroutit = orOut.begin();
@@ -3072,8 +3032,8 @@ void AGGREGATION::findMux2(CutFunction* cf,
 
 		//Prepare a queue for each input
 		bool conflict = false;
-		for(unsigned int i = 0; i < orinit->size(); i++){
-			unsigned int signal = orinit->at(i);
+		for(iSet = orinit->begin(); iSet != orinit->end(); iSet++){
+			unsigned int signal = *iSet;
 
 			/*
 				 Makes sure input to or gate does not go into 
@@ -3087,15 +3047,11 @@ void AGGREGATION::findMux2(CutFunction* cf,
 				unsigned int node1 = c1 & 0xFFFFFFFE;
 				unsigned int node2 = c2 & 0xFFFFFFFE;
 
-
-				for(unsigned int k = 0; k < orinit->size(); k++){
-					if(orinit->at(k) == node1 || orinit->at(k) == node2){
-						//printf("CONFLICT\n");
-						conflict = true;
-						break;
-					}
+				if(orinit->find(node1) != orinit->end() ||
+						orinit->find(node2) != orinit->end()){
+					conflict = true;
+					break;
 				}
-				if(conflict) break;
 			}
 
 			std::list<unsigned int> startqueue;
@@ -3103,7 +3059,7 @@ void AGGREGATION::findMux2(CutFunction* cf,
 			//printf("START: %d INDEX: %d\n", orinit->at(i), i);
 
 			queue.push_back(startqueue);
-			levelMap[orinit->at(i)] = 0;
+			levelMap[*iSet] = 0;
 		}
 
 		if(conflict){
@@ -3156,7 +3112,7 @@ void AGGREGATION::findMux2(CutFunction* cf,
 			isQueueEmpty = true;
 
 			//Loop through each BFS
-			for(unsigned int i = 0; i < orinit->size(); i++){
+			for(unsigned int i = 0; i < queue.size(); i++){
 
 				//Check to see if queue is empty
 				if(queue[i].empty())	continue;
@@ -3275,15 +3231,10 @@ void AGGREGATION::findMux2(CutFunction* cf,
 		while(orinit2 != orIn.end()){
 
 			unsigned int numMatch = 0;
-
-			for(unsigned int i = 0; i < orinit->size(); i++){
-				for(unsigned int j = 0; j < orinit2->size(); j++){
-					if(orinit->at(i) == orinit2->at(j)){
+			for(iSet = orinit->begin(); iSet != orinit->end(); iSet++)
+				if(orinit2->find(*iSet) != orinit2->end())
 						numMatch++;
-						break;
-					}
-				}
-			}
+
 
 			if(numMatch == orinit->size()){
 				selectBits.erase(*orinit);
@@ -3309,13 +3260,18 @@ void AGGREGATION::findMux2(CutFunction* cf,
 			oroutit++;
 		}
 	}
-	printf("done\n");
+	
+	
 
 
 
 
 
 
+
+	//Mux size, selectbits, count
+	std::map<int, std::map<std::set<int>, int> >stats;
+	std::map<int, std::map<std::set<int>, int> >::iterator iStats;
 
 	//Prepare output
 	orinit = orIn.begin();
@@ -3331,8 +3287,16 @@ void AGGREGATION::findMux2(CutFunction* cf,
 			if(stats[orinit->size()].find(selectBits[*orinit]) == stats[orinit->size()].end()){
 				stats[orinit->size()][selectBits[*orinit]] = 1;
 			}
-			else
+			else{
 				stats[orinit->size()][selectBits[*orinit]] ++;
+				ioResult[*oroutit] = (*orinit);
+				ioResult[*oroutit].insert(selectBits[*orinit].begin(), selectBits[*orinit].end());
+		bool contained= verifyContainment(aigraph, ioResult[*oroutit], *oroutit);
+		if(!contained) {
+			printf("Verify Containment Failed\n");
+			exit(1);
+		}
+			}
 		}
 
 		orinit++;
@@ -3340,31 +3304,29 @@ void AGGREGATION::findMux2(CutFunction* cf,
 	}
 
 
+/*
+	printf("\n\nPossible Mux or gates\n");	
+	orinit = orIn.begin();
+	oroutit = orOut.begin();
 
-	/*
-		 printf("\n\nPossible Mux or gates\n");	
-		 orinit = orIn.begin();
-		 oroutit = orOut.begin();
+	while(orinit != orIn.end()){
 
-		 unsigned int index = 0;
-		 while(orinit != orIn.end()){
-		 printf("INPUT: ");
-		 for(unsigned int i = 0; i < orinit->size(); i++){
-		 printf("%d ", orinit->at(i));
-		 }
-		 printf("\t\tOutput: %d\t\tSB: ", *oroutit);
-		 std::set<int>::iterator iSB;
-		 for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++){
-		 printf("%d ", *iSB);
-		 }
-		 printf("\n");
+		printf("INPUT: ");
+		for(iSet = orinit->begin(); iSet != orinit->end(); iSet++)
+			printf("%d ", *iSet);
 
-		 orinit++;
-		 oroutit++;
-		 index++;
-		 }
-		 printf("\n\n");
-	 */
+		printf("\t\tOutput: %d\t\tSB: ", *oroutit);
+
+		std::set<int>::iterator iSB;
+		for(iSB = selectBits[*orinit].begin(); iSB != selectBits[*orinit].end(); iSB++)
+			printf("%d ", *iSB);
+		printf("\n");
+
+		orinit++;
+		oroutit++;
+	}
+	printf("\n\n");
+	*/
 
 
 	for(iStats = stats.begin(); iStats!=stats.end(); iStats++){
@@ -3580,7 +3542,7 @@ unsigned int AGGREGATION::findMux_Orig(CutFunction* cf, AIG* aigraph, std::vecto
 
 
 
-int AGGREGATION::findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>& in){
+int AGGREGATION::findNegInput(AIG* aigraph, unsigned out, std::set<unsigned>& in){
 	std::list<unsigned> queue;
 	std::set<unsigned> mark;
 	std::vector<unsigned*> nChilds;
@@ -3597,28 +3559,18 @@ int AGGREGATION::findNegInput(AIG* aigraph, unsigned out, std::vector<unsigned>&
 
 
 		//If reached an input, return
-		bool foundInput = false;
 		bool isNeg = false;
 		if(qitem & 0x1){
 			qitem = qitem & 0xFFFFFFFE;
 			isNeg = true;
 		}
 
-		//Check to see if node is at the input
-		for(unsigned int i = 0; i < in.size(); i++){
-			unsigned input = in[i];
-			input = input & 0xFFFFFFFE;
-
-			if(qitem == in[i]){
+		//TODO: Maybe see if there is an inverted edge in input that needs inverting
+		if(in.find(qitem) != in.end()){
 				if(isNeg)
 					numNegative++;
-
-				foundInput = true;
-				break;
-			}
+				continue;
 		}
-
-		if(foundInput) continue;
 
 		//Enqueue childs
 		unsigned c1node = aigraph->getChild1(qitem);

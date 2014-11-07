@@ -124,7 +124,7 @@ namespace AGGREGATION{
 	unsigned int findMux_Orig(CutFunction* , AIG* , std::vector<unsigned int>& );
 	unsigned int findMux(CutFunction* , AIG* , std::vector<unsigned int>& );
 
-	int findNegInput(AIG* , unsigned , std::vector<unsigned>& );
+	int findNegInput(AIG* , unsigned , std::set<unsigned>& );
 	bool isInputNeg(AIG* , unsigned , unsigned );
 
 	/*#############################################################################
