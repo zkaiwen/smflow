@@ -1,9 +1,9 @@
 10
 3 0 CI 1 DI 2 S
 1 9 O
-0 IN name 0  1 3 O
-1 IN name 0  1 5 O
-2 IN name 0  2 3 O 4 O
+0 IN CI 0  1 3 O
+1 IN DI 0  1 5 O
+2 IN S 0  2 3 O 4 O
 3 ANDX name 2 0 I0 2 I1 1 6 O
 4 INV name 1 2 I0 1 5 O
 5 ANDX name 2 4 I0 1 I1 1 7 O

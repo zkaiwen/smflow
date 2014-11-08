@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <vector>
 #include <string>
 #include <map>
@@ -68,13 +69,11 @@ class Vertex
 		std::string getType();
 		std::string getName();
 
-		void addInput(Vertex*);
-		void addInPort(std::string);
+		void addInput(Vertex*, std::string );
 		void addOutput(Vertex*, std::string);
 
 		std::string removeOutputValue(int);
 		int removeInputValue(int);
-		void removeInPortValue(int);
 };
 
 #endif

@@ -213,6 +213,28 @@ int main( int argc, char *argv[] )
 			cut->printStat();
 			delete cut;
 		}
+		else if(command == "inputs"){
+			printf("INPUT SIZE: %d\n", aig->getInputSize());
+			printf("Inputs are from 2 - %d even\n", aig->getInputSize()*2);
+		}
+		else if(command == "outputs"){
+			printf("OUTPUT SIZE: %d\n", aig->getOutputSize());
+			std::vector<unsigned> out;
+			aig->getOutputs(out);
+			printf("OUTPUTS: ");
+			for(unsigned int i = 0; i < out.size(); i++)
+				printf("%d ", out[i]*2);
+			printf("\n");
+
+			out.clear();
+			aig->getFFInput(out);
+			printf("OUTPUTS of FF: ");
+			for(unsigned int i = 0; i < out.size(); i++)
+				printf("%d ", out[i]*2);
+			printf("\n");
+
+
+		}
 
 
 

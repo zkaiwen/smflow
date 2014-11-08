@@ -1,4 +1,3 @@
 circuits/g/primitive/
-circuits/temp/s344_og.cnl
-circuits/temp/s344_c.cnl
-circuits/temp/s349_og.cnl
+circuits/netlist/s344_og.cnl
+circuits/testbench/multiply4.cnl

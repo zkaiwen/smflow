@@ -64,8 +64,7 @@ Graph::Graph(const Graph& copy){
 		assert(input.size() == inputPort.size());
 
 		for(unsigned int i = 0; i < input.size(); i++){
-			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()]);
-			m_GraphV[it->first]->addInPort(inputPort[i]);
+			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()], inputPort[i]);
 		}
 
 
@@ -146,10 +145,8 @@ Graph& Graph::operator=(const Graph& copy){
 		//printf("in: %d\tport:%d\n", input.size(), inputPort.size());
 		assert(input.size() == inputPort.size());
 
-		for(unsigned int i = 0; i < input.size(); i++){
-			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()]);
-			m_GraphV[it->first]->addInPort(inputPort[i]);
-		}
+		for(unsigned int i = 0; i < input.size(); i++)
+			m_GraphV[it->first]->addInput(m_GraphV[input[i]->getID()], inputPort[i]);
 
 
 		//Copy Outputs
@@ -162,23 +159,19 @@ Graph& Graph::operator=(const Graph& copy){
 	}
 
 	std::map<std::string, int>::const_iterator itin;    
-	for(itin = copy.m_Inputs.begin(); itin != copy.m_Inputs.end(); itin++){
+	for(itin = copy.m_Inputs.begin(); itin != copy.m_Inputs.end(); itin++)
 		m_Inputs[itin->first] = itin->second;
-	}
 
 	std::map<std::string, int>::const_iterator inout;    
-	for(inout = copy.m_Outputs.begin(); inout != copy.m_Outputs.end(); inout++){
+	for(inout = copy.m_Outputs.begin(); inout != copy.m_Outputs.end(); inout++)
 		m_Outputs[inout->first] = inout->second;
-	}
 
-	for(unsigned int i = 0; i < m_Constants.size(); i++){
+	for(unsigned int i = 0; i < m_Constants.size(); i++)
 		m_Constants.push_back(copy.m_Constants[i]);
-	}
 
 	std::map<unsigned long long, int>::const_iterator itlut;
-	for(itlut = copy.m_Luts.begin(); itlut != copy.m_Luts.end(); itlut++){
+	for(itlut = copy.m_Luts.begin(); itlut != copy.m_Luts.end(); itlut++)
 		m_Luts[itlut->first] = itlut->second;
-	}
 
 	m_Name = copy.m_Name;
 	return *this;
@@ -301,8 +294,7 @@ bool Graph::importPrimitive(std::string fileName, int offset){
 				in = addVertex(input);
 			else
 				in = m_GraphV[input];	
-			vertex->addInput(in);
-			vertex->addInPort(port);
+			vertex->addInput(in, port);
 		}
 
 		inFile >> fanout;
@@ -448,8 +440,7 @@ bool Graph::importGraph(std::string fileName, int offset){
 				in = addVertex(input);
 			else
 				in = m_GraphV[input];	
-			vertex->addInput(in);
-			vertex->addInPort(port);
+			vertex->addInput(in, port);
 		}
 
 		inFile >> fanout;
@@ -1563,67 +1554,62 @@ void Graph::renameNodes(std::string name){
  *    node:  VID of the node to be substituted
  *    sub:   Graph to substitute the node for
  ****************************************************************************/
-unsigned Graph::substitute(int node, Graph* sub){
+unsigned Graph::substitute(int node, Graph* subCkt){
 	//printf("SUBSTITUTION! NODE: %d\n", node);
-	Vertex* nodeV = m_GraphV[node];
-	sub->renameNodes(nodeV->getName());
+	Vertex* node2BSub = m_GraphV[node];
+	subCkt->renameNodes(node2BSub->getName());
 	std::map<int, Vertex*>::iterator it; 
 
 
 	//Get IO from the Subgraph
-	std::vector<int> subInputs;
-	std::vector<int> subOutputs;
-	sub->getInputs(subInputs);
-	sub->getOutputs(subOutputs);
-	assert(subOutputs.size() == 1);
-	int subOutNode = subOutputs[0];
+	std::vector<int> subCktInputs;
+	std::vector<int> subCktOutputs;
+	subCkt->getInputs(subCktInputs);
+	subCkt->getOutputs(subCktOutputs);
+
+	assert(subCktOutputs.size() == 1);
+
+	int subCktOutNode = subCktOutputs[0];
 
 
-	//Get IO of the substituting node
-	std::vector<Vertex*> nodeInputs;
-	std::vector<Vertex*> nodeOutputs;
-	std::vector<std::string> nodeInputPorts;
-
-	nodeV->getInput(nodeInputs);
-	nodeV->getInPorts(nodeInputPorts);
-	nodeV->getOutput(nodeOutputs);
-
-
+	//Get IO of the subCktstituting node
+	std::vector<Vertex*> node2BSubInputs;
+	node2BSub->getInput(node2BSubInputs);
 
 
 	/********************
 		HANDLE INPUTS
 	 ********************/
-	//Make sure inputs to node and inputs to subgraph are the same
-	assert(nodeInputs.size() == subInputs.size());
+	//Make sure inputs to node and inputs to subCktgraph are the same
+	assert(node2BSubInputs.size() == subCktInputs.size());
 
-	//Have inputs of the node point to inputs of subgraph
-	for(unsigned int i = 0; i < nodeInputs.size(); i++){
+	//Have inputs of the node2BSubpoint to inputs of subCktgraph
+	for(unsigned int i = 0; i < node2BSubInputs.size(); i++){
 
-		//Remove node from the output of its inputs
-		std::string outPortName = nodeInputs[i]->removeOutputValue(node);
+		//Remove node2BSub from the output of its inputs
+		std::string outPortName = node2BSubInputs[i]->removeOutputValue(node);
 
-		//Get the portname of input to match to sub
-		std::string inPortName = nodeInputPorts[i];
-		int subInputIndex = sub->findInPort(inPortName);
-		//printf("Input port name: %s, Index of input in sub to delete: %d\n", inPortName.c_str(), subInputIndex);
+		//Get the portname of input to match to subCkt
+		std::string inPortName = node2BSub->getInputPortName(node2BSubInputs[i]->getID());
 
-		//Get the outputs of IN to sub
-		std::vector<Vertex*> sub_Out_of_In;
-		sub->getVertex(subInputIndex)->getOutput(sub_Out_of_In);
+		//printf("HERE\n");
+		int subCktInputIndex = subCkt->findInPort(inPortName);
+		//printf("DONE\n");
+		//printf("Input port name: %s, Index of input in subCkt to delete: %d\n", inPortName.c_str(), subCktInputIndex);
 
-		//Connect the inputNode to the input of sub
-		for(unsigned int j = 0; j < sub_Out_of_In.size(); j++){
-			nodeInputs[i]->addOutput(sub_Out_of_In[j], outPortName);
+		//Get the outputs of IN to subCkt
+		std::vector<Vertex*> subCkt_Out_of_In;
+		subCkt->getVertex(subCktInputIndex)->getOutput(subCkt_Out_of_In);
 
-			//Remove the original input of the currently added output
-			//printf("removing input %d from %d\n",  subInputIndex, sub_Out_of_In[j]->getID());
-			std::string inName = sub_Out_of_In[j]->getInputPortName(subInputIndex);
-			int index = sub_Out_of_In[j]->removeInputValue(subInputIndex);
-			assert(index != -1);
-			sub_Out_of_In[j]->removeInPortValue(index);
-			sub_Out_of_In[j]->addInput(nodeInputs[i]);
-			sub_Out_of_In[j]->addInPort(inName);
+		//Connect the inputNode to the input of subCkt
+		for(unsigned int j = 0; j < subCkt_Out_of_In.size(); j++){
+			node2BSubInputs[i]->addOutput(subCkt_Out_of_In[j], outPortName);
+
+			//Remove the original input in subCkt of the currently added output
+			//printf("removing input %d from %d\n",  subCktInputIndex, subCkt_Out_of_In[j]->getID());
+			std::string subCktInPortName = subCkt_Out_of_In[j]->getInputPortName(subCktInputIndex);
+			subCkt_Out_of_In[j]->removeInputValue(subCktInputIndex);
+			subCkt_Out_of_In[j]->addInput(node2BSubInputs[i], subCktInPortName);
 		}
 	}
 
@@ -1632,68 +1618,45 @@ unsigned Graph::substitute(int node, Graph* sub){
 
 
 
-	/********************
-		HANDLE OUTPUTS 
-	 ********************/
-	//TODO: Add output parameter in graph. 
-	//Makes sure there is an output from the sub		
-	bool found = false;
-	for(it = sub->begin(); it != sub->end(); it++){
-		if(it->second->getOVSize() == 0){
-			found = true;
-			break;
-		}
-	}
-
-	assert(found);
-
-
-
-	std::vector<std::string> outPortNames;
-	nodeV->getOutputPorts(outPortNames);
-
-	for(unsigned int i = 0; i < outPortNames.size(); i++){
+	std::vector<std::string> node2BSubOutPortName;
+	node2BSub->getOutputPorts(node2BSubOutPortName);
+	
+	for(unsigned int i = 0; i < node2BSubOutPortName.size(); i++){
 		//printf("Outport of node: %s\n", outPortNames[i].c_str());
-		std::vector<Vertex*> outputs;
-		nodeV->getPortOutput(outPortNames[i], outputs);
+		std::vector<Vertex*> node2BSubOut;
+		node2BSub->getPortOutput(node2BSubOutPortName[i], node2BSubOut);
 
-		int subOutputIndex = sub->findOutPort(outPortNames[i]);
-		//printf("Index of output of prim %d\n", subOutputIndex);
-		for(unsigned int j = 0; j < outputs.size(); j++){
-			//printf("adding %d\n", outputs[j]->getID());
-			sub->getVertex(subOutputIndex)->addOutput(outputs[j], outPortNames[i]);
+		int subCktOutputIndex = subCkt->findOutPort(node2BSubOutPortName[i]);
+		//printf("Index of output of prim %d\n", subCktOutputIndex);
+		for(unsigned int j = 0; j < node2BSubOut.size(); j++){
+			//printf("adding %d\n", node2BSubOut[j]->getID());
+			subCkt->getVertex(subCktOutputIndex)->addOutput(node2BSubOut[j], node2BSubOutPortName[i]);
 
-			//printf("removing2 input %d from %d\n", node, outputs[j]->getID());
-			int index = outputs[j]->removeInputValue(node);
-			//printf("adding input %d\n", subOutputIndex);
-			outputs[j]->addInput(sub->getVertex(subOutputIndex));
-
-			std::vector<std::string> outPorts;
-			outputs[j]->getInPorts(outPorts);
-			outputs[j]->addInPort(outPorts[index]);
-			outputs[j]->removeInPortValue(index);
-
+			//printf("removing2 input %d from %d\n", node, node2BSubOut[j]->getID());
+			std::string cktInPortName = node2BSubOut[j]->getInputPortName(node);
+			node2BSubOut[j]->removeInputValue(node);
+			//printf("adding input %d\n", subCktOutputIndex);
+			node2BSubOut[j]->addInput(subCkt->getVertex(subCktOutputIndex), cktInPortName);
 		}
 	}
 
 	//Add the new vertices into the graph
-	for(it = sub->begin(); it != sub->end(); it++){
+	for(it = subCkt->begin(); it != subCkt->end(); it++){
 		if(it->second->getType() != "IN"){
 			addVertex(it->second->getID(), it->second);
-			it->second = NULL; //Make sure delete sub does not delete content
+			it->second = NULL; //Make sure delete subCkt does not delete content
 		}
 	}
 
 	std::string outPort = isOutput(node);
 	if(outPort != "")
-		setOutput(outPort, subOutNode);
+		setOutput(outPort, subCktOutNode);
 
-	delete sub;
+	delete subCkt;
 	//printf("SUBSTITUTION COMPLETE\n");
 	//print();
 	//printf("DONE SUB\n");
-	return subOutputs[0];
-
+	return subCktOutputs[0];
 }
 
 
@@ -1987,20 +1950,19 @@ int Graph::DFScycle(Vertex* vertex, std::list<int>& mark){
 				continue;
 
 			//Break feedback loop, Remove output
-			std::string outPortName = currentV->removeOutputValue(nextV->getID());
+			currentV->removeOutputValue(nextV->getID());
 
-			int index = nextV->removeInputValue(currentV->getID());
-			std::vector<std::string> outPorts;
-			nextV->getInPorts(outPorts);
-			nextV->addInPort(outPorts[index]);
+			std::string inPortName = nextV->getInputPortName(currentV->getID());
+			nextV->removeInputValue(currentV->getID());
+
+
 			std::stringstream ss;
 			ss<<"P" << getNumInputs();
 			Vertex* inputV = addVertex(getLast(), "IN");
 			addInput(ss.str(), inputV->getID());
 
-			inputV->addOutput(nextV, outPortName);
-			nextV->removeInPortValue(index);
-			nextV->addInput(inputV);
+			inputV->addOutput(nextV, "O");
+			nextV->addInput(inputV, inPortName);
 
 			mark.pop_back();
 			return previous;

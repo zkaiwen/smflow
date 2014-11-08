@@ -368,10 +368,8 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 
 					for(unsigned int i = 0; i < loutput.size(); i++){
 						std::string portname = loutput[i]->getInputPortName(it->second->getID());
-						int index = loutput[i]->removeInputValue(it->second->getID());
-						loutput[i]->removeInPortValue(index);
-						loutput[i]->addInput(linput[0]);
-						loutput[i]->addInPort(portname);
+						loutput[i]->removeInputValue(it->second->getID());
+						loutput[i]->addInput(linput[0], portname);
 
 						linput[0]->addOutput(loutput[i],outportname);
 					}
@@ -478,8 +476,7 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 				Vertex* vin = lutgraph->addVertex(i, "IN");
 				Vertex* vinv = lutgraph->addVertex(lutin.size()+i, "INV");
 
-				vinv->addInput(vin);
-				vinv->addInPort("I");
+				vinv->addInput(vin, "I");
 				vin->addOutput(vinv, "O");
 
 				lutgraph->addInput(ss.str(), i);
@@ -527,30 +524,26 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 				//printf("Making %s gate\n", ss.str().c_str());
 
 				int numAndInput= 0;
-				int inputPortIndex = 0;
 
 				for(unsigned int j = 0; j < inputSum.length(); j++){
 					char bit = inputSum[inputSum.length()-1-j];
 					//printf("BIT: %c\n", bit);
+					//Add port name
+					std::stringstream portname; 
+					portname<<"I"<<numAndInput;
 
 					//Set inputs
 					if(bit == '-') continue; //Don't care bit
 					else if (bit == '1'){
-						aGate->addInput(lutgraph->getVertex(j));
+						aGate->addInput(lutgraph->getVertex(j), portname.str());
 						lutgraph->getVertex(j)->addOutput(aGate, "O");
-						numAndInput++;
 					}
 					else{
-						aGate->addInput(lutgraph->getVertex(lutin.size()+j));
+						aGate->addInput(lutgraph->getVertex(lutin.size()+j), portname.str());
 						lutgraph->getVertex(lutin.size()+j)->addOutput(aGate, "O");
-						numAndInput++;
 					}
 
-					//Add port name
-					std::stringstream portname; 
-					portname<<"I"<<inputPortIndex;
-					inputPortIndex++;
-					aGate->addInPort(portname.str());
+					numAndInput++;
 				}
 
 
@@ -562,7 +555,6 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 				aGate->setType(ss.str());
 
 				lutgraph->addVertex(aGate);
-
 			}
 			in.close();
 
@@ -596,11 +588,10 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 					for(int q = 0; q < 8; q++){
 						std::stringstream portname; 
 						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
 
 						Vertex* gate = lutgraph->getVertex(clauses[(8*i)+q]);
 						//printf("CLAUSE: %d   INDEX: %d\n", clauses[(8*i)+q], 8*i+q);
-						oGate->addInput(gate);
+						oGate->addInput(gate, portname.str());
 						gate->addOutput(oGate, "O");
 					}
 				}
@@ -616,10 +607,9 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 					for(int q = 0; q < numAndGatesLeft; q++){
 						std::stringstream portname; 
 						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
 
 						Vertex* gate = lutgraph->getVertex(clauses[(8*numOrGates)+q]);
-						oGate->addInput(gate);
+						oGate->addInput(gate, portname.str());
 						gate->addOutput(oGate, "O");
 					}
 				}
@@ -636,10 +626,9 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 					for(int q = 0; q < numOrGatesLeft; q++){
 						std::stringstream portname; 
 						portname<<"I"<<q;
-						oGate->addInPort(portname.str());
 
 						Vertex* gate = lutgraph->getVertex(orIndexStart+q);
-						oGate->addInput(gate);
+						oGate->addInput(gate, portname.str());
 						gate->addOutput(oGate, "O");
 					}
 
@@ -653,11 +642,10 @@ unsigned int SEQUENTIAL::replaceLUTs(Graph* ckt){
 						//Add port
 						std::stringstream portname; 
 						portname<<"I"<<numOrGatesLeft;
-						oGate->addInPort(portname.str());
 
 						//Get the and gate which is one before the or gate
 						Vertex* gate = lutgraph->getVertex(clauses[clauses.size()-1]); 
-						oGate->addInput(gate);
+						oGate->addInput(gate, portname.str());
 						gate->addOutput(oGate, "O");
 					}
 				}

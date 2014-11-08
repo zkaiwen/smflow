@@ -143,6 +143,7 @@ namespace AGGREGATION{
 	void findGateFunction(CutFunction* , AIG* ,  std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > & );
 	void findInputSign(AIG* , unsigned , std::set<unsigned>&, std::list<unsigned>&, std::list<unsigned>& );
 	void DFS_gate(AIG*, std::map<unsigned, std::set<unsigned> >& , unsigned , std::set<unsigned>& );
+	bool verify_gate(AIG*, std::set<unsigned>&,	unsigned );
 
 
 	/*#############################################################################
@@ -154,7 +155,7 @@ namespace AGGREGATION{
 
 
 
-	bool DFS_verify(AIG* , unsigned , std::set<unsigned>& , std::set<unsigned>& );
+	bool verifyContainment_DFS(AIG* , unsigned , std::set<unsigned>& , std::set<unsigned>& );
 	bool verifyContainment(AIG*, std::set<unsigned>&,	unsigned );
 	bool verifyContainment(AIG*, std::set<unsigned>&,	std::set<unsigned>& );
 

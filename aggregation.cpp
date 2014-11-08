@@ -316,12 +316,23 @@ void AGGREGATION::findGateFunction(CutFunction* cf, AIG* aig,  std::map<unsigned
 			exit(1);
 		}
 
+		//Verify gate property
+		if(!verify_gate(aig, iMapR->second, iMapR->first)){
+			printf("Verify Gate property failed\n");
+			printf(" * OUT: %d\tIS: %2d\t", iMapR->first, (int)iMapR->second.size());
+			for(iSet = iMapR->second.begin(); iSet != iMapR->second.end(); iSet++)
+				printf("%d ", *iSet);
+			printf("\n");
+			continue;
+		}
+
 		iResult = result.find(iMapR->second.size());
 		if(iResult == result.end()) result[iMapR->second.size()] = 1;
 		else iResult->second = iResult->second + 1;
 
 	}
 	ioResult = outInMap;	
+
 
 	printf(" * -- Complete\n\n");
 
@@ -440,8 +451,19 @@ void AGGREGATION::findInputSign(AIG* aigraph, unsigned  out, std::set<unsigned>&
 	assert(in.size() == posInputs.size() + negInputs.size());
 
 }
+	
+	bool AGGREGATION::verify_gate(AIG* aig, std::set<unsigned>& input,	unsigned output){
+		if(input.find(output & 0xFFFFFFFE) != input.end()) return true;
+		else if(output & 0x1) return false;
 
+		output = output & 0xFFFFFFFE;
+		
+		unsigned c1node = aig->getChild1(output);
+		unsigned c2node = aig->getChild2(output);
 
+		if(!verify_gate(aig, input, c1node)) return false;
+		return verify_gate(aig, input, c2node);
+	}
 
 
 
@@ -3304,8 +3326,6 @@ void AGGREGATION::findMux2(CutFunction* cf,
 	}
 
 
-/*
-	printf("\n\nPossible Mux or gates\n");	
 	orinit = orIn.begin();
 	oroutit = orOut.begin();
 
@@ -3326,7 +3346,6 @@ void AGGREGATION::findMux2(CutFunction* cf,
 		oroutit++;
 	}
 	printf("\n\n");
-	*/
 
 
 	for(iStats = stats.begin(); iStats!=stats.end(); iStats++){
@@ -3650,7 +3669,7 @@ bool AGGREGATION::isInputNeg(AIG* aigraph, unsigned out, unsigned in){
  *  Returns 1 if all it the fanin cone hits all the nodes in found
  *
  *#############################################################################*/
-bool AGGREGATION::DFS_verify(AIG* aig, unsigned start, std::set<unsigned>& input, std::set<unsigned>& marked){
+bool AGGREGATION::verifyContainment_DFS(AIG* aig, unsigned start, std::set<unsigned>& input, std::set<unsigned>& marked){
 	start = start& 0xFFFFFFFE;
 	marked.insert(start);
 
@@ -3663,12 +3682,12 @@ bool AGGREGATION::DFS_verify(AIG* aig, unsigned start, std::set<unsigned>& input
 	unsigned node2 = aig->getChild2(start) & 0xFFFFFFFE;
 
 	if(marked.find(node1) == marked.end()){
-		bool result = DFS_verify(aig, node1, input, marked);
+		bool result = verifyContainment_DFS(aig, node1, input, marked);
 		if(!result) return false;
 	}
 
 	if(marked.find(node2) == marked.end()){
-		bool result = DFS_verify(aig, node2, input, marked);
+		bool result = verifyContainment_DFS(aig, node2, input, marked);
 		return result;
 	}
 
@@ -3683,7 +3702,7 @@ bool AGGREGATION::verifyContainment(AIG* aig,
 	//Go through each output and make sure it all hits the inputs
 	std::set<unsigned> marked;
 	//printf("Verifying output: %d....", outNode);
-	return DFS_verify(aig, outNode, inputs, marked);
+	return verifyContainment_DFS(aig, outNode, inputs, marked);
 
 }
 

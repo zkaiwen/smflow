@@ -1,8 +1,8 @@
 9
 2 0 LI 1 CI 
 1 8 O
-0 IN name 0 2 3 O 2 O
-1 IN name 0 2 4 O 2 O
+0 IN LI 0 2 3 O 2 O
+1 IN CI 0 2 4 O 2 O
 2 ANDX name 2 0 I0 1 I1 1 6 O
 3 INV name 1 0 I0  1 5 O
 4 INV name 1 1 I0 1 5 O

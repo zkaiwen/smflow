@@ -118,6 +118,8 @@ void AIG::getOutInput(std::vector<unsigned>& outin){
  ********************************************************/
 void AIG::getOutputs(std::vector<unsigned>& output){
 	output = m_Outputs;
+	for(unsigned int i = 0; i < m_Aiger->num_outputs; i++)
+		output.push_back(m_Aiger->outputs[i].lit);
 }
 
 
@@ -486,7 +488,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	int ptBuffer = 0; 
 
 	std::vector<std::map<int, Vertex*>::iterator> ffList;
-	std::set<unsigned> outInput;
 
 	//Go through each node in the circuit and covert it to its
 	//  AND/INV representative
@@ -494,19 +495,8 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	end--;
 
 
-	//Prepare datastructure for easy output search
-	std::set<unsigned int> outputSet; 
-	std::map<std::string, int> cktout;
-	std::map<std::string, int>::iterator iOut;
-	ckt->getOutputs(cktout);
-	//printf("OUTPUTS OF CIRCUIT: %d\n", (int)cktout.size());
-	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++){
-			outputSet.insert(iOut->second);
-			//printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
-	}
 
 
-	int outputNode;
 	for(it = ckt->begin(); (it->first <= end->first) && (it != ckt->end()); it++){
 		std::string circuitType;
 		bool noSub = false;
@@ -517,8 +507,24 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 		std::string gateType = it->second->getType();
 
-		if(gateType.find("XORCY") != std::string::npos)
+		if(gateType.find("NAND") != std::string::npos)
+			circuitType = nandAIGFile_c;
+		else if(gateType.find("AND") != std::string::npos ||
+				gateType.find("IN") != std::string::npos){
+			if(it->second->getIVSize() > 2)
+				circuitType = andAIGFile_c;
+			else{
+					noSub = true;
+			}
+		}
+		else if(gateType.find("NOR") != std::string::npos)
+			circuitType = norAIGFile_c;
+		else if(gateType.find("XORCY") != std::string::npos)
 			circuitType = xorAIGFile_c + "cy";
+		else if(gateType.find("XOR") != std::string::npos)
+			circuitType = xorAIGFile_c;
+		else if(gateType.find("OR") != std::string::npos)
+			circuitType = orAIGFile_c;
 		else if(gateType.find("FF") != std::string::npos || 
 				gateType.find("FD") != std::string::npos ||
 				gateType.find("LD") != std::string::npos ||
@@ -529,31 +535,14 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		
 			noSub = true;
 		}
-		else if(gateType.find("MUXCY") != std::string::npos)
-			circuitType = s_SourcePrim + "muxcy";
 		else if(gateType.find("VCC") != std::string::npos ||
 				gateType.find("GND") != std::string::npos){
 			ckt->addConstant(it->first);
 
-			outputNode = it->second->getID();
 			noSub = true;
 		}
-		else if(gateType.find("XOR") != std::string::npos)
-			circuitType = xorAIGFile_c;
-		else if(gateType.find("NAND") != std::string::npos)
-			circuitType = nandAIGFile_c;
-		else if(gateType.find("AND") != std::string::npos ||
-				gateType.find("IN") != std::string::npos){
-			if(it->second->getIVSize() > 2)
-				circuitType = andAIGFile_c;
-			else{
-				noSub = true;
-			}
-		}
-		else if(gateType.find("NOR") != std::string::npos)
-			circuitType = norAIGFile_c;
-		else if(gateType.find("OR") != std::string::npos)
-			circuitType = orAIGFile_c;
+		else if(gateType.find("MUXCY") != std::string::npos)
+			circuitType = s_SourcePrim + "muxcy";
 		else if(gateType.find("MUXF") != std::string::npos)
 			circuitType = s_SourcePrim + "muxf";
 			/*
@@ -591,13 +580,9 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 			
 			for(unsigned int i = 0; i < out.size(); i++){
-				int index = out[i]->removeInputValue(it->first);
-				out[i]->addInput(in[0]);
-
-				std::vector<std::string> outPorts;
-				out[i]->getInPorts(outPorts);
-				out[i]->addInPort(outPorts[index]);
-				out[i]->removeInPortValue(index);
+				out[i]->removeInputValue(it->first);
+				std::string inPortName = out[i]->getInputPortName(it->first);
+				out[i]->addInput(in[0], inPortName);
 
 				in[0]->addOutput(out[i], outputPortName);
 			}
@@ -605,19 +590,12 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			noSub = true;
 		}
 		else{
-			printf("Unknown Gate Type\tI%sI\n", gateType.c_str());
+			printf("Unknown Gate Type\tI %s I\n", gateType.c_str());
 			ckt->print();
 			exit(1);
 		}
 
-		//If no substitution is needed, check if the node goes to output
 		if(noSub){
-			if(outputSet.find(it->second->getID()) != outputSet.end()){
-				outputNode = it->second->getID();
-				outInput.insert(outputNode);
-				//printf("NO SUB: Input that goes to output: %d TYPE: %s\n", outputNode, gateType.c_str());
-			}
-
 			continue;
 		}
 
@@ -630,19 +608,11 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 
 		Graph* primCkt = new Graph(circuitType);
 		primCkt->importGraph(circuitType, ckt->getLast() +1);
-		std::vector<int> subout;
-		primCkt->getOutputs(subout);
-		outputNode = subout[0];
 
 		//Substitute the node with the primitive type
 		ckt->substitute(it->first, primCkt);
 		toBeDeleted.push_back(it->first);
 
-		//Check to see if the node substituted goes to the output
-		if(outputSet.find(it->second->getID()) != outputSet.end()){
-			outInput.insert(outputNode);
-			//printf("SUB: Input that goes to output: %d ORIG: %d TYPE: %s\n", outputNode, it->second->getID(),  gateType.c_str());
-		}
 
 		//printf("VERTEXID: %d\n", it->first);
 		//if(ckt->getLast() > 40805){
@@ -658,31 +628,42 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	std::set<unsigned>::iterator iSet; 
 
 	//printf("Checking FF List to see if FF goes to output\n");
+	//Handle all the FF's by removing them and setting inputs to them as outputs and outputs and inputs
 	for(unsigned int i = 0; i < ffList.size(); i++){
 		int inID =  ffList[i]->second->getInputPortID("D");
 		assert(inID != -1);
 		ffCKTNodes.insert(inID);
-		//printf("FFID: %d\tINPUTID: %d\n", ffList[i]->second->getID(), inID);
+		//printf("FFID: %d\tINPUTID: %d NAME: %s\n", ffList[i]->second->getID(), inID, ckt->getNodeName(ffList[i]->second->getID()).c_str());
 
 		//If FF goes to output, store the input to the FF
-		if(outInput.erase(ffList[i]->second->getID()) == 1){
-			//printf("FF GOES TO OUTPUT!\n");
-			outInput.insert(inID);
-			std::string outPortName = ckt->isOutput(ffList[i]->second->getID());
-			if(outPortName != "")
-				ckt->setOutput(outPortName, inID);
+		std::string outname = ckt->isOutput(ffList[i]->second->getID());
+		if(outname != ""){
+			//printf("FF JUST GOES TO OUTPUT!\n");
+			ckt->setOutput(outname, inID);
+			//printf("ADD TO OUTPUT\n");
 		}
 		
 		if(handleFF(ffList[i]->first, ckt))
 			toBeDeleted.push_back(ffList[i]->first);
 	}
-	//printf("OUTINPUT SIZE: %d OUTPUTSIZE: %d\n", (int)outInput.size(), (int)outputSet.size());
 	
-	/*
-	printf("OUTINPUTSET: ");
-	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++)
+/*	
+	printf("OUTPUTSIZE: %d\n",(int)outputSet.size());
+	for(iSet = outputSet.begin(); iSet != outputSet.end(); iSet++)
 		printf("%d ", *iSet);
 	printf("\n");
+
+	std::map<std::string, int> outNodes;
+	std::map<std::string, int>::iterator iMap;
+	ckt->getOutputs(outNodes);
+	printf("CKT OUT NODES: ");
+	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
+		printf("ID: %d\t\tNAME: %s\n ",iMap->second, iMap->first.c_str());
+	outNodes.clear();
+	ckt->getInputs(outNodes);
+	printf("CKT IN NODES: ");
+	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
+		printf("ID: %d\t\tNAME: %s\n ",iMap->second, iMap->first.c_str());
 	*/
 	
 
@@ -743,9 +724,10 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		}
 	}
 
+	
+
 	unsigned int vlevelSize = vLevel.size();
 	unsigned int maxLevel = ckt->getMaxLevel();
-
 	//Create the rest of the AIG Graph LEVEL 1 and UP
 	for(unsigned int i = 1; i <= maxLevel; i++){
 		if(vLevel.size() != vlevelSize){
@@ -756,9 +738,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		for(unsigned int j = 0; j < vLevel[i].size(); j++){
 			Vertex* vertex = vLevel[i][j];
 			int vertexID = vertex->getID();
-			bool isOutput = false;
-			if(outInput.find(vertexID) != outInput.end())
-				isOutput = true;
 
 			if(vertex->getType().find("AND") != std::string::npos){
 				std::vector<Vertex*> in;
@@ -772,6 +751,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			else if(vertex->getType().find("INV") != std::string::npos){
 				std::vector<Vertex*> in;
 				vertex->getInput(in);
+
 				//printf("INV NODE: %d IN: %d \nAIG IN: %d\n", vertexID, in[0]->getID(), m_GateMap[in[0]->getID()]);
 
 
@@ -785,75 +765,58 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 					else
 						m_GateMap[vertexID] = m_GateMap[in[0]->getID()] - 1;
 				}
-				
 
-				if(isOutput){
-					m_Outputs.push_back(m_GateMap[in[0]->getID()]);
-					//m_Outputs.push_back(m_GateMap[vertexID]);
-					aiger_add_output(m_Aiger, m_GateMap[vertexID], 0);
-					std::string outname = ckt->isOutput(vertexID).c_str();
-					/*
-					if(outname != "")
-					printf("OUTPUT: GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
-					else
-					printf("OUTPUT,FF : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->getVertex(vertexID)->getName().c_str());
-					*/
-
-				}
 				continue;
 			}
-			else
-			{
+
+			else{
 				printf("Unknown Gate type:\t%s\n", vertex->getType().c_str());
 				exit(1);
 			}
 
-			//CHeck to see if node has an output
-			if(isOutput){
-				//printf("NO OUTPUT\n");
-				m_Outputs.push_back(m_GateMap[vertex->getID()]);
-				aiger_add_output(m_Aiger, m_GateMap[vertex->getID()], 0);
-				//printf("OUTPUT : GID: %d AIG: %d NAME: %s\n", vertexID, m_GateMap[vertexID], ckt->isOutput(vertexID).c_str());
-			}
 			//printf("\n");
 		}
+	}
+	
+	//Prepare datastructure for easy output search
+	std::map<std::string, int> cktout;
+	std::map<std::string, int>::iterator iOut;
+	ckt->getOutputs(cktout);
+	//printf("OUTPUTS OF CIRCUIT: %d\n", (int)cktout.size());
+	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++){
+		//printf("OUTPUT NODE OF CIRCUIT: %d NAME: %s\n", iOut->second, iOut->first.c_str());
+		aiger_add_output(m_Aiger, m_GateMap[iOut->second] & 0xFFFFFFFE, iOut->first.c_str());
 	}
 
 
 	//printf("[AIG]--Checking AIG...");
 	const char* msg;
 	msg = aiger_check(m_Aiger);
-	if(msg != NULL){
+	if(msg != NULL)
 		printf("[AIG] -- AIG CHECK FAIL!!\n%s\n", msg);
-	}
-	//printf("[AIG]--Conversion Complete\n");
 
 	//WRITING AIG TO OUTPUT AIGER FILE (.AAG)
 	std::string cktname = ckt->getName();
 	if(cktname.find(".g") == std::string::npos) {
-	ckt->getName().rfind("/");
-	int index = cktname.rfind("/")+1;
-	cktname = cktname.substr(index, cktname.length()-index-3);
-	//printf("FILE NAME: %s\n", cktname.c_str());
-	writeAiger("aiger/" + cktname + "aag", false);
-	printf("[AIG] -- Exported AIGER file: %s\n", (cktname + "aag").c_str());
+		ckt->getName().rfind("/");
+		int index = cktname.rfind("/")+1;
+		cktname = cktname.substr(index, cktname.length()-index-3);
+		//printf("FILE NAME: %s\n", cktname.c_str());
+		writeAiger("aiger/" + cktname + "aag", false);
+		printf("[AIG] -- Exported AIGER file: %s\n", (cktname + "aag").c_str());
 	}
 
-	
+
 	//Store the inputs that go into each output
-	//printf("OUTPUT INPUT MAP\n");
-	for(iSet = outInput.begin(); iSet != outInput.end(); iSet++){
-		if(m_GateMap[*iSet] >  1){
-			//printf("CKT: %d \tAIG: %d\n", *iSet, m_GateMap[*iSet]);
-			m_OutInput.push_back(m_GateMap[*iSet]);
-		}
-	}
-	
+	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++)
+		if(m_GateMap[iOut->second] >  1)
+			m_OutInput.push_back(m_GateMap[iOut->second]);
+
 	//Store the inputs that go into each FF	
-	//printf("FF INPUT MAP\n");
 	for(iSet = ffCKTNodes.begin(); iSet != ffCKTNodes.end(); iSet++){
 		if(m_GateMap[*iSet] >  1){
-			if(outInput.find(*iSet) == outInput.end()){
+			std::string outname = ckt->isOutput(*iSet);
+			if(outname != ""){
 				//printf("CKT: %d \tAIG: %d\n", *iSet, m_GateMap[*iSet]);
 				m_FFInput.push_back(m_GateMap[*iSet]);
 			}
@@ -876,26 +839,37 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
  *             False if converted to IN
  ********************************************************/
 bool AIG::handleFF(int node, Graph* ckt){
-//	printf("Removing FF...\nInputs to FF will go to PO. Gates the FF goes into will be switched for PI\n");
+	/*
+		 printf("Removing FF...\nInputs to FF will go to PO. Gates the FF goes into will be switched for PI\n");
+		 printf("ID: %d\tFFNAME: %s\n", node, ckt->getNodeName(node).c_str());
+	 */
 	std::vector<Vertex*> input;
 	Vertex* ffNode = ckt->getVertex(node);
 	ffNode->getInput(input);
 
+	int dport = ffNode->getInputPortID("D");
+	//printf("DPORT: %d\n", dport);
+	std::stringstream ss;
+	ss<< "FF" << node << "_"<< ckt->getNodeName(node);
+	ckt->addOutput(ss.str(),  dport);
+
 	//Remove ff from the input nodes' output
 	for(unsigned i = 0; i < input.size(); i++){
+		//printf("INPUT %d\n", input[i]->getID());
 		input[i]->removeOutputValue(node);
 		ffNode->removeInputValue(input[i]->getID());
-		
+
 		//Delete the input if the input is isolated	
-		if(input[i]->getNumInputs() == 0 && input[i]->getNumOutputs() == 0){
+		if(input[i]->getNumInputs() == 0 && input[i]->getNumOutputs() == 0)
 			ckt->removeVertex(input[i]->getID());
-		}
+
 	}
+
 
 	//If the FF has outputs, convert to IN
 	if(ffNode->getOVSize() > 0){
 		//Convert the FF to a IN Type 
-		std::stringstream ss;
+		ss.str("");
 		ss<< "FF" << node << "_"<< ckt->getNodeName(node);
 		ckt->addInput(ss.str(), node);
 		ffNode->setType("IN");

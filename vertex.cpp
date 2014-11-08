@@ -117,13 +117,12 @@ void Vertex::getInPorts(std::vector<std::string>& portlist){
 
 
 
-void Vertex::addInput(Vertex* input){
+void Vertex::addInput(Vertex* input, std::string port){
 	m_Input.push_back(input);
+	m_InPorts.push_back(port);
+	assert(m_InPorts.size() == m_Input.size());
 }
 
-void Vertex::addInPort(std::string port){
-	m_InPorts.push_back(port);
-}
 
 void Vertex::addOutput(Vertex* output, std::string port){
 	m_Output[port].push_back(output);
@@ -142,6 +141,7 @@ std::string Vertex::removeOutputValue(int outputVal){
 			}
 		}
 	}
+
 	printf("Remove output value %d Not found in output list\n", outputVal);
 	printf("Vertex: %d\tOutputList: ", m_ID);
 	for(it = m_Output.begin(); it != m_Output.end(); it++)
@@ -155,6 +155,8 @@ int Vertex::removeInputValue(int inputVal){
 	for(unsigned int i = 0; i < m_Input.size(); i++){
 		if(m_Input[i]->getID() == inputVal){
 			m_Input.erase(m_Input.begin() + i);
+			m_InPorts.erase(m_InPorts.begin() + i);
+			assert(m_InPorts.size() == m_Input.size());
 			return i;
 		}
 	}
@@ -165,9 +167,6 @@ int Vertex::removeInputValue(int inputVal){
 	return -1;
 }
 
-void Vertex::removeInPortValue(int index){
-	m_InPorts.erase(m_InPorts.begin() + index);
-}
 
 void Vertex::getOutput(std::vector<Vertex*> &v){
 	std::map<std::string, std::vector<Vertex*> >::iterator it;
