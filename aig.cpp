@@ -647,24 +647,6 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			toBeDeleted.push_back(ffList[i]->first);
 	}
 	
-/*	
-	printf("OUTPUTSIZE: %d\n",(int)outputSet.size());
-	for(iSet = outputSet.begin(); iSet != outputSet.end(); iSet++)
-		printf("%d ", *iSet);
-	printf("\n");
-
-	std::map<std::string, int> outNodes;
-	std::map<std::string, int>::iterator iMap;
-	ckt->getOutputs(outNodes);
-	printf("CKT OUT NODES: ");
-	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
-		printf("ID: %d\t\tNAME: %s\n ",iMap->second, iMap->first.c_str());
-	outNodes.clear();
-	ckt->getInputs(outNodes);
-	printf("CKT IN NODES: ");
-	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
-		printf("ID: %d\t\tNAME: %s\n ",iMap->second, iMap->first.c_str());
-	*/
 	
 
 	//Delete substituted nodes from the graph
@@ -806,6 +788,17 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		printf("[AIG] -- Exported AIGER file: %s\n", (cktname + "aag").c_str());
 	}
 
+	std::map<std::string, int> outNodes;
+	std::map<std::string, int>::iterator iMap;
+	ckt->getOutputs(outNodes);
+	printf("CKT OUT NODES: ");
+	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
+		printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
+	outNodes.clear();
+	ckt->getInputs(outNodes);
+	printf("CKT IN NODES: ");
+	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
+		printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
 
 	//Store the inputs that go into each output
 	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++)
