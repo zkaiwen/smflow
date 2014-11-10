@@ -569,19 +569,17 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 			it->second->getOutput(out);
 			it->second->getInput(in);
 
-			std::string outputPortName = in[0]->removeOutputValue(it->first);
-
 			//Check to see if INPUT is connected to buffer and out is OUTPUT
-			//If it is...delete input
 			if(in[0]->getType() == "IN" && out.size() == 0){
 				//printf("BUFFER IS A PASSTHROUGH\n");
 				ptBuffer++;
 			}
-
 			
+			std::string outputPortName = in[0]->removeOutputValue(it->first);
+
 			for(unsigned int i = 0; i < out.size(); i++){
-				out[i]->removeInputValue(it->first);
 				std::string inPortName = out[i]->getInputPortName(it->first);
+				out[i]->removeInputValue(it->first);
 				out[i]->addInput(in[0], inPortName);
 
 				in[0]->addOutput(out[i], outputPortName);
@@ -630,7 +628,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	//printf("Checking FF List to see if FF goes to output\n");
 	//Handle all the FF's by removing them and setting inputs to them as outputs and outputs and inputs
 	for(unsigned int i = 0; i < ffList.size(); i++){
-		int inID =  ffList[i]->second->getInputPortID("D");
+		int inID =  ffList[i]->second->getInputPortVertex("D")->getID();
 		assert(inID != -1);
 		ffCKTNodes.insert(inID);
 		//printf("FFID: %d\tINPUTID: %d NAME: %s\n", ffList[i]->second->getID(), inID, ckt->getNodeName(ffList[i]->second->getID()).c_str());
@@ -840,7 +838,7 @@ bool AIG::handleFF(int node, Graph* ckt){
 	Vertex* ffNode = ckt->getVertex(node);
 	ffNode->getInput(input);
 
-	int dport = ffNode->getInputPortID("D");
+	int dport = ffNode->getInputPortVertex("D")->getID();
 	//printf("DPORT: %d\n", dport);
 	std::stringstream ss;
 	ss<< "FF" << node << "_"<< ckt->getNodeName(node);

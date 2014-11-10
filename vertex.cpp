@@ -227,20 +227,28 @@ std::string  Vertex::getInputPortName(int id){
 			return m_InPorts[index];
 	}
 
-	printf("Input ID %d not found\n", id);
+	printf("Input ID %d not found when trying to get port name\n", id);
+	for(unsigned int index = 0; index < m_Input.size(); index++){
+		printf("INPUT ID: %d\tINPUT PORT: %s\n", m_Input[index]->getID(), m_InPorts[index].c_str());
+	}
 	exit(1);
 
 }
 
-int Vertex::getInputPortID(std::string port){
+Vertex* Vertex::getInputPortVertex(std::string port){
 	for(unsigned int index = 0; index < m_InPorts.size(); index++){
 		if(m_InPorts[index] == port)
-			return m_Input[index]->getID();
+			return m_Input[index];
 	}
-	//	printf("[WARNING] -- Input name %s not found\n", port.c_str());
-	return -1;
+	printf("[ERROR] -- Input name %s not found\n", port.c_str());
+	return NULL;
+}
 
+Vertex* Vertex::getInputPortVertex(unsigned index){
+	if(index < m_Input.size())
+		return m_Input[index];
 
+	return NULL;
 }
 
 unsigned int Vertex::getOVSize(){

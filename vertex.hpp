@@ -55,7 +55,8 @@ class Vertex
 		int getLevel();
 		int getNumInputs();
 		int getNumOutputs();
-		int getInputPortID(std::string);
+		Vertex* getInputPortVertex(std::string);
+		Vertex* getInputPortVertex(unsigned);
 		void getInPorts(std::vector<std::string>&);
 		void getOutput(std::vector<Vertex*> &);
 		void getOutput(std::map<std::string, std::vector<Vertex*> >&);

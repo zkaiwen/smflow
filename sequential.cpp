@@ -49,7 +49,7 @@ void SEQUENTIAL::getFFFeedbackList(Graph* ckt, std::list<InOut*>& ffList){
 			std::set<unsigned> mark;
 			std::set<unsigned> ffFound;
 
-			int dport = ff->getInputPortID("D");
+			int dport = ff->getInputPortVertex("D")->getID();
 			DFS_FF(mark, ffFound, ckt->getVertex(dport));
 
 			//Check to see if current FF is in the input list (FEEDBACK)
@@ -94,7 +94,7 @@ void SEQUENTIAL::findRegisterGroup(std::list<Vertex*>& ffList, std::map<unsigned
 	std::map<int, std::set<Vertex*> > reg;
 	for(iList = ffList.begin(); iList != ffList.end(); iList++){
 		Vertex* ff = *iList;
-		int enablePort= ff->getInputPortID("CE");
+		int enablePort= ff->getInputPortVertex("CE")->getID();
 
 		if(enablePort != -1){
 			reg[enablePort].insert(ff); 
@@ -154,7 +154,7 @@ void SEQUENTIAL::findFSM(Graph* ckt){
 
 		std::set<int> mark;
 		int vID = ff->getID();
-		int dport = ff->getInputPortID("D");
+		int dport = ff->getInputPortVertex("D")->getID();
 
 		//Make sure FF's have a D port
 		assert(dport != -1);
@@ -205,7 +205,7 @@ void SEQUENTIAL::findFSM(Graph* ckt){
 
 	for(iList = ffList.begin(); iList != ffList.end(); iList++){
 		Vertex* ff = *iList;
-		int enablePort= ff->getInputPortID("CE");
+		int enablePort= ff->getInputPortVertex("CE")->getID();
 		Vertex* enable = ckt->getVertex(enablePort);
 
 		if(enablePort == -1){

@@ -1573,8 +1573,8 @@ unsigned Graph::substitute(int node, Graph* subCkt){
 
 
 	//Get IO of the subCktstituting node
-	std::vector<Vertex*> node2BSubInputs;
-	node2BSub->getInput(node2BSubInputs);
+	std::vector<std::string> node2BSubInputs;
+	node2BSub->getInputPorts(node2BSubInputs);
 
 
 	/********************
@@ -1587,15 +1587,14 @@ unsigned Graph::substitute(int node, Graph* subCkt){
 	for(unsigned int i = 0; i < node2BSubInputs.size(); i++){
 
 		//Remove node2BSub from the output of its inputs
-		std::string outPortName = node2BSubInputs[i]->removeOutputValue(node);
+		Vertex* node2BSubInputVertex;
+		node2BSubInputVertex = node2BSub->getInputPortVertex(i);
+		std::string outPortName = node2BSubInputVertex->removeOutputValue(node);
 
 		//Get the portname of input to match to subCkt
-		std::string inPortName = node2BSub->getInputPortName(node2BSubInputs[i]->getID());
+		int subCktInputIndex = subCkt->findInPort(node2BSubInputs[i]);
 
-		//printf("HERE\n");
-		int subCktInputIndex = subCkt->findInPort(inPortName);
-		//printf("DONE\n");
-		//printf("Input port name: %s, Index of input in subCkt to delete: %d\n", inPortName.c_str(), subCktInputIndex);
+		//printf("Input port ID: %d name: %s, Index of input in subCkt to delete: %d\n", node2BSubInputVertex->getID(), node2BSubInputs[i].c_str(), subCktInputIndex);
 
 		//Get the outputs of IN to subCkt
 		std::vector<Vertex*> subCkt_Out_of_In;
@@ -1603,13 +1602,13 @@ unsigned Graph::substitute(int node, Graph* subCkt){
 
 		//Connect the inputNode to the input of subCkt
 		for(unsigned int j = 0; j < subCkt_Out_of_In.size(); j++){
-			node2BSubInputs[i]->addOutput(subCkt_Out_of_In[j], outPortName);
+			node2BSubInputVertex->addOutput(subCkt_Out_of_In[j], outPortName);
 
 			//Remove the original input in subCkt of the currently added output
 			//printf("removing input %d from %d\n",  subCktInputIndex, subCkt_Out_of_In[j]->getID());
 			std::string subCktInPortName = subCkt_Out_of_In[j]->getInputPortName(subCktInputIndex);
 			subCkt_Out_of_In[j]->removeInputValue(subCktInputIndex);
-			subCkt_Out_of_In[j]->addInput(node2BSubInputs[i], subCktInPortName);
+			subCkt_Out_of_In[j]->addInput(node2BSubInputVertex,  subCktInPortName);
 		}
 	}
 
