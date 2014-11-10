@@ -15,7 +15,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string>
+#include <cstring>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -29,6 +29,7 @@
 #include "sequential.hpp"
 #include "aggregation.hpp"
 #include "similarity.hpp"
+#include "rapidxml/rapidxml.hpp"
 
 //Special Print Function
 void printStatement(std::string statement){
@@ -77,7 +78,7 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	std::string primBase = argv[1];          //Location of primitive circuits
 	std::string dataBase = argv[2];          //Location of database file
-	std::string outDatabase = argv[3];       //Output database file
+	std::string xmlFileName= argv[3];       //Output database file
 	std::string option= "";                  //Command line options
 
 	//Time tracking
@@ -103,7 +104,7 @@ int main( int argc, char *argv[] )
 	float elapsedTime;
 	int k = 6;                              //k-Cut enumeration value 
 
-	std::ofstream outdb;                    //Database output file stream
+	//std::ofstream outdb;                    //Database output file stream
 	std::map<std::string, std::set<unsigned long long> > pDatabase;
 	std::map<std::string, double> similarity;
 
@@ -192,8 +193,8 @@ int main( int argc, char *argv[] )
 
 
 
-	outdb.open(outDatabase.c_str());
-	outdb<<aigComponentDefinition<<"\n";
+	//outdb.open(outDatabase.c_str());
+	//outdb<<aigComponentDefinition<<"\n";
 
 	std::string file = "";
 	std::vector<int> count; 
@@ -201,6 +202,58 @@ int main( int argc, char *argv[] )
 	//Go through each circuit in the database and preprocess data/signature 
 	//int sdfid = 100183;
 
+
+
+
+	printf("READING IN XML FILE\n");
+	std::ifstream xmlfile;
+	xmlfile.open(xmlFileName.c_str());
+	if (!infile.is_open())	{
+		fprintf(stderr, "[ERROR] -- Cannot open the xml file for import...exiting\n");
+		fprintf(stderr, "\n***************************************************\n\n");
+		exit(-1);
+	}
+
+	std::string xmlstring = "";
+	std::string xmlline;
+	while(getline(xmlfile, xmlline))
+		xmlstring += xmlline + "\n";
+
+	rapidxml::xml_document<> xmldoc;
+	char* cstr = new char[xmlstring.size() + 1];
+	strcpy(cstr, xmlstring.c_str());
+	xmldoc.parse<0>(cstr);
+
+	rapidxml::xml_node<> *xmlnode = xmldoc.first_node();
+	rapidxml::xml_attribute<> *xmlattr = xmlnode->first_attribute();
+	if(xmlattr != NULL){
+		std::cout<<"ATTR: "<<xmlattr->name()<<" VAL: "<<xmlattr->value()<<"\n";
+	}
+
+	while(xmlnode != 0) {
+		std::cout << xmlnode->name() << std::endl;
+		rapidxml::xml_node<> *child = xmlnode->first_node();
+		while (child != 0)
+		{
+			std::cout << child->name() << " " << child->value() << std::endl;
+			rapidxml::xml_node<> *child2 = child->first_node();
+			while (child2 != 0)
+			{
+				std::cout << child2->name() << " " << child2->value() << std::endl;
+				child2 = child2->next_sibling(); 
+			}
+
+			child = child->next_sibling(); 
+		}
+		xmlnode = xmlnode->next_sibling();
+	}
+
+
+
+
+
+	delete [] cstr;
+	exit(1);
 
 	//*************************************************************************
 	//*  Process Data base file and extract features from circuits
@@ -617,10 +670,10 @@ int main( int argc, char *argv[] )
 
 	delete functionCalc;
 
-	outdb << "END\n";
-	outdb.close();
+	//outdb << "END\n";
+	//outdb.close();
 	printStatement("Build Database Complete");
-	printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
+	//printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
 		
 	
 	
