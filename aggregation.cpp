@@ -3328,7 +3328,7 @@ void AGGREGATION::findMux2(CutFunction* cf,
 
 	orinit = orIn.begin();
 	oroutit = orOut.begin();
-
+/*
 	while(orinit != orIn.end()){
 
 		printf("INPUT: ");
@@ -3346,6 +3346,7 @@ void AGGREGATION::findMux2(CutFunction* cf,
 		oroutit++;
 	}
 	printf("\n\n");
+	*/
 
 
 	for(iStats = stats.begin(); iStats!=stats.end(); iStats++){

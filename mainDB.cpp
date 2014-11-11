@@ -12,6 +12,8 @@
 #ifndef MAINDB_GUARD
 #define MAINDB_GUARD
 
+
+//System Includes
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,6 +23,8 @@
 #include <unistd.h>
 #include <math.h>
 #include <fstream>
+
+//smflow Includes
 #include "graph.hpp"
 #include "vertex.hpp"
 #include "aig.hpp"
@@ -29,7 +33,15 @@
 #include "sequential.hpp"
 #include "aggregation.hpp"
 #include "similarity.hpp"
+
+//XML Includes
 #include "rapidxml/rapidxml.hpp"
+
+//Socket TCP/IP Includes
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 
 //Special Print Function
 void printStatement(std::string statement){
@@ -154,7 +166,86 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
+	int sockfd, newsockfd;
+	socklen_t clientLength;
+	char buffer[10000];
+	struct sockaddr_in server_addr, client_addr;
 
+	const int portNumber = 8888;
+	sockfd = socket(AF_INET, SOCK_STREAM, 0)
+	if(sockfd < 0){
+		printf("[ERROR] -- Server socket cannot be opened\n");
+		return 0;
+	}
+
+	bzero((char *) &server_addr, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;                   //Address format is host and port number
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(portNumber);
+
+	if(bind(sockfd, (struct sockaddr *) &server_addr, 
+					sizeof(serv_addr)) < 0){
+				
+				printf("[ERROR] -- Error has occured during binding\n");
+				return 0;
+	}
+
+	listen(sockfd, 5);
+	clientLength = sizeof(client_addr);
+	newsockfd = accept(sockfd, (struct sockaddr*) &client_addr, &clientlength);
+	if(newsockfd < 0){
+		printf("[ERROR] -- Error has occured accepting the client\n");
+		return 0;
+	}
+	bzero(buffer, 256);
+	n = rad(newsockfd, buffer, 255);
+
+
+	/*
+		 printf("READING IN XML FILE\n");
+		 std::ifstream xmlfile;
+		 xmlfile.open(xmlFileName.c_str());
+		 if (!infile.is_open())	{
+		 fprintf(stderr, "[ERROR] -- Cannot open the xml file for import...exiting\n");
+		 fprintf(stderr, "\n***************************************************\n\n");
+		 exit(-1);
+		 }
+
+		 std::string xmlstring = "";
+		 std::string xmlline;
+		 while(getline(xmlfile, xmlline))
+		 xmlstring += xmlline + "\n";
+
+		 rapidxml::xml_document<> xmldoc;
+		 char* cstr = new char[xmlstring.size() + 1];
+		 strcpy(cstr, xmlstring.c_str());
+		 xmldoc.parse<0>(cstr);
+
+		 rapidxml::xml_node<> *xmlnode = xmldoc.first_node();
+		 rapidxml::xml_attribute<> *xmlattr = xmlnode->first_attribute();
+		 if(xmlattr != NULL){
+		 std::cout<<"ATTR: "<<xmlattr->name()<<" VAL: "<<xmlattr->value()<<"\n";
+		 }
+
+		 while(xmlnode != 0) {
+		 std::cout << xmlnode->name() << std::endl;
+		 rapidxml::xml_node<> *child = xmlnode->first_node();
+		 while (child != 0)
+		 {
+		 std::cout << child->name() << " " << child->value() << std::endl;
+		 rapidxml::xml_node<> *child2 = child->first_node();
+		 while (child2 != 0)
+		 {
+		 std::cout << child2->name() << " " << child2->value() << std::endl;
+		 child2 = child2->next_sibling(); 
+		 }
+
+		 child = child->next_sibling(); 
+		 }
+		 xmlnode = xmlnode->next_sibling();
+		 }
+		 delete [] cstr;
+	 */
 
 
 	//**************************************************************************
@@ -205,56 +296,6 @@ int main( int argc, char *argv[] )
 
 
 
-	printf("READING IN XML FILE\n");
-	std::ifstream xmlfile;
-	xmlfile.open(xmlFileName.c_str());
-	if (!infile.is_open())	{
-		fprintf(stderr, "[ERROR] -- Cannot open the xml file for import...exiting\n");
-		fprintf(stderr, "\n***************************************************\n\n");
-		exit(-1);
-	}
-
-	std::string xmlstring = "";
-	std::string xmlline;
-	while(getline(xmlfile, xmlline))
-		xmlstring += xmlline + "\n";
-
-	rapidxml::xml_document<> xmldoc;
-	char* cstr = new char[xmlstring.size() + 1];
-	strcpy(cstr, xmlstring.c_str());
-	xmldoc.parse<0>(cstr);
-
-	rapidxml::xml_node<> *xmlnode = xmldoc.first_node();
-	rapidxml::xml_attribute<> *xmlattr = xmlnode->first_attribute();
-	if(xmlattr != NULL){
-		std::cout<<"ATTR: "<<xmlattr->name()<<" VAL: "<<xmlattr->value()<<"\n";
-	}
-
-	while(xmlnode != 0) {
-		std::cout << xmlnode->name() << std::endl;
-		rapidxml::xml_node<> *child = xmlnode->first_node();
-		while (child != 0)
-		{
-			std::cout << child->name() << " " << child->value() << std::endl;
-			rapidxml::xml_node<> *child2 = child->first_node();
-			while (child2 != 0)
-			{
-				std::cout << child2->name() << " " << child2->value() << std::endl;
-				child2 = child2->next_sibling(); 
-			}
-
-			child = child->next_sibling(); 
-		}
-		xmlnode = xmlnode->next_sibling();
-	}
-
-
-
-
-
-	delete [] cstr;
-	exit(1);
-
 	//*************************************************************************
 	//*  Process Data base file and extract features from circuits
 	//**************************************************************************
@@ -267,9 +308,9 @@ int main( int argc, char *argv[] )
 		printStatement("[MAIN] -- Processing File: " +  file);
 		name.push_back(file);
 
-	//*************************************************************************
-	//* Import circuits and convert to AIG 
-	//**************************************************************************
+		//*************************************************************************
+		//* Import circuits and convert to AIG 
+		//**************************************************************************
 		gettimeofday(&igraph_b, NULL); //--------------------------------------------
 		Graph* ckt = new Graph(file);
 		ckt->importGraph(file, 0);
@@ -280,9 +321,9 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//* Replace LUT with combinational logic 
-	//**************************************************************************
+		//*************************************************************************
+		//* Replace LUT with combinational logic 
+		//**************************************************************************
 		gettimeofday(&rlut_b, NULL); //--------------------------------------------
 		unsigned int numLUTs = SEQUENTIAL::replaceLUTs(ckt);
 		stat_numLUTs.push_back(numLUTs);
@@ -291,14 +332,14 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//*  Searching for sequential layout/patterns
-	//**************************************************************************
+		//*************************************************************************
+		//*  Searching for sequential layout/patterns
+		//**************************************************************************
 		//Count the number of enable based registers
 		//std::map<unsigned, unsigned> rgcount;
 		//SEQUENTIAL::findRegisterGroup(ffList, rgcount);
 		//stat_reg.push_back(rgcount);
-	
+
 		//Count number of FF
 		std::list<Vertex*> ffList;
 		SEQUENTIAL::getFFList(ckt, ffList);
@@ -346,21 +387,21 @@ int main( int argc, char *argv[] )
 
 		SEQUENTIAL::deleteFFFeedbackList(ffFeedbackList);
 
-	
+
 
 
 
 		/*aigraph->convertGraph2AIG(ckt, true);
-			//USING OPEN BABEL TO CHECK SIMILARITY
-			int lastSlashIndex = file.find_last_of("/") + 1;
-			std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
-			ckt->exportGraphSDFV3000(cname, sdfid);
-			sdfid++;
+		//USING OPEN BABEL TO CHECK SIMILARITY
+		int lastSlashIndex = file.find_last_of("/") + 1;
+		std::string cname = file.substr(lastSlashIndex, file.length()-lastSlashIndex-4);
+		ckt->exportGraphSDFV3000(cname, sdfid);
+		sdfid++;
 		 */
 
-	//*************************************************************************
-	//* AIG Translation 
-	//**************************************************************************
+		//*************************************************************************
+		//* AIG Translation 
+		//**************************************************************************
 		gettimeofday(&iaig_b, NULL); //--------------------------------------------
 		AIG* aigraph = new AIG();
 		aigraph->convertGraph2AIG(ckt, false);
@@ -376,9 +417,9 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//* K Cut Enumeration 
-	//**************************************************************************
+		//*************************************************************************
+		//* K Cut Enumeration 
+		//**************************************************************************
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
@@ -386,11 +427,11 @@ int main( int argc, char *argv[] )
 
 
 
-	
-	
-	//*************************************************************************
-	//* Input correspondence 
-	//**************************************************************************
+
+
+		//*************************************************************************
+		//* Input correspondence 
+		//**************************************************************************
 		//Find input cut for FF nodes----------------------------
 		gettimeofday(&outc_b, NULL); //------------------------------------------------
 		std::vector<unsigned> nodes;
@@ -431,6 +472,7 @@ int main( int argc, char *argv[] )
 			else
 				cutCountOut[iCut->second.size()]++; 
 		}
+
 		stat_spCutCountOut.push_back(cutCountOut);
 		gettimeofday(&ffc_e, NULL); //------------------------------------------------
 
@@ -438,9 +480,9 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//* Calculate Function based on K-Cuts 
-	//**************************************************************************
+		//*************************************************************************
+		//* Calculate Function based on K-Cuts 
+		//**************************************************************************
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
 		functionCalc->processAIGCuts(true);
@@ -451,10 +493,9 @@ int main( int argc, char *argv[] )
 
 
 
-
-	//*************************************************************************
-	//* Aggregate similar functions 
-	//**************************************************************************
+		//*************************************************************************
+		//* Aggregate similar functions 
+		//**************************************************************************
 		std::map<unsigned, std::set<unsigned> >::iterator iMapS;
 		std::set<unsigned>::iterator iSet;
 
@@ -574,9 +615,9 @@ int main( int argc, char *argv[] )
 
 
 		/*
-		std::map<unsigned long long, int> functionCount;
-		functionCalc->getFunctionCount(functionCount);
-		count.push_back(functionCount.size());
+			 std::map<unsigned long long, int> functionCount;
+			 functionCalc->getFunctionCount(functionCount);
+			 count.push_back(functionCount.size());
 			 outdb<< file << "\n";
 			 outdb<< functionCount.size() << "\n";
 			 for(fcit = functionCount.begin(); fcit != functionCount.end(); fcit++){
@@ -586,12 +627,12 @@ int main( int argc, char *argv[] )
 
 
 
-	//*************************************************************************
-	//* Calculate Elapsed Time 
-	//**************************************************************************
+		//*************************************************************************
+		//* Calculate Elapsed Time 
+		//**************************************************************************
 		std::vector<float> time;
 		time.reserve(20);
-		
+
 		elapsedTime = (igraph_e.tv_sec - igraph_b.tv_sec) * 1000.0;
 		elapsedTime += (igraph_e.tv_usec - igraph_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
@@ -603,7 +644,7 @@ int main( int argc, char *argv[] )
 		elapsedTime = (ce_e.tv_sec - ce_b.tv_sec) * 1000.0;     
 		elapsedTime += (ce_e.tv_usec - ce_b.tv_usec) / 1000.0;  
 		time.push_back(elapsedTime/1000);
-		
+
 		elapsedTime = (outc_e.tv_sec - outc_b.tv_sec) * 1000.0;     
 		elapsedTime += (outc_e.tv_usec - outc_b.tv_usec) / 1000.0;  
 		time.push_back(elapsedTime/1000);
@@ -620,7 +661,7 @@ int main( int argc, char *argv[] )
 		elapsedTime = (cas_e.tv_sec - cas_b.tv_sec) * 1000.0;
 		elapsedTime += (cas_e.tv_usec - cas_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-		
+
 		elapsedTime = (blk_e.tv_sec - blk_b.tv_sec) * 1000.0;
 		elapsedTime += (blk_e.tv_usec - blk_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
@@ -628,7 +669,7 @@ int main( int argc, char *argv[] )
 		elapsedTime = (fb_e.tv_sec - fb_b.tv_sec) * 1000.0;
 		elapsedTime += (fb_e.tv_usec - fb_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-		
+
 		elapsedTime = (cnt_e.tv_sec - cnt_b.tv_sec) * 1000.0;     
 		elapsedTime += (cnt_e.tv_usec - cnt_b.tv_usec) / 1000.0;  
 		time.push_back(elapsedTime/1000);
@@ -640,11 +681,11 @@ int main( int argc, char *argv[] )
 		elapsedTime = (par_e.tv_sec - par_b.tv_sec) * 1000.0;
 		elapsedTime += (par_e.tv_usec - par_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-		
+
 		elapsedTime = (gate_e.tv_sec - gate_b.tv_sec) * 1000.0;
 		elapsedTime += (gate_e.tv_usec - gate_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
-	
+
 		elapsedTime = (eq_e.tv_sec - eq_b.tv_sec) * 1000.0;
 		elapsedTime += (eq_e.tv_usec - eq_b.tv_usec) / 1000.0;
 		time.push_back(elapsedTime/1000);
@@ -674,32 +715,32 @@ int main( int argc, char *argv[] )
 	//outdb.close();
 	printStatement("Build Database Complete");
 	//printf("[mainDB] -- Database Output File: %s\n\n", outDatabase.c_str() );
-		
-	
-	
-	
+
+
+
+
 	//*************************************************************************
 	//* Form the timing label 
 	//**************************************************************************
 	std::vector<std::string> tLabel;
 	tLabel.reserve(20);
-		tLabel.push_back("GRP-IM");
-		tLabel.push_back("AIG-CN");
-		tLabel.push_back("CUT");
-		tLabel.push_back("OUT-C");
-		tLabel.push_back("FF-C");
-		tLabel.push_back("CUT-F");
-		tLabel.push_back("FF-CAS");
-		tLabel.push_back("FF-BLK");
-		tLabel.push_back("FF-FB");
-		tLabel.push_back("CNT");
-		tLabel.push_back("LUT-R");
-		tLabel.push_back("PAR-A");
-		tLabel.push_back("GAT-A");
-		tLabel.push_back("EQ-A");
-		tLabel.push_back("MUX-A");
-		tLabel.push_back("DEC-A");
-		tLabel.push_back("ADD-A");
+	tLabel.push_back("GRP-IM");
+	tLabel.push_back("AIG-CN");
+	tLabel.push_back("CUT");
+	tLabel.push_back("OUT-C");
+	tLabel.push_back("FF-C");
+	tLabel.push_back("CUT-F");
+	tLabel.push_back("FF-CAS");
+	tLabel.push_back("FF-BLK");
+	tLabel.push_back("FF-FB");
+	tLabel.push_back("CNT");
+	tLabel.push_back("LUT-R");
+	tLabel.push_back("PAR-A");
+	tLabel.push_back("GAT-A");
+	tLabel.push_back("EQ-A");
+	tLabel.push_back("MUX-A");
+	tLabel.push_back("DEC-A");
+	tLabel.push_back("ADD-A");
 
 
 
