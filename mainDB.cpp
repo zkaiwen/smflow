@@ -33,14 +33,11 @@
 #include "sequential.hpp"
 #include "aggregation.hpp"
 #include "similarity.hpp"
+#include "server.hpp"
 
 //XML Includes
 #include "rapidxml/rapidxml.hpp"
 
-//Socket TCP/IP Includes
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 
 
 //Special Print Function
@@ -63,6 +60,7 @@ void calculateSimilarity_size(std::vector<std::string>& name,
 		std::vector<std::map<unsigned, unsigned> >& fingerprint,
 		std::vector<std::vector< std::vector<double> > >& simTable);
 
+std::string receiveAllData(int newsockfd, int bufferLength);
 
 int main( int argc, char *argv[] )
 {
@@ -166,39 +164,24 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
-	int sockfd, newsockfd;
-	socklen_t clientLength;
-	char buffer[10000];
-	struct sockaddr_in server_addr, client_addr;
-
-	const int portNumber = 8888;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0)
-	if(sockfd < 0){
-		printf("[ERROR] -- Server socket cannot be opened\n");
+	Server* server = new Server(9000);
+	if(! server->waitForClient())
 		return 0;
-	}
 
-	bzero((char *) &server_addr, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;                   //Address format is host and port number
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(portNumber);
+	std::string data = server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
 
-	if(bind(sockfd, (struct sockaddr *) &server_addr, 
-					sizeof(serv_addr)) < 0){
-				
-				printf("[ERROR] -- Error has occured during binding\n");
-				return 0;
-	}
+	data = server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
 
-	listen(sockfd, 5);
-	clientLength = sizeof(client_addr);
-	newsockfd = accept(sockfd, (struct sockaddr*) &client_addr, &clientlength);
-	if(newsockfd < 0){
-		printf("[ERROR] -- Error has occured accepting the client\n");
+	if(!server->sendData("YEAH! WE GOT IT!"))
 		return 0;
-	}
-	bzero(buffer, 256);
-	n = rad(newsockfd, buffer, 255);
+
+	data = server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
+
+	server->closeSocket();
+	return 0;
 
 
 	/*
@@ -1156,4 +1139,6 @@ void calculateSimilarity_size(std::vector<std::string>& name,
 		}
 	}
 }
+
+
 #endif
