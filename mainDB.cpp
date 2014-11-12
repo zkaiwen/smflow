@@ -76,10 +76,8 @@ int main( int argc, char *argv[] )
 	printf("* \n");
 	printf("*************************************************************\n");
 	printf("*************************************************************\n\n");
-	if(argc != 4)
-	{
-
-		printf("./xfpgeniusDB <primitive file> <database file> <output database>\n\n\n");
+	if(argc != 4){
+		printf("./xfpgeniusDB <primitive file> <database file> <xml database file>\n\n\n");
 		return 0;
 	}
 
@@ -164,7 +162,9 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
+	/*
 	Server* server = new Server(9000);
+
 	if(! server->waitForClient())
 		return 0;
 
@@ -181,10 +181,10 @@ int main( int argc, char *argv[] )
 	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
 
 	server->closeSocket();
+	delete server;
 	return 0;
 
 
-	/*
 		 printf("READING IN XML FILE\n");
 		 std::ifstream xmlfile;
 		 xmlfile.open(xmlFileName.c_str());
@@ -468,7 +468,8 @@ int main( int argc, char *argv[] )
 		//**************************************************************************
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
-		functionCalc->processAIGCuts(true);
+		functionCalc->processAIGCuts_Perm(true);
+		functionCalc->printUniqueFunctionStat();
 		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 

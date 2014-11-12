@@ -712,6 +712,7 @@ void CutFunction::processAIGCuts_Perm(bool np){
 
 				//Calculate the output at each node up to the current node
 				calculate2(node);
+
 				unsigned long long functionVal = m_NodeValue[node];
 				unsigned long long negateVal = ~(functionVal);
 				//printf("OUTPUT: %x\n", negate);
@@ -1093,10 +1094,15 @@ void CutFunction::printUniqueFunction(){
 	printf("-------------------------------------\n");
 	std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator iMap;
 	std::set<unsigned long long>::iterator iSet;
+	int maxkeyprint = 5;
 
 	for(iMap = m_UniqueFunction.begin(); iMap != m_UniqueFunction.end(); iMap++){
-		printf("FUNCTION KEY: \n");
+		printf("FUNCTION KEY SIZE: %d\n",(int) iMap->first.size());
+		int count = 0; 
 		for(iSet = iMap->first.begin(); iSet != iMap->first.end(); iSet++){
+			count++;
+			if(count > maxkeyprint) break;
+
 			printf(" %llx\n", *iSet);
 		}
 		printf(" *  COUNT: %d\n", (int)iMap->second.size());
@@ -1128,6 +1134,7 @@ void CutFunction::printUniqueFunctionStat(){
 	std::vector< std::map<std::set<unsigned long long>, std::vector<std::vector<unsigned> > >::iterator > mostUnique;
 
 	unsigned int min = 0xFFFFFFFF;
+	int maxkeyprint = 5;
 
 	for(iMap = m_UniqueFunction.begin(); iMap != m_UniqueFunction.end(); iMap++){
 		if(iMap->second.size() < min){
@@ -1143,7 +1150,10 @@ void CutFunction::printUniqueFunctionStat(){
 
 	for(unsigned int a = 0; a < mostUnique.size(); a++){
 		printf("FUNCTION KEY: \n");
+		int count = 0; 
 		for(iSet = mostUnique[a]->first.begin(); iSet != mostUnique[a]->first.end(); iSet++){
+			count++;
+			if(count > maxkeyprint) break;
 			printf(" %llx\n", *iSet);
 		}
 		printf(" *  COUNT: %d\n", (int)mostUnique[a]->second.size());

@@ -21,16 +21,16 @@ Server::Server(unsigned port){
 
 //Returns false if failed
 bool Server::waitForClient(){
-	printf("[SKT] -- Preparing TCP/IP connection with client front-end\n");
+	printf("[SERVER] -- Preparing TCP/IP connection with client front-end\n");
 
-	printf("[SKT] -- Opening Socket...\n");
+	printf("[SERVER] -- Opening Socket...\n");
 	m_ServerSktID= socket(AF_INET, SOCK_STREAM, 0);
 	if(m_ServerSktID< 0){
 		printf("[ERROR] -- Server socket cannot be opened\n");
 		return false;
 	}
 
-	printf("[SKT] -- Preparing to bind...\n");
+	printf("[SERVER] -- Preparing to bind...\n");
 	socklen_t clientLength;
 	struct sockaddr_in server_addr, client_addr;
 	bzero((char *) &server_addr, sizeof(server_addr));
@@ -45,7 +45,9 @@ bool Server::waitForClient(){
 		return false;
 	}
 
-	printf("[SKT] -- Listening for clients...\n");
+	print();
+
+	printf("[SERVER] -- Listening for clients...\n");
 	listen(m_ServerSktID, 5);
 
 	clientLength = sizeof(client_addr);
@@ -82,7 +84,7 @@ std::string Server::receiveAllData(){
 
 
 	//Blocking Receive to wait for the first data sent by the client
-	printf("[SKT] -- Waiting for data from client...\n");
+	printf("[SERVER] -- Waiting for data from client...\n");
 	bzero(buffer, m_bufferLength);
 	if((size_recv = recv(m_ClientSktID, buffer, m_bufferLength-1, 0) ) < 0){
 		printf("[ERROR] -- Error occured when attempting to receive blocking\n");
@@ -100,7 +102,7 @@ std::string Server::receiveAllData(){
 
 	//beginning time
 	gettimeofday(&begin , NULL);
-	printf("[SKT] -- Initial packet received. Retrieving all data\n");
+	printf("[SERVER] -- Initial packet received. Retrieving all data\n");
 
 	while(1){
 		gettimeofday(&now , NULL);
@@ -128,7 +130,7 @@ std::string Server::receiveAllData(){
 		else
 			usleep(5000);
 	}
-	printf("[SKT] -- Data received from client\n");
+	printf("[SERVER] -- Data received from client\n");
 	
 	//Set it so that receive is blocking
 	option = option & ~O_NONBLOCK;
@@ -155,7 +157,7 @@ void Server::closeSocket(){
 	if(m_ServerSktID< 0)
 		printf("[SERVER] -- There is no socket to close\n");
 
-	printf("[SKT] -- Closing socket...\n");
+	printf("[SERVER] -- Closing socket...\n");
 	close(m_ServerSktID);
 	close(m_ClientSktID);
 	m_ServerSktID = -1;
@@ -163,6 +165,7 @@ void Server::closeSocket(){
 }
 
 void Server::print(){
+	printf("[SERVER] -- Server Information\n");
 	struct ifaddrs* ifAddrStruct=NULL;
 	struct ifaddrs* ifa=NULL;
 	void* tmpAddrPtr=NULL;
@@ -170,15 +173,14 @@ void Server::print(){
 	getifaddrs(&ifAddrStruct);
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
-		if (!ifa->ifa_addr) {
-			continue;
-		}
+		if (!ifa->ifa_addr) continue;
+
 		if (ifa->ifa_addr->sa_family == AF_INET) { // check it is IP4
 			// is a valid IP4 Address
 			tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 			char addressBuffer[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+			printf(" * [IPV4] DEV: %-7s\tIP: %s\n", ifa->ifa_name, addressBuffer); 
 		} 
 		
 		else if (ifa->ifa_addr->sa_family == AF_INET6) { // check it is IP6
@@ -186,8 +188,11 @@ void Server::print(){
 			tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 			char addressBuffer[INET6_ADDRSTRLEN];
 			inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+			printf(" * [IPV6] DEV: %-7s\tIP: %s\n", ifa->ifa_name, addressBuffer); 
 		} 
 	}
+
+	printf(" * [PORT] : %d\n\n", m_Port);
+
 	if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
 }
