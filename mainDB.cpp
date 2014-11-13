@@ -163,25 +163,6 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 
 	/*
-	Server* server = new Server(9000);
-
-	if(! server->waitForClient())
-		return 0;
-
-	std::string data = server->receiveAllData();
-	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
-
-	data = server->receiveAllData();
-	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
-
-	if(!server->sendData("YEAH! WE GOT IT!"))
-		return 0;
-
-	data = server->receiveAllData();
-	printf("DATA RECEIVED FROM CLIENT: %s\n", data.c_str());
-
-	server->closeSocket();
-	delete server;
 	return 0;
 
 
@@ -267,6 +248,7 @@ int main( int argc, char *argv[] )
 
 
 
+	//std::ofstream outdb;                    //Database output file stream
 	//outdb.open(outDatabase.c_str());
 	//outdb<<aigComponentDefinition<<"\n";
 
@@ -468,8 +450,8 @@ int main( int argc, char *argv[] )
 		//**************************************************************************
 		gettimeofday(&func_b, NULL);//-----------------------------------------------
 		functionCalc->setParams(cut, aigraph);
-		functionCalc->processAIGCuts_Perm(true);
-		functionCalc->printUniqueFunctionStat();
+		functionCalc->processAIGCuts(true);
+		//functionCalc->printUniqueFunctionStat();
 		//functionCalc->processAIGCuts_Perm(true);
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 
@@ -1074,6 +1056,57 @@ int main( int argc, char *argv[] )
 	}
 	printf("\nTotal Time:  %f\n", totaltotal);
 	printf("\n\n[ --------***--------      END      --------***-------- ]\n\n");
+	
+	
+	
+	
+	
+	
+	
+	//**************************************************************************
+	//* MKR- CONECTING WITH FRONT ENDJ 
+	//**************************************************************************
+	Server* server = new Server(9000);
+
+	if(! server->waitForClient())
+		return 0;
+
+	std::string dotData= server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
+	std::ofstream dos;                    //Database output file stream
+	dos.open("circuits/demo/dot/ckt.dot");
+	dos<<dotData;
+
+	std::string xmlData= server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", xmlData.c_str());
+	std::ofstream xos;                    //Database output file stream
+	xos.open("circuits/demo/xml/ckt.xml");
+	xos<<xmlData;
+
+	
+	std::system("python2.7 scripts/dot2cnl.py circuits/demo/dot/ckt.dot");
+	std::system("mv -v circuits/demo/dot/ckt.cnl circuits/demo/cnl/");
+
+	server->closeSocket();
+	delete server;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	return 0;
 
