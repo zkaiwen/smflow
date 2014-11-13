@@ -15,6 +15,7 @@ OBJ= \
 		sequential.o \
 		verification.o \
 		server.o \
+		database.o \
 		aiger.o
 
 PROF=
@@ -47,6 +48,9 @@ vertex.o: vertex.cpp vertex.hpp
 
 aggregation.o: aggregation.cpp aggregation.hpp 
 	g++ $(CFLAGS) -c aggregation.cpp $(PROF)
+
+database.o: database.cpp database.hpp 
+	g++ $(CFLAGS) -c database.cpp $(PROF)
 
 similarity.o: similarity.cpp similarity.hpp 
 	g++ $(CFLAGS) -c similarity.cpp $(PROF)

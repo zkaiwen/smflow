@@ -34,6 +34,7 @@
 #include "aggregation.hpp"
 #include "similarity.hpp"
 #include "server.hpp"
+#include "database.hpp"
 
 //XML Includes
 #include "rapidxml/rapidxml.hpp"
@@ -60,7 +61,6 @@ void calculateSimilarity_size(std::vector<std::string>& name,
 		std::vector<std::map<unsigned, unsigned> >& fingerprint,
 		std::vector<std::vector< std::vector<double> > >& simTable);
 
-std::string receiveAllData(int newsockfd, int bufferLength);
 
 int main( int argc, char *argv[] )
 {
@@ -84,10 +84,10 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR-   Declarations
 	//**************************************************************************
-	std::string primBase = argv[1];          //Location of primitive circuits
-	std::string dataBase = argv[2];          //Location of database file
-	std::string xmlFileName= argv[3];       //Output database file
+	std::string primBaseFile = argv[1];          //Location of primitive circuits
+	std::string databaseFile = argv[2];          //Location of database file
 	std::string option= "";                  //Command line options
+	std::string xmlFileName= "circuits/demo/xml/";       //Output database file
 
 	//Time tracking
 	timeval iaig_b, iaig_e;
@@ -165,23 +165,21 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT ENDJ 
 	//**************************************************************************
+/*
 	Server* server = new Server(9000);
 
 	if(! server->waitForClient())
 		return 0;
 
-/*
 	std::string dotData= server->receiveAllData();
 	printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
 	std::ofstream dos;                    //Database output file stream
 	dos.open("circuits/demo/dot/ckt.dot");
 	dos<<dotData;
-	*/
 
 	std::string xmlData= server->receiveAllData();
 	printf("DATA RECEIVED FROM CLIENT: %s\n", xmlData.c_str());
 
-	/*
 	std::ofstream xos;                    //Database output file stream
 	xos.open("circuits/demo/xml/ckt.xml");
 	xos<<xmlData;
@@ -189,14 +187,9 @@ int main( int argc, char *argv[] )
 	
 	std::system("python2.7 scripts/dot2cnl.py circuits/demo/dot/ckt.dot");
 	std::system("mv -v circuits/demo/dot/ckt.cnl circuits/demo/cnl/");
-	*/
-
 	server->closeSocket();
 	delete server;
 
-	return 0;
-
-	/*
 	return 0;
 
 
@@ -252,6 +245,8 @@ int main( int argc, char *argv[] )
 	if(argc == 5) 
 		option = argv[4];
 
+	
+
 
 
 	//**************************************************************************
@@ -259,7 +254,7 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//Make sure database file is okay
 	std::ifstream infile;
-	infile.open(dataBase.c_str());
+	infile.open(databaseFile.c_str());
 	if (!infile.is_open())	{
 		fprintf(stderr, "[ERROR] -- Cannot open the database for import...exiting\n");
 		fprintf(stderr, "\n***************************************************\n\n");
@@ -276,7 +271,7 @@ int main( int argc, char *argv[] )
 	gettimeofday(&lib_b, NULL); //--------------------------------------------
 	printStatement("Performing Library preprocessing");
 	CutFunction* functionCalc = new CutFunction();
-	functionCalc->preProcessLibrary(primBase);
+	functionCalc->preProcessLibrary(primBaseFile);
 	gettimeofday(&lib_e, NULL); //--------------------------------------------
 	//functionCalc->printLibrary();
 
@@ -298,6 +293,8 @@ int main( int argc, char *argv[] )
 	//*************************************************************************
 	//*  Process Data base file and extract features from circuits
 	//**************************************************************************
+	Database* database = new Database();
+	database->initializeDatabase();
 	while(getline(infile, file)){
 		//Handles empty lines in files
 		if(file == "\n")
@@ -604,6 +601,7 @@ int main( int argc, char *argv[] )
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		
 		stat_mux4.push_back(muxResult4);		
+
 		gettimeofday(&mux_e, NULL);//------------------------------------------
 
 		//std::vector<unsigned int> muxResult1;
@@ -707,6 +705,78 @@ int main( int argc, char *argv[] )
 		delete cut;
 		delete ckt;
 		functionCalc->reset();
+
+		//Store results in database
+		std::list<std::string> features;
+		features.push_back("MUX21");
+		features.push_back("MUX31");
+		features.push_back("MUX41");
+		features.push_back("ADDER");
+		features.push_back("ADDERC");
+		features.push_back("CARRY");
+		features.push_back("CARRYC");
+		features.push_back("PARITY");
+		features.push_back("GATE");
+		features.push_back("EQUAL");
+		features.push_back("BLK0");
+		features.push_back("BLK1");
+		features.push_back("BLK2");
+		features.push_back("CAS1");
+		features.push_back("CAS2");
+		features.push_back("CAS3");
+		features.push_back("CNT");
+		features.push_back("OUTIN");
+		features.push_back("FFIN");
+
+		std::list<std::map<unsigned, unsigned> > fingerPrints;
+		fingerPrints.push_back(stat_mux2.back());
+		fingerPrints.push_back(stat_mux3.back());
+		fingerPrints.push_back(stat_mux4.back());
+		fingerPrints.push_back(stat_adder.back());
+		fingerPrints.push_back(stat_adderAgg.back());
+		fingerPrints.push_back(stat_carry.back());
+		fingerPrints.push_back(stat_carryAgg.back());
+		fingerPrints.push_back(stat_parity.back());
+		fingerPrints.push_back(stat_gate.back());
+		fingerPrints.push_back(stat_equal.back());
+		fingerPrints.push_back(stat_blockFFM0.back());
+		fingerPrints.push_back(stat_blockFFM1.back());
+		fingerPrints.push_back(stat_blockFFM2.back());
+		fingerPrints.push_back(stat_cascadeFFM1.back());
+		fingerPrints.push_back(stat_cascadeFFM2.back());
+		fingerPrints.push_back(stat_cascadeFFM3.back());
+		fingerPrints.push_back(stat_counter.back());
+		fingerPrints.push_back(stat_spCutCountOut.back());
+		fingerPrints.push_back(stat_spCutCountFF.back());
+
+		int nameStart= file.find_last_of("/") + 1;
+		std::string cktName = file.substr(nameStart, file.length()-nameStart-4);
+
+		printf("\n2-1 MUX:\n");
+		std::map<unsigned, unsigned>::iterator iMap;
+		for(iMap = stat_mux2.back().begin(); iMap != stat_mux2.back().end(); iMap++)
+			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
+		printf("\n4-1 MUX:\n");
+		for(iMap = stat_mux4.back().begin(); iMap != stat_mux4.back().end(); iMap++)
+			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
+
+		printf("\nParity\n");
+		for(iMap = stat_parity.back().begin(); iMap != stat_parity.back().end(); iMap++)
+			printf("\t%d-Bit parity tree...\t\t%d\n", iMap->first, iMap->second);
+
+		printf("\nGate\n");
+		for(iMap = stat_gate.back().begin(); iMap != stat_gate.back().end(); iMap++)
+			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
+		printf("\nequal\n");
+		for(iMap = stat_equal.back().begin(); iMap != stat_equal.back().end(); iMap++)
+			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
+		database->addCircuitEntry(cktName, fingerPrints, features);
+
+		
+		nameStart = databaseFile.find_last_of("/") + 1;
+		xmlFileName = xmlFileName + "db" + databaseFile.substr(nameStart, databaseFile.length()-nameStart);
+		database->exportDatabase(xmlFileName +".xml");
+
 	}
 
 	delete functionCalc;
@@ -906,7 +976,7 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_cascadeFFM1, simTable);
 	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 2\n");
 	calculateSimilarity(name, stat_cascadeFFM2, simTable);
-	printf("\n[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
+	printf("[MAINDB] -- Calculating similarity Sequential cascading block OFF: 3\n");
 	calculateSimilarity(name, stat_cascadeFFM3, simTable);
 
 	printf("[MAINDB] -- Calculating similarity Counter identification: 3\n");
