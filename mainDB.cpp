@@ -161,6 +161,40 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_parity;
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
+	
+	//**************************************************************************
+	//* MKR- CONECTING WITH FRONT ENDJ 
+	//**************************************************************************
+	Server* server = new Server(9000);
+
+	if(! server->waitForClient())
+		return 0;
+
+/*
+	std::string dotData= server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
+	std::ofstream dos;                    //Database output file stream
+	dos.open("circuits/demo/dot/ckt.dot");
+	dos<<dotData;
+	*/
+
+	std::string xmlData= server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", xmlData.c_str());
+
+	/*
+	std::ofstream xos;                    //Database output file stream
+	xos.open("circuits/demo/xml/ckt.xml");
+	xos<<xmlData;
+
+	
+	std::system("python2.7 scripts/dot2cnl.py circuits/demo/dot/ckt.dot");
+	std::system("mv -v circuits/demo/dot/ckt.cnl circuits/demo/cnl/");
+	*/
+
+	server->closeSocket();
+	delete server;
+
+	return 0;
 
 	/*
 	return 0;
@@ -1061,11 +1095,11 @@ int main( int argc, char *argv[] )
 	
 	
 	
-	
-	
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT ENDJ 
 	//**************************************************************************
+	
+/*	
 	Server* server = new Server(9000);
 
 	if(! server->waitForClient())
@@ -1089,24 +1123,7 @@ int main( int argc, char *argv[] )
 
 	server->closeSocket();
 	delete server;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	*/
 
 	return 0;
 
