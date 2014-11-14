@@ -108,6 +108,11 @@ int main( int argc, char *argv[] )
 		return 0;
 	}
 	database->printDatabase();
+	if(!database->verify_CircuitFingerprint()){
+		printf("[ERROR] -- Fingerprint feature size is not as expected\n");
+		delete database;
+		return 0;
+	}
 	
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT ENDJ 
@@ -132,6 +137,9 @@ int main( int argc, char *argv[] )
 	std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
 	CircuitFingerprint* cktfp = database->extractFingerprint(refXML);
 	cktfp->print();
+
+	database->compareFingerprint(cktfp);
+
 	
 	
 

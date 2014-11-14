@@ -728,7 +728,8 @@ int main( int argc, char *argv[] )
 		features.push_back("OUTIN");
 		features.push_back("FFIN");
 
-		std::list<std::map<unsigned, unsigned> > fingerPrints;
+		std::vector<std::map<unsigned, unsigned> > fingerPrints;
+		fingerPrints.reserve(19);
 		fingerPrints.push_back(stat_mux2.back());
 		fingerPrints.push_back(stat_mux3.back());
 		fingerPrints.push_back(stat_mux4.back());
@@ -771,14 +772,12 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_equal.back().begin(); iMap != stat_equal.back().end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 		database->addCircuitEntry(cktName, fingerPrints, features);
-		break;
-
-		
 	}
-		int nameStart = databaseFile.find_last_of("/") + 1;
-		xmlFileName = xmlFileName + "db" + databaseFile.substr(nameStart, databaseFile.length()-nameStart);
-		database->exportDatabase(xmlFileName +".xml");
-		return 0;
+
+	//Export the database
+	int nameStart = databaseFile.find_last_of("/") + 1;
+	xmlFileName = xmlFileName + "db" + databaseFile.substr(nameStart, databaseFile.length()-nameStart);
+	database->exportDatabase(xmlFileName +".xml");
 
 	delete functionCalc;
 

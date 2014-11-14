@@ -23,6 +23,8 @@
 #include <cstring>
 #include <iostream>
 
+#include "similarity.hpp"
+
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_print.hpp"
 
@@ -52,43 +54,50 @@ enum fp_attr_t{
 
 class CircuitFingerprint{
 	public:
-	std::string name;
+		std::string name;
+		unsigned id;
 
-	std::vector<std::map<unsigned, unsigned> >  fingerprint;
-	CircuitFingerprint(){
-		name = "";		
-		fingerprint.reserve(19);
-	};
+		std::vector<std::map<unsigned, unsigned> >  fingerprint;
+		CircuitFingerprint(){
+			name = "";		
+			fingerprint.reserve(19);
+		};
 
-	void print(){
-		std::map<unsigned, unsigned>::iterator iMap;
-
-		printf("Circuit: %s\n", name.c_str());
-		for(unsigned int i = 0; i < fingerprint.size(); i++){
-			printf("FP: \n");
-			for(iMap = fingerprint[i].begin(); 
-					iMap != fingerprint[i].end(); iMap++)
-				printf("\t%4d-bit\t%4d\n", iMap->first, iMap->second);
-		}
-	};
+		void print(){
+			std::map<unsigned, unsigned>::iterator iMap;
+			printf("Circuit: %s\n", name.c_str());
+			for(unsigned int i = 0; i < fingerprint.size(); i++){
+				printf("FP: \n");
+				for(iMap = fingerprint[i].begin(); iMap != fingerprint[i].end(); iMap++)
+					printf("\t%4d-bit\t%4d\n", iMap->first, iMap->second);
+			}
+		};
 };
 
 
+	struct cScore{
+		double score;
+		unsigned id;
+		std::string cName;
+	};
+
+	struct setCompare{
+		bool operator()(const cScore& lhs, const cScore& rhs) const{
+			return lhs.score > rhs.score;
+		}
+	};
 
 
 
 class Database{
 	private:
+		static const unsigned s_NumFeatures = 19;
 		rapidxml::xml_document<> m_XML;
 		rapidxml::xml_node<>* m_Root;
 		std::list<CircuitFingerprint*> m_Datastore;
-		
-		int string2int(char*);
 
 		//TODO:IF MODIFIED, MODIFY THE NUMBER ABOVE
-		static const unsigned numFeatures = 19;
-		
-
+		int string2int(char*);
 
 	public:
 		Database();
@@ -96,18 +105,17 @@ class Database{
 
 		void initializeDatabase();
 
-		void addCircuitEntry(std::string, std::list<std::map<unsigned, unsigned> >&, std::list<std::string>&);
-		
+		void addCircuitEntry(std::string, std::vector<std::map<unsigned, unsigned> >&, std::list<std::string>&);
 		CircuitFingerprint* extractFingerprint(std::string&);
+		void compareFingerprint(CircuitFingerprint*);
 
 		bool importDatabase(std::string);
 		void exportDatabase(std::string);
+
 		void printXML();
 		void printDatabase();
 
 		bool verify_CircuitFingerprint();
-
-
 };
 
 

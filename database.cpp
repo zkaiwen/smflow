@@ -53,24 +53,29 @@ void Database::initializeDatabase(){
 
 
 
-void Database::addCircuitEntry(std::string name, std::list<std::map<unsigned, unsigned> >& fp, std::list<std::string>& features){
+void Database::addCircuitEntry(std::string name, std::vector<std::map<unsigned, unsigned> >& fp, std::list<std::string>& features){
 	printf("[DATABASE] -- Adding circuit entry into database\n");
 	assert(features.size() == fp.size());
 
+	CircuitFingerprint* cktfp = new CircuitFingerprint();
+	cktfp->name = name;
+
+	std::stringstream ss;
 	xml_node<>* cktNode = m_XML.allocate_node(node_element, "CIRCUIT");
 	cktNode->append_attribute(m_XML.allocate_attribute("name",m_XML.allocate_string(name.c_str()))) ;
+	ss<<m_Datastore.size();
+	cktNode->append_attribute(m_XML.allocate_attribute("id",m_XML.allocate_string(ss.str().c_str()))) ;
 
-	std::list<std::map<unsigned, unsigned> >::iterator iList;
 	std::list<std::string>::iterator iFeat;
 	std::map<unsigned, unsigned>::iterator iMap;
 
 	iFeat = features.begin();
-	for(iList = fp.begin(); iList != fp.end(); iList++){
-		xml_node<>* featureNode = m_XML.allocate_node(node_element, iFeat->c_str());
+	for(unsigned int i = 0; i < fp.size(); i++){
+		xml_node<>* featureNode = m_XML.allocate_node(node_element, m_XML.allocate_string(iFeat->c_str()));
 
-		for(iMap = iList->begin(); iMap != iList->end(); iMap++){
+		for(iMap = fp[i].begin(); iMap != fp[i].end(); iMap++){
 			xml_node<>* compNode= m_XML.allocate_node(node_element,"ATTR"); 
-			std::stringstream ss;
+			ss.str("");
 			ss<<iMap->first;
 			std::string value = ss.str();
 			printf("SIZE: S:|%s| I:%d\t\t", value.c_str(), iMap->first);
@@ -88,7 +93,12 @@ void Database::addCircuitEntry(std::string name, std::list<std::map<unsigned, un
 
 		iFeat++;
 	}
+
 	
+	cktfp->fingerprint = fp;
+	cktfp->id = m_Datastore.size();
+	m_Datastore.push_back(cktfp);
+
 	m_Root->append_node(cktNode);
 }
 
@@ -145,16 +155,20 @@ bool Database::importDatabase(std::string path){
 	printf("[DATABASE] -- XML File imported. Parsing...\n");
 
 	enum Error {
+		eDatabaseNotEmpty,
 		eNodeNull,
 		eNoAttr, 
 		eDATABASE_FE,
 		eCIRCUIT_FE,
 		eCNAME_FE, 
 		eSC_FE,
+		eFeature_FE,
+		eCIRCUIT_ATTR_FE,
 		eNoAttrSC
 	};
 
 	try{
+		if(m_Datastore.size() != 0) throw eDatabaseNotEmpty;
 		xml_node<>* rootNode= m_XML.first_node();
 		if(rootNode == NULL) throw eNodeNull;
 
@@ -168,14 +182,29 @@ bool Database::importDatabase(std::string path){
 			std::string cktNodeName = cktNode->name();
 			if(cktNodeName!= "CIRCUIT") throw eCIRCUIT_FE;
 
+			std::string cktName = "===";  
+			int id = -2;
+
+			//Get the name and ID of the circuit 
 			xml_attribute<>* cktAttr = cktNode->first_attribute();
 			if(cktAttr == NULL) throw eNoAttr;
 
 			std::string cktAttrName = cktAttr->name();
-			if(cktAttrName != "name") throw eCNAME_FE;
+			if(cktAttrName == "name") cktName = cktAttr->value(); 
+			else if(cktAttrName == "id") id = string2int(cktAttr->value()); 
+			else throw eCIRCUIT_ATTR_FE ;
 
+			cktAttr = cktAttr->next_attribute();
+			if(cktAttr == NULL) throw eNoAttr;
+			
+			cktAttrName = cktAttr->name();
+			if(cktAttrName == "name") cktName = cktAttr->value(); 
+			else if(cktAttrName == "id") id = string2int(cktAttr->value()); 
+			else throw eCIRCUIT_ATTR_FE ;
+
+			if(id < 0 || cktName == "===") throw eCIRCUIT_ATTR_FE;
 			CircuitFingerprint* cktfp = new CircuitFingerprint();
-			std::string cktName = cktAttr->value();
+			cktfp->id = id;
 			cktfp->name = cktName;
 
 			//Look through the fingerprint of each circuit
@@ -195,6 +224,7 @@ bool Database::importDatabase(std::string path){
 					std::string attrAttrName = attrAttr->name();
 					if(attrAttrName == "size") size = string2int(attrAttr->value());
 					else if(attrAttrName == "count") count= string2int(attrAttr->value());
+					else throw eFeature_FE;
 
 					attrAttr = attrAttr->next_attribute();
 					if(attrAttr == NULL) throw eNoAttr;
@@ -202,9 +232,9 @@ bool Database::importDatabase(std::string path){
 					attrAttrName = attrAttr->name();
 					if(attrAttrName == "size") size = string2int(attrAttr->value());
 					else if(attrAttrName == "count") count = string2int(attrAttr->value());
+					else throw eFeature_FE;
 
 					if(size == -2 || count == -2) throw eSC_FE;
-					else if(size == -2 || count == -2) throw eNoAttrSC;
 
 					//Store the attribute into the fingerprint;
 					fingerprint[size] = count;
@@ -225,11 +255,13 @@ bool Database::importDatabase(std::string path){
 
 	catch (Error error){
 		if(error == eNodeNull) printf("[ERROR] -- XML root node is empty\n");
+		else if(error == eNodeNull) printf("[ERROR] -- Database is not empty. Aborting import\n");
 		else if(error == eNoAttrSC) printf("[ERROR] -- XML node expected a size or count attribute \n");
 		else if(error == eNoAttr) printf("[ERROR] -- XML node expected an attribute\n");
 		else if(error == eDATABASE_FE) printf("[ERROR] -- XML File has a different format then expected (DATABASE)\n");
 		else if(error == eCIRCUIT_FE) printf("[ERROR] -- XML File has a different format then expected (CIRCUIT)\n");
-		else if(error == eCNAME_FE) printf("[ERROR] -- XML File has a different format then expected (CIRCUIT Name attribute is missing)\n");
+		else if(error == eCIRCUIT_ATTR_FE) printf("[ERROR] -- XML File has a different format then expected (CIRCUIT name or id attribute is missing)\n");
+		else if(error == eFeature_FE) printf("[ERROR] -- XML File has a different format then expected (ATTR size or count attribute is missing)\n");
 		else if(error == eCNAME_FE) printf("[ERROR] -- XML File has a different format then expected (Size Count has a value that is unknown)\n");
 		return false;
 	}
@@ -278,7 +310,7 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 
 	
 	CircuitFingerprint* cktfp = new CircuitFingerprint();
-	for(unsigned int i = 0; i < numFeatures; i++){
+	for(unsigned int i = 0; i < s_NumFeatures; i++){
 		std::map<unsigned, unsigned> fingerprint;
 		cktfp->fingerprint.push_back(fingerprint);
 	}
@@ -364,18 +396,65 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 
 
 
+
+
+void Database::compareFingerprint(CircuitFingerprint* cktfp){
+
+	std::list<CircuitFingerprint*>::iterator iList;
+	std::set<cScore, setCompare> results;
+	std::set<cScore, setCompare>::iterator iSet;
+
+	for(iList = m_Datastore.begin(); iList != m_Datastore.end(); iList++){
+		double sum;
+		for(unsigned int i = 0; i < s_NumFeatures; i++){
+			sum += SIMILARITY::tanimotoWindow(cktfp->fingerprint[i], (*iList)->fingerprint[i]);
+		}
+
+		cScore cscore;
+		cscore.score = sum/s_NumFeatures;
+		cscore.cName = (*iList)->name;
+		cscore.id = (*iList)->id;
+		results.insert(cscore);
+	}
+
+		
+	for(iSet = results.begin(); iSet != results.end(); iSet++)
+		printf("CIRCUIT: %-15s\tID: %3d\tSCORE:%f\n", iSet->cName.c_str(), iSet->id, iSet->score);
+	
+	exit(1);
+
+
+	
+}
+
+
+
+
 bool Database::verify_CircuitFingerprint(){
 	std::list<CircuitFingerprint*>::iterator iList;
 	std::map<unsigned, unsigned>::iterator iMap;
 
+	std::set<unsigned> uniqueIDSet;
+
+	
 	for(iList = m_Datastore.begin(); iList != m_Datastore.end(); iList++){
-		if((*iList)->fingerprint.size() != numFeatures){
+		//Verify that all circuits have the same bitvector for the fingerprint
+		if((*iList)->fingerprint.size() != s_NumFeatures){
 			printf("[DATABASE] -- ERROR: Fingerprint Verification failed\n");
 			printf(" * Unconformed size\n");
 			return false;
 		}
-	}
 
+		//Verify that all circuits have unique IDs
+		if(uniqueIDSet.find((*iList)->id) != uniqueIDSet.end()){
+			printf("[DATABASE] -- ERROR: CID: %d has already been assigned\n", (*iList)->id);
+			printf(" * IDs are not unique\n");
+			return false;
+		}
+		else
+			uniqueIDSet.insert((*iList)->id);
+	}
+		
 	return true;
 }
 
