@@ -601,7 +601,7 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 		int gateSizeNum = it->second->getIVSize();
 		char gateSize = '0' + gateSizeNum;
 
-		circuitType = circuitType + gateSize + ".g";
+		circuitType = circuitType + gateSize + ".cnl";
 		//printf("CIRCUIT PRIM: %s\n", circuitType.c_str());
 
 		Graph* primCkt = new Graph(circuitType);

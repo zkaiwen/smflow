@@ -33,6 +33,7 @@
 #include "aggregation.hpp"
 #include "similarity.hpp"
 #include "server.hpp"
+#include "database.hpp"
 
 //XML Includes
 #include "rapidxml/rapidxml.hpp"
@@ -70,7 +71,7 @@ int main( int argc, char *argv[] )
 	printf("********************************************************************************\n\n");
 
 	if(argc < 2){
-		printf("./xfpgeniusRef <database file>\n\n\n");
+		printf("./xfpgeniusRef <database xml file>\n\n\n");
 		return 0;
 	}
 
@@ -81,10 +82,11 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//*  Declarations
 	//**************************************************************************
-	std::string database = argv[1];            //Location of database file
+	std::string databaseFile = argv[1];            //Location of database file
 	std::string option= "";                    //Command line option
 
 	//Time tracking
+	/*
 	timeval aig_b, aig_e;
 	timeval ce_b, ce_e;
 	timeval lib_b, lib_e;
@@ -94,8 +96,49 @@ int main( int argc, char *argv[] )
 
 	float elapsedTime;
 	int k = 6;                              //k-Cut enumeration value 
+	*/
+
+	//*************************************************************************
+	//*  Process Data base file
+	//**************************************************************************
+	Database* database = new Database();
+	if(!database->importDatabase(databaseFile)){
+		printStatement("EXITING");
+		delete database;
+		return 0;
+	}
+	database->printDatabase();
+	
+	//**************************************************************************
+	//* MKR- CONECTING WITH FRONT ENDJ 
+	//**************************************************************************
+	
+/*	
+	Server* server = new Server(9000);
+
+	if(! server->waitForClient())
+		return 0;
+
+	std::string dotData= server->receiveAllData();
+	printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
+	std::ofstream dos;                    //Database output file stream
+	dos.open("circuits/demo/dot/ckt.dot");
+	dos<<dotData;
+
+	server->closeSocket();
+	delete server;
+	*/
+
+	std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
+	CircuitFingerprint* cktfp = database->extractFingerprint(refXML);
+	cktfp->print();
+	
+	
 
 
+	delete cktfp;	
+	delete database;
+	return 0;
 }
 
 

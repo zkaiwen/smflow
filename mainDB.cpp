@@ -771,13 +771,14 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_equal.back().begin(); iMap != stat_equal.back().end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 		database->addCircuitEntry(cktName, fingerPrints, features);
+		break;
 
 		
-		nameStart = databaseFile.find_last_of("/") + 1;
+	}
+		int nameStart = databaseFile.find_last_of("/") + 1;
 		xmlFileName = xmlFileName + "db" + databaseFile.substr(nameStart, databaseFile.length()-nameStart);
 		database->exportDatabase(xmlFileName +".xml");
-
-	}
+		return 0;
 
 	delete functionCalc;
 

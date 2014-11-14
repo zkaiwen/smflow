@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Database>
-	<Circuit name="c2670_c">
+<DATABASE>
+	<CIRCUIT name="c2670_c">
 		<MUX21>
 			<ATTR size="2" count="7"/>
 			<ATTR size="4" count="1"/>
@@ -62,6 +62,6 @@
 			<ATTR size="119" count="1"/>
 		</OUTIN>
 		<FFIN/>
-	</Circuit>
-</Database>
+	</CIRCUIT>
+</DATABASE>
 
