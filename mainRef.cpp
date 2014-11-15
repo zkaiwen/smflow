@@ -107,44 +107,65 @@ int main( int argc, char *argv[] )
 		delete database;
 		return 0;
 	}
-	database->printDatabase();
+
 	if(!database->verify_CircuitFingerprint()){
 		printf("[ERROR] -- Fingerprint feature size is not as expected\n");
 		delete database;
 		return 0;
 	}
 	
+
 	//**************************************************************************
-	//* MKR- CONECTING WITH FRONT ENDJ 
+	//* MKR- CONECTING WITH FRONT END
 	//**************************************************************************
-	
-/*	
-	Server* server = new Server(9000);
+	Server* server = new Server(8000);
+	if(! server->waitForClient()) return 0;
 
-	if(! server->waitForClient())
-		return 0;
 
-	std::string dotData= server->receiveAllData();
-	printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
-	std::ofstream dos;                    //Database output file stream
-	dos.open("circuits/demo/dot/ckt.dot");
-	dos<<dotData;
+	std::string xmlData;
+	while(1){
+		xmlData = server->receiveAllData() ;
+		if(xmlData == "SOCKET_CLOSE"){
+			if(! server->waitForClient()) return 0;
 
-	server->closeSocket();
+			xmlData = server->receiveAllData() ;
+			if(xmlData == "SOCKET_CLOSE"){
+				printf("[MAIN] -- Client has disconnected twice in a row...exiting...\n");
+				break;
+			}
+		}
+
+		/*
+			 printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
+			 std::ofstream dos;                    //Database output file stream
+			 dos.open("circuits/demo/dot/ckt.dot");
+			 dos<<dotData;
+
+			 server->closeSocket();
+		 */
+
+		//std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
+
+		CircuitFingerprint* cktfp = database->extractFingerprint(xmlData);
+		//cktfp->print();
+
+		std::set<cScore, setCompare> result;
+		database->compareFingerprint(cktfp, result);
+		std::string xmlResult = database->formResultXML(result);
+		if(!server->sendData(xmlResult)){
+			printf("[MAIN] -- Writing to client seemed to have encountered an error...\n");
+			break;
+		}
+		printf("RESULT: %s\n", xmlResult.c_str());
+
+		delete cktfp;	
+	}
+
+
+
+
+
 	delete server;
-	*/
-
-	std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
-	CircuitFingerprint* cktfp = database->extractFingerprint(refXML);
-	cktfp->print();
-
-	database->compareFingerprint(cktfp);
-
-	
-	
-
-
-	delete cktfp;	
 	delete database;
 	return 0;
 }

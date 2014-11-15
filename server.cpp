@@ -21,6 +21,7 @@ Server::Server(unsigned port){
 
 //Returns false if failed
 bool Server::waitForClient(){
+	closeSocket();
 	printf("[SERVER] -- Preparing TCP/IP connection with client front-end\n");
 
 	printf("[SERVER] -- Opening Socket...\n");
@@ -90,6 +91,11 @@ std::string Server::receiveAllData(){
 		printf("[ERROR] -- Error occured when attempting to receive blocking\n");
 		return "";
 	}
+	else if(size_recv == 0){
+		printf("[SERVER] -- Client seems to have disconnected...\n");
+		closeSocket();
+		return "SOCKET_CLOSE";
+	}
 	buffer[m_bufferLength] = '\0';
 	data += buffer ;
 	
@@ -147,15 +153,21 @@ bool Server::sendData(std::string data){
 	}
 	int result = write(m_ClientSktID, data.c_str(), data.length()+1);	
 
-	if(result < 0) return false;
+	if(result < 0){
+		printf("[SERVER] -- Writing to client seemed to have encountered an error...\n");
+		closeSocket();
+		return false;
+	}
 
 	return true;
 }
 
 
 void Server::closeSocket(){
-	if(m_ServerSktID< 0)
+	if(m_ServerSktID < 0){
 		printf("[SERVER] -- There is no socket to close\n");
+		return;
+	}
 
 	printf("[SERVER] -- Closing socket...\n");
 	close(m_ServerSktID);
