@@ -398,16 +398,18 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 
 
 
-void Database::compareFingerprint(CircuitFingerprint* cktfp){
+void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, setCompare>& results){
 
 	std::list<CircuitFingerprint*>::iterator iList;
-	std::set<cScore, setCompare> results;
 	std::set<cScore, setCompare>::iterator iSet;
 
 	for(iList = m_Datastore.begin(); iList != m_Datastore.end(); iList++){
-		double sum;
+		double sum = 0.00;
 		for(unsigned int i = 0; i < s_NumFeatures; i++){
-			sum += SIMILARITY::tanimotoWindow(cktfp->fingerprint[i], (*iList)->fingerprint[i]);
+			if(cktfp->fingerprint[i].size() == 0 && (*iList)->fingerprint[i].size() == 0)
+				sum += 1.00;
+			else
+				sum += SIMILARITY::tanimotoWindow(cktfp->fingerprint[i], (*iList)->fingerprint[i]);
 		}
 
 		cScore cscore;
@@ -421,11 +423,47 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp){
 	for(iSet = results.begin(); iSet != results.end(); iSet++)
 		printf("CIRCUIT: %-15s\tID: %3d\tSCORE:%f\n", iSet->cName.c_str(), iSet->id, iSet->score);
 	
-	exit(1);
-
-
-	
 }
+
+
+
+
+
+
+
+
+
+std::string Database::formResultXML(std::set<cScore, setCompare>& result){
+	//XML Declaration
+	xml_document<> xmldoc;
+	xml_node<>* decl = xmldoc.allocate_node(node_declaration);
+	decl->append_attribute(xmldoc.allocate_attribute("version", "1.0"));
+	decl->append_attribute(xmldoc.allocate_attribute("encoding", "utf-8"));
+	xmldoc.append_node(decl);
+	
+	//XML ROOT NODE
+	xml_node<> * matchNode= xmldoc.allocate_node(node_element, "Result");	
+	xmldoc.append_node(matchNode);
+	
+	std::set<cScore, setCompare>::iterator iSet;
+	std::stringstream ss;
+	for(iSet = result.begin(); iSet != result.end(); iSet++){
+		ss<<iSet->id;
+
+		xml_node<>* idNode= xmldoc.allocate_node(node_element, "ID");
+		idNode->value(xmldoc.allocate_string(ss.str().c_str()));
+		ss.str("");
+		matchNode->append_node(idNode);
+	}
+
+	ss<<xmldoc;
+
+	return ss.str();
+}
+
+
+
+
 
 
 

@@ -3362,35 +3362,29 @@ void AGGREGATION::findMux2(CutFunction* cf,
 					 printf("\n");
 				 */
 
-				if(iCount->second > 1){
 					if(result2.find(iCount->second) == result2.end())
 						result2[iCount->second] = 1;
 					else
 						result2[iCount->second]++;
 
-				}
 			}
 
 		}
 		else if(iStats->first == 3){
 			for(iCount = iStats->second.begin(); iCount!=iStats->second.end(); iCount++){
-				if(iCount->second > 1){
 					if(result3.find(iCount->second) == result3.end())
 						result3[iCount->second] = 1;
 					else
 						result3[iCount->second]++;
-				}
 			}
 
 		}
 		else if(iStats->first == 4){
 			for(iCount = iStats->second.begin(); iCount!=iStats->second.end(); iCount++){
-				if(iCount->second > 1){
 					if(result4.find(iCount->second) == result4.end())
 						result4[iCount->second] = 1;
 					else
 						result4[iCount->second]++;
-				}
 			}
 
 		}

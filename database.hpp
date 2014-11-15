@@ -52,6 +52,24 @@ enum fp_attr_t{
 }
 */
 
+
+//Used to sort the id and name by the score
+struct cScore{
+	double score;
+	unsigned id;
+	std::string cName;
+};
+
+
+//Used to compare the cScore so that it is sorted by the score
+struct setCompare{
+	bool operator()(const cScore& lhs, const cScore& rhs) const{
+		return lhs.score > rhs.score;
+	}
+};
+
+
+
 class CircuitFingerprint{
 	public:
 		std::string name;
@@ -75,18 +93,6 @@ class CircuitFingerprint{
 };
 
 
-	struct cScore{
-		double score;
-		unsigned id;
-		std::string cName;
-	};
-
-	struct setCompare{
-		bool operator()(const cScore& lhs, const cScore& rhs) const{
-			return lhs.score > rhs.score;
-		}
-	};
-
 
 
 class Database{
@@ -107,7 +113,9 @@ class Database{
 
 		void addCircuitEntry(std::string, std::vector<std::map<unsigned, unsigned> >&, std::list<std::string>&);
 		CircuitFingerprint* extractFingerprint(std::string&);
-		void compareFingerprint(CircuitFingerprint*);
+		
+		void compareFingerprint(CircuitFingerprint*, std::set<cScore, setCompare>&);
+		std::string formResultXML(std::set<cScore, setCompare>&); 
 
 		bool importDatabase(std::string);
 		void exportDatabase(std::string);

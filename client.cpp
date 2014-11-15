@@ -43,37 +43,39 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
-    printf("Please enter the message: ");
     bzero(buffer,256);
+    printf("Press Enter to send reference XML: ");
     fgets(buffer,255,stdin);
 
 
 
-	std::ifstream infile;
-	infile.open("circuits/demo/dot/adder.dot");
-	if (!infile.is_open())	{
-		fprintf(stderr, "[ERROR] -- Cannot open the database for import...exiting\n");
-		fprintf(stderr, "\n***************************************************\n\n");
-		exit(-1);
-	}
-		 
-		 std::string xmlstring = "";
-		 std::string xmlline;
-		 while(getline(infile, xmlline))
-		 	xmlstring += xmlline;
-
-
-
-    n = write(sockfd,xmlstring.c_str(),xmlstring.length()+1);
+	std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
+    n = write(sockfd,refXML.c_str(), refXML.length()+1);
     if (n < 0) 
          error("ERROR writing to socket");
-    printf("Please enter the message: ");
+
     bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) 
+         error("ERROR reading from socket");
+    printf("RESULT FROM SERVER:\t%s\n",buffer);
+    bzero(buffer,256);
+    printf("Press Enter to send reference XML: ");
     fgets(buffer,255,stdin);
-    n = write(sockfd,buffer,strlen(buffer));
+
+
+
+	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>13</InputCount><Name>Z_Out_2</Name><InputCount>13</InputCount><Name>Numeric_3</Name><InputCount>11</InputCount><Name>Out</Name><InputCount>9</InputCount><Name>Z_Out</Name><InputCount>8</InputCount></Outputs></Circuit0>";
+    n = write(sockfd,refXML.c_str(), refXML.length()+1);
     if (n < 0) 
          error("ERROR writing to socket");
+
     bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) 
+         error("ERROR reading from socket");
+    printf("RESULT FROM SERVER:\t%s\n",buffer);
+
     close(sockfd);
     return 0;
 }
