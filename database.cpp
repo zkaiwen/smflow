@@ -421,6 +421,7 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 		double sum = 0.00;
 		for(unsigned int i = 0; i < s_NumFeatures; i++){
 			if(m_IndexSkip.find(i) != m_IndexSkip.end()) continue;
+
 			if(cktfp->fingerprint[i].size() == 0 && (*iList)->fingerprint[i].size() == 0)
 				sum += 1.00;
 			else
@@ -439,11 +440,6 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 		printf("CIRCUIT: %-15s\tID: %3d\tSCORE:%f\n", iSet->cName.c_str(), iSet->id, iSet->score);
 	
 }
-
-
-
-
-
 
 
 

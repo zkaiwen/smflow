@@ -92,7 +92,6 @@ std::string Server::receiveAllData(){
 		return "";
 	}
 	else if(size_recv == 0){
-		printf("[SERVER] -- Client seems to have disconnected...\n");
 		closeSocket();
 		return "SOCKET_CLOSE";
 	}
