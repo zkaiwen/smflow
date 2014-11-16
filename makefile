@@ -9,7 +9,6 @@ OBJ= \
 		cutenumeration.o \
 		cutfunction.o \
 		vertex.o \
-		print.o \
 		aggregation.o \
 		similarity.o \
 		sequential.o \
@@ -34,10 +33,10 @@ graph.o: graph.cpp graph.hpp vertex.o
 graph_b.o: graph_b.cpp graph_b.hpp 
 	g++ $(CFLAGS) -c graph_b.cpp $(PROF)
 
-mainRef.o: mainRef.cpp topoDescriptors.hpp $(OBJ)
+mainRef.o: mainRef.cpp $(OBJ)
 	g++ $(CFLAGS) -c mainRef.cpp $(PROF) 
 
-mainDB.o: mainDB.cpp topoDescriptors.hpp $(OBJ)
+mainDB.o: mainDB.cpp $(OBJ)
 	g++ $(CFLAGS) -c mainDB.cpp $(PROF)
 
 aig.o: aig.cpp aig.hpp graph.o aiger.o

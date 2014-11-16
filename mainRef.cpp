@@ -118,6 +118,11 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT END
 	//**************************************************************************
+<<<<<<< HEAD
+=======
+	
+
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 	Server* server = new Server(8000);
 	if(! server->waitForClient()) return 0;
 
@@ -127,6 +132,7 @@ int main( int argc, char *argv[] )
 		xmlData = server->receiveAllData() ;
 		if(xmlData == "SOCKET_CLOSE"){
 			if(! server->waitForClient()) return 0;
+<<<<<<< HEAD
 
 			xmlData = server->receiveAllData() ;
 			if(xmlData == "SOCKET_CLOSE"){
@@ -163,8 +169,50 @@ int main( int argc, char *argv[] )
 
 
 
+=======
+
+			xmlData = server->receiveAllData() ;
+			if(xmlData == "SOCKET_CLOSE"){
+				printf("[MAIN] -- Client has disconnected twice in a row...exiting...\n");
+				break;
+			}
+				
+		}
+
+		/*
+			 printf("DATA RECEIVED FROM CLIENT: %s\n", dotData.c_str());
+			 std::ofstream dos;                    //Database output file stream
+			 dos.open("circuits/demo/dot/ckt.dot");
+			 dos<<dotData;
+
+			 server->closeSocket();
+		 */
+
+		//std::string refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>1</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>3</InputCount><Name>Numeric_3</Name><InputCount>3</InputCount><Name>Out</Name><InputCount>3</InputCount><Name>Z_Out</Name><InputCount>2</InputCount></Outputs></Circuit0>";
+
+		CircuitFingerprint* cktfp = database->extractFingerprint(xmlData);
+		//cktfp->print();
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
+
+		std::set<cScore, setCompare> result;
+		database->compareFingerprint(cktfp, result);
+		std::string xmlResult = database->formResultXML(result);
+		if(!server->sendData(xmlResult)){
+			printf("[MAIN] -- Writing to client seemed to have encountered an error...\n");
+			break;
+		}
+		printf("RESULT: %s\n", xmlResult.c_str());
+
+<<<<<<< HEAD
+=======
+		delete cktfp;	
+	}
 
 
+
+
+
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 	delete server;
 	delete database;
 	return 0;

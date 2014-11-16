@@ -420,7 +420,10 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 	for(iList = m_Datastore.begin(); iList != m_Datastore.end(); iList++){
 		double sum = 0.00;
 		for(unsigned int i = 0; i < s_NumFeatures; i++){
+<<<<<<< HEAD
 			if(m_IndexSkip.find(i) != m_IndexSkip.end()) continue;
+=======
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 			if(cktfp->fingerprint[i].size() == 0 && (*iList)->fingerprint[i].size() == 0)
 				sum += 1.00;
 			else
@@ -443,11 +446,18 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 std::string Database::formResultXML(std::set<cScore, setCompare>& result){
 	//XML Declaration
 	xml_document<> xmldoc;
@@ -455,11 +465,19 @@ std::string Database::formResultXML(std::set<cScore, setCompare>& result){
 	decl->append_attribute(xmldoc.allocate_attribute("version", "1.0"));
 	decl->append_attribute(xmldoc.allocate_attribute("encoding", "utf-8"));
 	xmldoc.append_node(decl);
+<<<<<<< HEAD
 	
 	//XML ROOT NODE
 	xml_node<> * matchNode= xmldoc.allocate_node(node_element, "Result");	
 	xmldoc.append_node(matchNode);
 	
+=======
+	
+	//XML ROOT NODE
+	xml_node<> * matchNode= xmldoc.allocate_node(node_element, "Result");	
+	xmldoc.append_node(matchNode);
+	
+>>>>>>> 34d0a7e343c7a8025ddc652102f571d1562a0c85
 	std::set<cScore, setCompare>::iterator iSet;
 	std::stringstream ss;
 	for(iSet = result.begin(); iSet != result.end(); iSet++){
