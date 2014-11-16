@@ -456,6 +456,7 @@ std::string Database::formResultXML(std::set<cScore, setCompare>& result){
 	xml_node<> * matchNode= xmldoc.allocate_node(node_element, "Result");	
 	xmldoc.append_node(matchNode);
 	
+	
 	std::set<cScore, setCompare>::iterator iSet;
 	std::stringstream ss;
 	for(iSet = result.begin(); iSet != result.end(); iSet++){

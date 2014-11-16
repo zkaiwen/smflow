@@ -161,10 +161,6 @@ int main( int argc, char *argv[] )
 		delete cktfp;	
 	}
 
-
-
-
-
 	delete server;
 	delete database;
 	return 0;
