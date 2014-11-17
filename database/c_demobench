@@ -1,4 +1,2 @@
 circuits/g/primitive/
-circuits/netlist/b04_mod.cnl
-circuits/netlist/b03_og.cnl
-circuits/netlist/s344_og.cnl
+circuits/demo/cnl/firfilter.cnl
