@@ -1,0 +1,14 @@
+11
+4 7 A_0  8 A_1  9 B_0  10 B_1  
+3 2 CO  1 S_0  4 S_1  
+0 AND2 ha0_a2 2 7 I0 9 I1 2 3 O 4 O 
+1 XOR2 ha0_x1 2 7 I0 9 I1 0 
+2 OR2 fa1_o1 2 3 I0 5 I1 0 
+3 AND2 fa1_a1 2 0 I0 6 I1 1 2 O 
+4 XOR2 fa1_x2 2 0 I1 6 I0 0 
+5 AND2 fa1_a2 2 8 I0 10 I1 1 2 O 
+6 XOR2 fa1_x1 2 8 I0 10 I1 2 3 O 4 O 
+7 IN A_0 0 2 0 O 1 O 
+8 IN A_1 0 2 5 O 6 O 
+9 IN B_0 0 2 0 O 1 O 
+10 IN B_1 0 2 5 O 6 O 

@@ -1,0 +1,18 @@
+15
+4 11 A_0  12 A_1  13 B_0  14 B_1  
+3 8 S_0  4 S_1  6 S_2  
+0 AND2 ha1_a2 2 12 I0 14 I1 2 9 O 10 O 
+1 XOR2 ha1_x1 2 12 I0 14 I1 2 4 O 5 O 
+2 AND2 ha0_a2 2 11 I0 13 I1 2 9 O 10 O 
+3 XOR2 ha0_x1 2 11 I0 13 I1 2 4 O 5 O 
+4 XOR2 a21_ha0_x1 2 3 I0 1 I1 0 
+5 AND2 a21_ha0_a2 2 3 I0 1 I1 2 7 O 8 O 
+6 OR2 a21_fa1_o1 2 7 I0 9 I1 0 
+7 AND2 a21_fa1_a1 2 5 I0 10 I1 1 6 O 
+8 XOR2 a21_fa1_x2 2 5 I1 10 I0 0 
+9 AND2 a21_fa1_a2 2 2 I0 0 I1 1 6 O 
+10 XOR2 a21_fa1_x1 2 2 I0 0 I1 2 7 O 8 O 
+11 IN A_0 0 2 2 O 3 O 
+12 IN A_1 0 2 0 O 1 O 
+13 IN B_0 0 2 2 O 3 O 
+14 IN B_1 0 2 0 O 1 O 
