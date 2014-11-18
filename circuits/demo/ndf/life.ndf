@@ -1,0 +1,576 @@
+(edif life
+  (edifVersion 2 0 0)
+  (edifLevel 0)
+  (keywordMap (keywordLevel 0))
+  (status
+    (written
+      (timestamp 2014 11 17 19 58 24)
+      (program "Xilinx ngc2edif" (version "P.20131013"))
+      (author "Xilinx. Inc ")
+      (comment "This EDIF netlist is to be used within supported synthesis tools")
+      (comment "for determining resource/timing estimates of the design component")
+      (comment "represented by this netlist.")
+      (comment "Command line: life.ngc ")))
+  (external UNISIMS
+    (edifLevel 0)
+    (technology (numberDefinition))
+    (cell GND
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port G
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell LUT4
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port I0
+              (direction INPUT)
+            )
+            (port I1
+              (direction INPUT)
+            )
+            (port I2
+              (direction INPUT)
+            )
+            (port I3
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell MUXCY
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port CI
+              (direction INPUT)
+            )
+            (port DI
+              (direction INPUT)
+            )
+            (port S
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell XORCY
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port CI
+              (direction INPUT)
+            )
+            (port LI
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell LUT3
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port I0
+              (direction INPUT)
+            )
+            (port I1
+              (direction INPUT)
+            )
+            (port I2
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell LUT2
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port I0
+              (direction INPUT)
+            )
+            (port I1
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+    (cell LUT5
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port I0
+              (direction INPUT)
+            )
+            (port I1
+              (direction INPUT)
+            )
+            (port I2
+              (direction INPUT)
+            )
+            (port I3
+              (direction INPUT)
+            )
+            (port I4
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+  )
+
+  (library life_lib
+    (edifLevel 0)
+    (technology (numberDefinition))
+    (cell life
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port self
+              (direction INPUT)
+            )
+            (port out
+              (direction OUTPUT)
+            )
+            (port (array (rename neighbors "neighbors<7:0>") 8)
+              (direction INPUT))
+            (designator "xc7vx330t-3-ffg1157")
+            (property TYPE (string "life") (owner "Xilinx"))
+            (property BUS_INFO (string "8:INPUT:neighbors<7:0>") (owner "Xilinx"))
+            (property SHREG_MIN_SIZE (string "2") (owner "Xilinx"))
+            (property SHREG_EXTRACT_NGC (string "YES") (owner "Xilinx"))
+            (property NLW_UNIQUE_ID (integer 0) (owner "Xilinx"))
+            (property NLW_MACRO_TAG (integer 0) (owner "Xilinx"))
+            (property NLW_MACRO_ALIAS (string "life_life") (owner "Xilinx"))
+          )
+          (contents
+            (instance XST_GND
+              (viewRef view_1 (cellRef GND (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_lut_0__ "ADDERTREE_INTERNAL_Madd3_lut<0>")
+              (viewRef view_1 (cellRef LUT4 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "6996") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_cy_0__ "ADDERTREE_INTERNAL_Madd3_cy<0>")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_xor_0__ "ADDERTREE_INTERNAL_Madd3_xor<0>")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_renamed_0 "ADDERTREE_INTERNAL_Madd3")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "E8") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_cy_0__0 "ADDERTREE_INTERNAL_Madd3_cy<0>_0")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_xor_0__0 "ADDERTREE_INTERNAL_Madd3_xor<0>_0")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd3_xor_0__1 "ADDERTREE_INTERNAL_Madd3_xor<0>_1")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_lut_0__ "ADDERTREE_INTERNAL_Madd4_lut<0>")
+              (viewRef view_1 (cellRef LUT4 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "6996") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_cy_0__ "ADDERTREE_INTERNAL_Madd4_cy<0>")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_xor_0__ "ADDERTREE_INTERNAL_Madd4_xor<0>")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_renamed_1 "ADDERTREE_INTERNAL_Madd4")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "E8") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_lut_0_1_renamed_2 "ADDERTREE_INTERNAL_Madd4_lut<0>1")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_0") (owner "Xilinx"))
+              (property INIT (string "96") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_cy_0__0 "ADDERTREE_INTERNAL_Madd4_cy<0>_0")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_xor_0__0 "ADDERTREE_INTERNAL_Madd4_xor<0>_0")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd41_renamed_3 "ADDERTREE_INTERNAL_Madd41")
+              (viewRef view_1 (cellRef LUT2 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_0") (owner "Xilinx"))
+              (property INIT (string "8") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_lut_0_2_renamed_4 "ADDERTREE_INTERNAL_Madd4_lut<0>2")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_1") (owner "Xilinx"))
+              (property INIT (string "96") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_cy_0__1 "ADDERTREE_INTERNAL_Madd4_cy<0>_1")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_xor_0__1 "ADDERTREE_INTERNAL_Madd4_xor<0>_1")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd42_renamed_5 "ADDERTREE_INTERNAL_Madd42")
+              (viewRef view_1 (cellRef LUT2 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_1") (owner "Xilinx"))
+              (property INIT (string "8") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_lut_0_3_renamed_6 "ADDERTREE_INTERNAL_Madd4_lut<0>3")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_2") (owner "Xilinx"))
+              (property INIT (string "96") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd4_xor_0__2 "ADDERTREE_INTERNAL_Madd4_xor<0>_2")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance ADDERTREE_INTERNAL_Madd43
+              (viewRef view_1 (cellRef LUT2 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property PK_HLUTNM (string "_XLNM_ADDER_TREE_2") (owner "Xilinx"))
+              (property INIT (string "8") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd_lut_0__ "ADDERTREE_INTERNAL_Madd_lut<0>")
+              (viewRef view_1 (cellRef LUT2 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "6") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd_cy_0__ "ADDERTREE_INTERNAL_Madd_cy<0>")
+              (viewRef view_1 (cellRef MUXCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd_xor_0__ "ADDERTREE_INTERNAL_Madd_xor<0>")
+              (viewRef view_1 (cellRef XORCY (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+            )
+            (instance out1
+              (viewRef view_1 (cellRef LUT5 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "02020200") (owner "Xilinx"))
+            )
+            (instance (rename ADDERTREE_INTERNAL_Madd31_renamed_7 "ADDERTREE_INTERNAL_Madd31")
+              (viewRef view_1 (cellRef LUT3 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "E8") (owner "Xilinx"))
+            )
+            (net (rename neighbors_0_ "neighbors<0>")
+              (joined
+                (portRef (member neighbors 7))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd3_lut_0__))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd3_renamed_0))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd31_renamed_7))
+              )
+            )
+            (net (rename neighbors_1_ "neighbors<1>")
+              (joined
+                (portRef (member neighbors 6))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd3_lut_0__))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd3_renamed_0))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd31_renamed_7))
+              )
+            )
+            (net (rename neighbors_2_ "neighbors<2>")
+              (joined
+                (portRef (member neighbors 5))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__))
+              )
+            )
+            (net (rename neighbors_3_ "neighbors<3>")
+              (joined
+                (portRef (member neighbors 4))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0__))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd4_renamed_1))
+              )
+            )
+            (net (rename neighbors_4_ "neighbors<4>")
+              (joined
+                (portRef (member neighbors 3))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd3_lut_0__))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd3_renamed_0))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd31_renamed_7))
+              )
+            )
+            (net (rename neighbors_5_ "neighbors<5>")
+              (joined
+                (portRef (member neighbors 2))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd_lut_0__))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd_cy_0__))
+              )
+            )
+            (net (rename neighbors_6_ "neighbors<6>")
+              (joined
+                (portRef (member neighbors 1))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd_lut_0__))
+              )
+            )
+            (net (rename neighbors_7_ "neighbors<7>")
+              (joined
+                (portRef (member neighbors 0))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd_cy_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd_xor_0__))
+              )
+            )
+            (net self
+              (joined
+                (portRef self)
+                (portRef I4 (instanceRef out1))
+              )
+            )
+            (net out
+              (joined
+                (portRef out)
+                (portRef O (instanceRef out1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_0
+              (joined
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0__))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd4_renamed_1))
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd_xor_0__))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_03
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0__))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd4_renamed_1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_13
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__0))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_1_renamed_2))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd41_renamed_3))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_23
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__1))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_2_renamed_4))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd42_renamed_5))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_04
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__))
+                (portRef I3 (instanceRef out1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_14
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__0))
+                (portRef I0 (instanceRef out1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_24
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__1))
+                (portRef I1 (instanceRef out1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd_34
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__2))
+                (portRef I2 (instanceRef out1))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd3_lut_0_ "ADDERTREE_INTERNAL_Madd3_lut<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_lut_0__))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd3_cy_0_ "ADDERTREE_INTERNAL_Madd3_cy<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__0))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__0))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd3
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_renamed_0))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__0))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd3_cy_0_1 "ADDERTREE_INTERNAL_Madd3_cy<0>1")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__0))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__1))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd3_cy_0_2 "ADDERTREE_INTERNAL_Madd3_cy<0>2")
+              (joined
+                (portRef G (instanceRef XST_GND))
+                (portRef I3 (instanceRef ADDERTREE_INTERNAL_Madd3_lut_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__1))
+                (portRef I3 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0__))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_3_renamed_6))
+                (portRef I1 (instanceRef ADDERTREE_INTERNAL_Madd43))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_2_renamed_4))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd42_renamed_5))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_3_renamed_6))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd43))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_lut_0_ "ADDERTREE_INTERNAL_Madd4_lut<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0__))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_cy_0_ "ADDERTREE_INTERNAL_Madd4_cy<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__0))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__0))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd4
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_renamed_1))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_1_renamed_2))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__0))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_lut_0_1 "ADDERTREE_INTERNAL_Madd4_lut<0>1")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_1_renamed_2))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__0))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__0))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_cy_0_1 "ADDERTREE_INTERNAL_Madd4_cy<0>1")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__0))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__1))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__1))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd41
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd41_renamed_3))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_2_renamed_4))
+                (portRef DI (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__1))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_lut_0_2 "ADDERTREE_INTERNAL_Madd4_lut<0>2")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_2_renamed_4))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__1))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__1))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_cy_0_2 "ADDERTREE_INTERNAL_Madd4_cy<0>2")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_cy_0__1))
+                (portRef CI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__2))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd42
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd42_renamed_5))
+                (portRef I2 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_3_renamed_6))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd4_lut_0_3 "ADDERTREE_INTERNAL_Madd4_lut<0>3")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_3_renamed_6))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd4_xor_0__2))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd_lut_0_ "ADDERTREE_INTERNAL_Madd_lut<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd_lut_0__))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd_cy_0__))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd_xor_0__))
+              )
+            )
+            (net (rename ADDERTREE_INTERNAL_Madd_cy_0_ "ADDERTREE_INTERNAL_Madd_cy<0>")
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd_cy_0__))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd4_lut_0_1_renamed_2))
+                (portRef I0 (instanceRef ADDERTREE_INTERNAL_Madd41_renamed_3))
+              )
+            )
+            (net ADDERTREE_INTERNAL_Madd31
+              (joined
+                (portRef O (instanceRef ADDERTREE_INTERNAL_Madd31_renamed_7))
+                (portRef S (instanceRef ADDERTREE_INTERNAL_Madd3_cy_0__0))
+                (portRef LI (instanceRef ADDERTREE_INTERNAL_Madd3_xor_0__0))
+              )
+            )
+          )
+      )
+    )
+  )
+
+  (design life
+    (cellRef life
+      (libraryRef life_lib)
+    )
+    (property PART (string "xc7vx330t-3-ffg1157") (owner "Xilinx"))
+  )
+)
+
