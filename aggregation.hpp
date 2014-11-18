@@ -59,13 +59,11 @@ namespace AGGREGATION{
 	void simplifyingSet(AIG* , 
 			std::vector<InOut*>& , 
 			std::set<unsigned>& , 
-			std::map<unsigned, std::set<unsigned> >& ,
-			std::map<unsigned, std::set<unsigned> >& );
+			std::map<unsigned, std::set<unsigned> >&);
 
 	void simplify_output(AIG* , 
 			std::set<unsigned>& , 
-			std::map<unsigned, std::set<unsigned> >& ,
-			std::map<unsigned, std::set<unsigned> >& );
+			std::map<unsigned, std::set<unsigned> >&);
 
 	void printAddList(std::list<std::set<unsigned> >& ,	std::list<std::set<unsigned> >& );
 
