@@ -76,8 +76,8 @@ int main( int argc, char *argv[] )
 	printf("* \n");
 	printf("*************************************************************\n");
 	printf("*************************************************************\n\n");
-	if(argc != 4){
-		printf("./xfpgeniusDB <primitive file> <database file> <xml database file>\n\n\n");
+	if(argc != 3){
+		printf("./xfpgeniusDB <primitive file> <database file>\n\n\n");
 		return 0;
 	}
 

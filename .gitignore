@@ -7,3 +7,6 @@ circuits/netlist/b*
 database/db_*
 .*
 *.o
+src/espresso_src/Makefile
+src/espresso_src/src/Makefile
+src/espresso_src/config*

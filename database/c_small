@@ -1,4 +1,3 @@
 circuits/g/primitive/
-circuits/netlist/c2670_c.cnl
-circuits/netlist/c2670_re_h.cnl
-circuits/netlist/c2670_re.cnl
+circuits/demo/cnl/life.cnl
+circuits/netlist/s344_og.cnl

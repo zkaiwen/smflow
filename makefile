@@ -21,6 +21,8 @@ PROF=
 
 all: mainDB
 
+x: mainDB mainRef
+
 mainRef: $(OBJ) mainRef.o 
 	g++ $(CFLAGS) -o xfpgeniusRef $(OBJ) mainRef.o 
 

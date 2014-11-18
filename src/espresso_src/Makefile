@@ -58,7 +58,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = gcc
-MAKEINFO = makeinfo
+MAKEINFO = /home/bii/smflow/src/espresso_src/missing makeinfo
 PACKAGE = espresso-ab
 VERSION = 1.0
 
