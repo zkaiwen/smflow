@@ -6,9 +6,11 @@ module life(input self, input [7:0] neighbors,
 	
 
 		
-	out = 0;
-	out = out | (count == 3);
-	out = out | ((self == 1) & (count == 2));
+	always@(*)begin
+		out = 0;
+		out = out | (count == 3);
+		out = out | ((self == 1) & (count == 2));
+	end
 
 endmodule
 
@@ -79,4 +81,4 @@ module ha(A, B, S, CO);
 	output S, CO;
 	XOR2 x1(w1, A, B);
 	AND2 a2(w3, A, B);
-endmodule;
+endmodule

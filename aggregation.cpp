@@ -840,6 +840,7 @@ void AGGREGATION::simplifyingSet(AIG* aig,
 				inPort.insert(*iSet);
 
 			outInMap[outnode] = inPort;
+			sumNodes.insert(outnode);
 		}
 		else{
 			//if output has been mapped, make sure to add the new nodes in and then 
@@ -2288,6 +2289,7 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	std::vector<unsigned long long> faSum_f;
 	std::vector<unsigned long long> faSum2_f;
 	std::vector<unsigned long long> faSum3_f;
+	std::vector<unsigned long long> haSum_f;
 	std::vector<unsigned long long> haSum2_f;
 	std::vector<unsigned long long> haSum3_f;
 	printf(" * Parsing function database for half adder components...\n");
@@ -2300,12 +2302,14 @@ void AGGREGATION::findAdder(CutFunction* cf,
 		}
 		else if(it->second.find("faSum2bit") != std::string::npos)
 			faSum2_f.push_back(it->first);
-		else if(it->second.find("faSum") != std::string::npos)
+		else if(it->second.find("parityTree3") != std::string::npos)
 			faSum_f.push_back(it->first);
 		else if(it->second.find("haSum3") != std::string::npos)
 			haSum3_f.push_back(it->first);
 		else if(it->second.find("haSum2") != std::string::npos)
 			haSum2_f.push_back(it->first);
+		else if(it->second.find("xor") != std::string::npos)
+			haSum_f.push_back(it->first);
 	}
 
 
@@ -2317,6 +2321,8 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	cf->getPortMap(pmap);
 
 
+		 printf("\n\nHASUM FUNCTIONS: \n");
+		 printIO(pmap, haSum_f);
 		 printf("\n\nHASUM2 FUNCTIONS: \n");
 		 printIO(pmap, haSum2_f);
 		 printf("\n\nHASUM3 FUNCTIONS: \n");
@@ -2337,27 +2343,31 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	std::list<std::set<unsigned> >::iterator iList2;
 	std::set<unsigned>::iterator iSet;
 	std::set<unsigned> sumNodes;
+	std::set<unsigned> dummy;
 
 	std::vector<InOut*> faSum;
 	std::vector<InOut*> faSum2;
 	std::vector<InOut*> faSum3;
+	std::vector<InOut*> haSum;
 	std::vector<InOut*> haSum2;
 	std::vector<InOut*> haSum3;
 
 	parsePortMap(pmap, faSum_f, faSum);
 	parsePortMap(pmap, faSum2_f, faSum2);
 	parsePortMap(pmap, faSum3_f, faSum3);
+	parsePortMap(pmap, haSum_f, haSum);
 	parsePortMap(pmap, haSum2_f, haSum2);
 	parsePortMap(pmap, haSum3_f, haSum3);
 
 
 
 	std::map<unsigned, std::set<unsigned> > outIn;
+	simplifyingSet(aigraph, haSum, sumNodes, outIn);
 	simplifyingSet(aigraph, faSum, sumNodes, outIn);
-	simplifyingSet(aigraph, faSum2, sumNodes, outIn);
-	simplifyingSet(aigraph, faSum3, sumNodes, outIn);
-	simplifyingSet(aigraph, haSum3, sumNodes, outIn);
 	simplifyingSet(aigraph, haSum2, sumNodes, outIn);
+	simplifyingSet(aigraph, faSum2, sumNodes, outIn);
+	simplifyingSet(aigraph, haSum3, sumNodes, outIn);
+	simplifyingSet(aigraph, faSum3, sumNodes, outIn);
 
 	std::map<unsigned, std::set<unsigned> >::iterator iOutin;
 		 printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
@@ -2391,6 +2401,11 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	findHAddHeader(aigraph, haSum2, haSum3, sumNodes, outIn, addInputList, addOutputList);
 		 printf("HADD ADD header #################################\n");
 		 printAddList(addInputList, addOutputList);
+	
+	findHAddHeader(aigraph, haSum, haSum2, sumNodes, outIn, addInputList, addOutputList);
+		 printf("HADDlower ADD header #################################\n");
+		 printAddList(addInputList, addOutputList);
+
 
 
 	combineAdder(aigraph, addInputList, addOutputList);

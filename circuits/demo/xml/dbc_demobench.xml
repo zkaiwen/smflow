@@ -1,6 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DATABASE>
-	<CIRCUIT name="firfilter" id="0">
+	<CIRCUIT name="fa" id="0">
+		<MUX21>
+			<ATTR size="1" count="1"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER/>
+		<ADDERC/>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="1"/>
+		</PARITY>
+		<GATE/>
+		<EQUAL/>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="3" count="2"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="add2_c" id="1">
+		<MUX21>
+			<ATTR size="1" count="2"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="2" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="2" count="1"/>
+		</ADDERC>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="1"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="1"/>
+		</GATE>
+		<EQUAL/>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="2" count="1"/>
+			<ATTR size="4" count="2"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="addTree2bit_1" id="2">
+		<MUX21>
+			<ATTR size="1" count="3"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="2" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="2" count="1"/>
+		</ADDERC>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="1"/>
+			<ATTR size="4" count="1"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="1"/>
+			<ATTR size="5" count="1"/>
+		</GATE>
+		<EQUAL>
+			<ATTR size="6" count="1"/>
+		</EQUAL>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="4" count="3"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="addTree4bit_1" id="3">
+		<MUX21>
+			<ATTR size="1" count="8"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="3" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="3" count="1"/>
+		</ADDERC>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="4"/>
+			<ATTR size="4" count="3"/>
+			<ATTR size="8" count="1"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="4"/>
+			<ATTR size="5" count="2"/>
+			<ATTR size="6" count="1"/>
+		</GATE>
+		<EQUAL>
+			<ATTR size="6" count="3"/>
+		</EQUAL>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="8" count="4"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="count1s_8bit" id="4">
+		<MUX21>
+			<ATTR size="1" count="6"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="3" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="3" count="1"/>
+		</ADDERC>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="4"/>
+			<ATTR size="4" count="3"/>
+			<ATTR size="8" count="1"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="4"/>
+			<ATTR size="5" count="2"/>
+			<ATTR size="6" count="1"/>
+		</GATE>
+		<EQUAL>
+			<ATTR size="6" count="3"/>
+		</EQUAL>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="8" count="4"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="life_c" id="5">
+		<MUX21>
+			<ATTR size="1" count="2"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="3" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="3" count="1"/>
+		</ADDERC>
+		<CARRY/>
+		<CARRYC/>
+		<PARITY>
+			<ATTR size="3" count="4"/>
+			<ATTR size="4" count="3"/>
+			<ATTR size="8" count="1"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="5"/>
+			<ATTR size="5" count="2"/>
+			<ATTR size="6" count="1"/>
+		</GATE>
+		<EQUAL>
+			<ATTR size="6" count="3"/>
+			<ATTR size="7" count="1"/>
+		</EQUAL>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="9" count="1"/>
+		</OUTIN>
+		<FFIN/>
+	</CIRCUIT>
+	<CIRCUIT name="firfilter" id="6">
 		<MUX21>
 			<ATTR size="1" count="13"/>
 		</MUX21>
@@ -59,45 +275,6 @@
 			<ATTR size="25" count="1"/>
 			<ATTR size="29" count="1"/>
 		</FFIN>
-	</CIRCUIT>
-	<CIRCUIT name="life" id="1">
-		<MUX21>
-			<ATTR size="1" count="2"/>
-			<ATTR size="2" count="3"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER/>
-		<ADDERC/>
-		<CARRY/>
-		<CARRYC/>
-		<PARITY>
-			<ATTR size="3" count="2"/>
-			<ATTR size="4" count="1"/>
-			<ATTR size="6" count="1"/>
-			<ATTR size="7" count="2"/>
-			<ATTR size="9" count="1"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="1"/>
-			<ATTR size="5" count="2"/>
-			<ATTR size="6" count="3"/>
-			<ATTR size="7" count="1"/>
-		</GATE>
-		<EQUAL>
-			<ATTR size="7" count="1"/>
-		</EQUAL>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="9" count="1"/>
-		</OUTIN>
-		<FFIN/>
 	</CIRCUIT>
 </DATABASE>
 
