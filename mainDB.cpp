@@ -148,8 +148,10 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_spCutCountOut;
 	std::vector<std::map<unsigned, unsigned> > stat_adder;
 	std::vector<std::map<unsigned, unsigned> > stat_adderAgg;
+	/*
 	std::vector<std::map<unsigned, unsigned> > stat_carry;
 	std::vector<std::map<unsigned, unsigned> > stat_carryAgg;
+	*/
 
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM1;
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM2;
@@ -419,6 +421,15 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
+		std::vector<unsigned> aigout;
+		aigraph->getOutputs(aigout);
+
+		for(unsigned i = 0; i < aigout.size(); i++){
+			std::list<std::set<unsigned> > outCut;
+			cut->getCuts(aigout[i]/2, outCut);
+			cut->printCutSet(aigout[i]/2);
+		}
+
 		gettimeofday(&ce_e, NULL); //------------------------------------------------
 
 
@@ -515,9 +526,11 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> addResult;
 		std::map<unsigned, unsigned> addAggResult;
 		std::map<unsigned, std::set<unsigned> > addIOResult;
+		/*
 		std::map<unsigned, unsigned> carryResult;
 		std::map<unsigned, unsigned> carryAggResult;
 		std::map<unsigned, std::set<unsigned> > carryIOResult;
+		*/
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
@@ -530,9 +543,11 @@ int main( int argc, char *argv[] )
 			printf("\n");
 		}
 
+/*
 		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
 		stat_carry.push_back(carryResult);
 		stat_carryAgg.push_back(carryAggResult);
+		*/
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -713,8 +728,6 @@ int main( int argc, char *argv[] )
 		features.push_back("MUX41");
 		features.push_back("ADDER");
 		features.push_back("ADDERC");
-		features.push_back("CARRY");
-		features.push_back("CARRYC");
 		features.push_back("PARITY");
 		features.push_back("GATE");
 		features.push_back("EQUAL");
@@ -735,8 +748,10 @@ int main( int argc, char *argv[] )
 		fingerPrints.push_back(stat_mux4.back());
 		fingerPrints.push_back(stat_adder.back());
 		fingerPrints.push_back(stat_adderAgg.back());
+		/*
 		fingerPrints.push_back(stat_carry.back());
 		fingerPrints.push_back(stat_carryAgg.back());
+		*/
 		fingerPrints.push_back(stat_parity.back());
 		fingerPrints.push_back(stat_gate.back());
 		fingerPrints.push_back(stat_equal.back());
@@ -858,12 +873,14 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 
+/*
 		printf("\nCarry\n");
 		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		printf("\nCarryAgg\n");
 		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
+			*/
 
 		printf("\nParity\n");
 		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++)
@@ -954,9 +971,11 @@ int main( int argc, char *argv[] )
 	printf("[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
 	calculateSimilarity(name, stat_adderAgg, simTable);
 	printf("[MAINDB] -- Calculating similarity carry aggregation\n");
+	/*
 	calculateSimilarity(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
+	*/
 
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity(name, stat_parity, simTable);
@@ -1059,10 +1078,12 @@ int main( int argc, char *argv[] )
 	calculateSimilarity_size(name, stat_adder, simTable);
 	printf("[MAINDB] -- Calculating similarity of Combined Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adderAgg, simTable);
+	/*
 	printf("[MAINDB] -- Calculating similarity of carry aggregation\n");
 	calculateSimilarity_size(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity of combined carry aggregation\n");
 	calculateSimilarity_size(name, stat_carryAgg, simTable);
+	*/
 
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity_size(name, stat_parity, simTable);

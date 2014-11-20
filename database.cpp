@@ -18,16 +18,14 @@ Database::Database(){
 		m_IndexSkip.insert(1);
 		m_IndexSkip.insert(5);
 		m_IndexSkip.insert(6);
-		m_IndexSkip.insert(7);
 		m_IndexSkip.insert(8);
+		m_IndexSkip.insert(9);
 		m_IndexSkip.insert(10);
 		m_IndexSkip.insert(11);
 		m_IndexSkip.insert(12);
 		m_IndexSkip.insert(13);
 		m_IndexSkip.insert(14);
-		m_IndexSkip.insert(15);
 		m_IndexSkip.insert(16);
-		m_IndexSkip.insert(18);
 }
 
 

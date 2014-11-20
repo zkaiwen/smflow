@@ -78,7 +78,7 @@ class CircuitFingerprint{
 		std::vector<std::map<unsigned, unsigned> >  fingerprint;
 		CircuitFingerprint(){
 			name = "";		
-			fingerprint.reserve(19);
+			fingerprint.reserve(17);
 		};
 
 		void print(){
@@ -97,7 +97,7 @@ class CircuitFingerprint{
 
 class Database{
 	private:
-		static const unsigned s_NumFeatures = 19;
+		static const unsigned s_NumFeatures = 17;
 		std::set<unsigned> m_IndexSkip;
 		rapidxml::xml_document<> m_XML;
 		rapidxml::xml_node<>* m_Root;
