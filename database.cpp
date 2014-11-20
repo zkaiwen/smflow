@@ -399,7 +399,7 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 		else if(error == eNodeNull) printf("[ERROR] -- XML root node is empty\n");
 
 		delete cktfp;
-		return false;
+		return NULL;
 	}
 
 	return cktfp;

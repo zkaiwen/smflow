@@ -502,7 +502,8 @@ void CutEnumeration::findInputCut(std::vector<unsigned>& nodes){
  *    Node is the Node ID/2
  *    
  *    @PARAMS
- *       node: The node to get the cuts from
+ *       node: The node to get the cuts from 
+ *             MAKE SURE TO DIVIDE BY 2 to get the index
  *
  *    @RETURN: Pointer to the list of cuts
  ********************************************************/
@@ -649,7 +650,11 @@ void CutEnumeration::printCutSet_In(unsigned node){
 
 
 
-
+/*
+ * 
+ * Prints the cut set given the ACTUAL AIG NODE
+ *
+ */
 void CutEnumeration::printCutSet(unsigned node){
 	std::list<std::set<unsigned> >::iterator r;
 	std::set<unsigned>::iterator n;

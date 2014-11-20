@@ -421,14 +421,6 @@ int main( int argc, char *argv[] )
 		gettimeofday(&ce_b, NULL); //------------------------------------------------
 		CutEnumeration* cut = new CutEnumeration (aigraph);
 		cut->findKFeasibleCuts(k);
-		std::vector<unsigned> aigout;
-		aigraph->getOutputs(aigout);
-
-		for(unsigned i = 0; i < aigout.size(); i++){
-			std::list<std::set<unsigned> > outCut;
-			cut->getCuts(aigout[i]/2, outCut);
-			cut->printCutSet(aigout[i]/2);
-		}
 
 		gettimeofday(&ce_e, NULL); //------------------------------------------------
 
@@ -495,6 +487,28 @@ int main( int argc, char *argv[] )
 		functionCalc->processAIGCuts(true);
 		//functionCalc->printUniqueFunctionStat();
 		//functionCalc->processAIGCuts_Perm(true);
+	
+		//Process function at the output/FF nodes
+		std::vector<unsigned> aigout;
+		aigraph->getOutputs(aigout);
+
+		for(unsigned i = 0; i < aigout.size(); i++){
+			std::list<std::set<unsigned> > outCut;
+			cut->getCuts(aigout[i]/2, outCut);
+			cut->printCutSet(aigout[i]);
+
+			//Calculate the first cut (First cut is usually teh furthest)
+			std::set<unsigned long long> keyVal;
+			std::set<unsigned long long>::iterator iKey;
+			functionCalc->processSingleCut(aigout[i], *(outCut.begin()), keyVal);
+
+			printf("KEYVAL PERM: \n");
+			for(iKey = keyVal.begin(); iKey != keyVal.end(); iKey++)
+				printf("%llx\n");
+			printf("\n\n");
+
+			
+		}
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 
 

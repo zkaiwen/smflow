@@ -8,3 +8,6 @@ circuits/demo/cnl/count1s_8bit.cnl
 circuits/demo/cnl/life_c.cnl
 circuits/demo/cnl/firfilter4.cnl
 circuits/demo/cnl/firfilter8.cnl
+
+circuits/demo/cnl/add2_c.cnl
+circuits/testbench/adder4_k_C.cnl

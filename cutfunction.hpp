@@ -93,6 +93,9 @@ class CutFunction{
 		void processAIGCuts_Perm(bool);
 		void processAIGCutsX(bool np);  //Process cut with don't cares possibilities
 		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long long> >&);
+		//
+		
+		void processSingleCut(unsigned, std::set<unsigned>&, std::set<unsigned long long>&);
 		unsigned long long calculate(unsigned);
 		unsigned long long calculate2(unsigned);
 		unsigned int* setPermutation(int);
