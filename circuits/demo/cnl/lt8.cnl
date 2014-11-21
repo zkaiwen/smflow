@@ -1,0 +1,24 @@
+21
+16 5 data_a_0  6 data_a_1  7 data_a_2  8 data_a_3  9 data_a_4  10 data_a_5  11 data_a_6  12 data_a_7  13 data_b_0  14 data_b_1  15 data_b_2  16 data_b_3  17 data_b_4  18 data_b_5  19 data_b_6  20 data_b_7  
+1 0 lt  
+0 LUT5 lt21 5 5 I0 6 I4 13 I1 14 I2 2 I3 0 d444ddd4
+1 LUT6 lt2_renamed_0 6 10 I0 11 I2 12 I4 18 I1 19 I3 20 I5 2 3 O 4 O 4d44dd4d4d444d44
+2 MUXF7 lt1_renamed_1 3 15 S 3 I0 4 I1 1 0 O 
+3 LUT6 lt1_F 6 7 I0 8 I5 9 I3 16 I2 17 I1 1 I4 1 2 O 4050004054555054
+4 LUT6 lt1_G 6 7 I5 8 I4 9 I2 16 I1 17 I0 1 I3 1 2 O 8c08efceffffffff
+5 IN data_a_0 0 1 0 O 
+6 IN data_a_1 0 1 0 O 
+7 IN data_a_2 0 2 3 O 4 O 
+8 IN data_a_3 0 2 3 O 4 O 
+9 IN data_a_4 0 2 3 O 4 O 
+10 IN data_a_5 0 1 1 O 
+11 IN data_a_6 0 1 1 O 
+12 IN data_a_7 0 1 1 O 
+13 IN data_b_0 0 1 0 O 
+14 IN data_b_1 0 1 0 O 
+15 IN data_b_2 0 1 2 O 
+16 IN data_b_3 0 2 3 O 4 O 
+17 IN data_b_4 0 2 3 O 4 O 
+18 IN data_b_5 0 1 1 O 
+19 IN data_b_6 0 1 1 O 
+20 IN data_b_7 0 1 1 O 

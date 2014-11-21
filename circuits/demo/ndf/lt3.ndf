@@ -1,0 +1,133 @@
+(edif lt3
+  (edifVersion 2 0 0)
+  (edifLevel 0)
+  (keywordMap (keywordLevel 0))
+  (status
+    (written
+      (timestamp 2014 11 21 14 16 53)
+      (program "Xilinx ngc2edif" (version "P.20131013"))
+      (author "Xilinx. Inc ")
+      (comment "This EDIF netlist is to be used within supported synthesis tools")
+      (comment "for determining resource/timing estimates of the design component")
+      (comment "represented by this netlist.")
+      (comment "Command line: lt3.ngc ")))
+  (external UNISIMS
+    (edifLevel 0)
+    (technology (numberDefinition))
+    (cell LUT6
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port I0
+              (direction INPUT)
+            )
+            (port I1
+              (direction INPUT)
+            )
+            (port I2
+              (direction INPUT)
+            )
+            (port I3
+              (direction INPUT)
+            )
+            (port I4
+              (direction INPUT)
+            )
+            (port I5
+              (direction INPUT)
+            )
+            (port O
+              (direction OUTPUT)
+            )
+          )
+      )
+    )
+  )
+
+  (library lt3_lib
+    (edifLevel 0)
+    (technology (numberDefinition))
+    (cell lt3
+      (cellType GENERIC)
+        (view view_1
+          (viewType NETLIST)
+          (interface
+            (port lt
+              (direction OUTPUT)
+            )
+            (port (array (rename data_a "data_a<2:0>") 3)
+              (direction INPUT))
+            (port (array (rename data_b "data_b<2:0>") 3)
+              (direction INPUT))
+            (designator "xc7a100t-3-csg324")
+            (property TYPE (string "lt3") (owner "Xilinx"))
+            (property BUS_INFO (string "3:INPUT:data_a<2:0>") (owner "Xilinx"))
+            (property BUS_INFO (string "3:INPUT:data_b<2:0>") (owner "Xilinx"))
+            (property SHREG_MIN_SIZE (string "2") (owner "Xilinx"))
+            (property SHREG_EXTRACT_NGC (string "YES") (owner "Xilinx"))
+            (property NLW_UNIQUE_ID (integer 0) (owner "Xilinx"))
+            (property NLW_MACRO_TAG (integer 0) (owner "Xilinx"))
+            (property NLW_MACRO_ALIAS (string "lt3_lt3") (owner "Xilinx"))
+          )
+          (contents
+            (instance lt1
+              (viewRef view_1 (cellRef LUT6 (libraryRef UNISIMS)))
+              (property XSTLIB (boolean (true)) (owner "Xilinx"))
+              (property INIT (string "4D44DD4D4D444D44") (owner "Xilinx"))
+            )
+            (net (rename data_a_2_ "data_a<2>")
+              (joined
+                (portRef (member data_a 0))
+                (portRef I0 (instanceRef lt1))
+              )
+            )
+            (net (rename data_a_1_ "data_a<1>")
+              (joined
+                (portRef (member data_a 1))
+                (portRef I2 (instanceRef lt1))
+              )
+            )
+            (net (rename data_a_0_ "data_a<0>")
+              (joined
+                (portRef (member data_a 2))
+                (portRef I4 (instanceRef lt1))
+              )
+            )
+            (net (rename data_b_2_ "data_b<2>")
+              (joined
+                (portRef (member data_b 0))
+                (portRef I1 (instanceRef lt1))
+              )
+            )
+            (net (rename data_b_1_ "data_b<1>")
+              (joined
+                (portRef (member data_b 1))
+                (portRef I3 (instanceRef lt1))
+              )
+            )
+            (net (rename data_b_0_ "data_b<0>")
+              (joined
+                (portRef (member data_b 2))
+                (portRef I5 (instanceRef lt1))
+              )
+            )
+            (net lt
+              (joined
+                (portRef lt)
+                (portRef O (instanceRef lt1))
+              )
+            )
+          )
+      )
+    )
+  )
+
+  (design lt3
+    (cellRef lt3
+      (libraryRef lt3_lib)
+    )
+    (property PART (string "xc7a100t-3-csg324") (owner "Xilinx"))
+  )
+)
+

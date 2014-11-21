@@ -1,0 +1,10 @@
+7
+6 1 data_a_0  2 data_a_1  3 data_a_2  4 data_b_0  5 data_b_1  6 data_b_2  
+1 0 lt  
+0 LUT6 lt1 6 1 I0 2 I2 3 I4 4 I1 5 I3 6 I5 0 4d44dd4d4d444d44
+1 IN data_a_0 0 1 0 O 
+2 IN data_a_1 0 1 0 O 
+3 IN data_a_2 0 1 0 O 
+4 IN data_b_0 0 1 0 O 
+5 IN data_b_1 0 1 0 O 
+6 IN data_b_2 0 1 0 O 

@@ -1,0 +1,13 @@
+10
+8 2 data_a_0  3 data_a_1  4 data_a_2  5 data_a_3  6 data_b_0  7 data_b_1  8 data_b_2  9 data_b_3  
+1 1 lt  
+0 LUT4 lt1_SW0 4 4 I2 5 I3 8 I0 9 I1 1 1 O f571
+1 LUT5 lt1 5 2 I4 3 I3 6 I0 7 I1 0 I2 0 88aaeef
+2 IN data_a_0 0 1 1 O 
+3 IN data_a_1 0 1 1 O 
+4 IN data_a_2 0 1 0 O 
+5 IN data_a_3 0 1 0 O 
+6 IN data_b_0 0 1 1 O 
+7 IN data_b_1 0 1 1 O 
+8 IN data_b_2 0 1 0 O 
+9 IN data_b_3 0 1 0 O 
