@@ -108,6 +108,7 @@ int main( int argc, char *argv[] )
 	timeval gate_b, gate_e;
 	timeval par_b, par_e;
 	timeval add_b, add_e;
+	timeval sim_b, sim_e;
 
 	float elapsedTime;
 	int k = 6;                              //k-Cut enumeration value 
@@ -499,7 +500,7 @@ int main( int argc, char *argv[] )
 		for(unsigned i = 0; i < aigout.size(); i++){
 			std::list<std::set<unsigned> > outCut;
 			cut->getCuts(aigout[i]/2, outCut);
-			cut->printCutSet(aigout[i]);
+			//cut->printCutSet(aigout[i]);
 
 			//Calculate the first cut (First cut is usually teh furthest)
 			std::set<unsigned long long> keyVal;
@@ -559,11 +560,7 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> addResult;
 		std::map<unsigned, unsigned> addAggResult;
 		std::map<unsigned, std::set<unsigned> > addIOResult;
-		/*
-			 std::map<unsigned, unsigned> carryResult;
-			 std::map<unsigned, unsigned> carryAggResult;
-			 std::map<unsigned, std::set<unsigned> > carryIOResult;
-		 */
+
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
@@ -578,11 +575,14 @@ int main( int argc, char *argv[] )
 			 }
 		 */
 
-		/*
+			 std::map<unsigned, unsigned> carryResult;
+			 std::map<unsigned, unsigned> carryAggResult;
+			 std::map<unsigned, std::set<unsigned> > carryIOResult;
 			 AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
+			 /*
 			 stat_carry.push_back(carryResult);
 			 stat_carryAgg.push_back(carryAggResult);
-		 */
+			 */
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -869,6 +869,7 @@ int main( int argc, char *argv[] )
 	tLabel.push_back("MUX-A");
 	tLabel.push_back("DEC-A");
 	tLabel.push_back("ADD-A");
+	tLabel.push_back("SIM");
 
 
 
@@ -944,6 +945,10 @@ int main( int argc, char *argv[] )
 		for(iOF = stat_outFunction[i].begin(); iOF != stat_outFunction[i].end(); iOF++)
 			printf("\t%llx\n", *iOF);
 
+		printf("\nOUT-IN Correspondence\n");
+		for(iMap = stat_spCutCountOut[i].begin(); iMap != stat_spCutCountOut[i].end(); iMap++)
+			printf("\t%d-Bit input...\t\t%d\n", iMap->first, iMap->second);
+
 		stat_numMux.push_back(totalMux);
 	}
 	printf("\n\n");
@@ -992,6 +997,7 @@ int main( int argc, char *argv[] )
 
 
 
+	gettimeofday(&sim_b, NULL); //-----------------------------------------------
 
 
 
@@ -1059,6 +1065,7 @@ int main( int argc, char *argv[] )
 	printf("[MAINDB] -- Calculating similarity Counter identification: 3\n");
 	calculateSimilarity(name, stat_counter, simTable);
 	*/
+	gettimeofday(&sim_e, NULL); //-----------------------------------------------
 
 	printf("\n***********************************************************************\n");
 
@@ -1115,6 +1122,7 @@ int main( int argc, char *argv[] )
 
 
 
+/*
 	simTable.clear();
 	simTable.reserve(name.size());
 	for(unsigned int i = 0; i < name.size(); i++){
@@ -1137,12 +1145,6 @@ int main( int argc, char *argv[] )
 	calculateSimilarity_size(name, stat_adder, simTable);
 	printf("[MAINDB] -- Calculating similarity of Combined Adder aggregation\n");
 	calculateSimilarity_size(name, stat_adderAgg, simTable);
-	/*
-	printf("[MAINDB] -- Calculating similarity of carry aggregation\n");
-	calculateSimilarity_size(name, stat_carry, simTable);
-	printf("[MAINDB] -- Calculating similarity of combined carry aggregation\n");
-	calculateSimilarity_size(name, stat_carryAgg, simTable);
-	*/
 
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity_size(name, stat_parity, simTable);
@@ -1192,6 +1194,7 @@ int main( int argc, char *argv[] )
 		printf("\n");
 	}
 	printf("\n");
+	*/
 
 	//std::cout<<"\033[1;4;31m"<<"BLUE TEXT"<<"\033[0m"<<std::endl;
 
@@ -1232,12 +1235,20 @@ int main( int argc, char *argv[] )
 	}
 
 	printf("------------------------------------------------------------------\n");
+
+		
 	printf("%-20s", "TOTAL:");
 	float totaltotal = 0.0;
 	for(unsigned int k = 0; k < totalTime.size(); k++){
 		printf("%-10.3f", totalTime[k]);
 		totaltotal +=totalTime[k];
 	}
+	printf("------------------------------------------------------------------\n\n");
+	
+	
+	elapsedTime = (sim_e.tv_sec - sim_b.tv_sec) * 1000.0;
+	elapsedTime += (sim_e.tv_usec - sim_b.tv_usec) / 1000.0;
+	printf("SIM  :%-10.3f", elapsedTime);
 	printf("\nTotal Time:  %f\n", totaltotal);
 	printf("\n\n[ --------***--------      END      --------***-------- ]\n\n");
 	

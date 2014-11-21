@@ -14,3 +14,8 @@ circuits/demo/cnl/firfilter4.cnl
 circuits/demo/cnl/firfilter8.cnl
 circuits/demo/cnl/sobel.cnl
 circuits/demo/cnl/prewitt.cnl
+circuits/demo/cnl/node.cnl
+circuits/demo/cnl/median.cnl
+circuits/demo/cnl/lt3.cnl
+circuits/demo/cnl/lt4.cnl
+circuits/demo/cnl/lt8.cnl

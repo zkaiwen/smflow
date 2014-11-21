@@ -2550,35 +2550,20 @@ void AGGREGATION::findCarry(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	cf->getPortMap(pmap);
 	cf->getPortMap_DC(pmap_dc);
-	/*
-		 printf("XOR FUNCTIONS: \n");
-		 printIO(pmap, xorFunction);
 
-	//		printf("FACARRY FUNCTIONS: \n");
-	//		printIO(pmap, faCarry);
-	//		printf("\n\nFACARRY2 FUNCTIONS: \n");
-	//		printIO(pmap, faCarry2);
+
+	printf("FACARRY FUNCTIONS: \n");
+	printIO(pmap, faCarry_f);
+	printf("\n\nFACARRY2 FUNCTIONS: \n");
+	printIO(pmap, faCarry2_f);
 	printf("\n\nHACARRY2 FUNCTIONS: \n");
 	printIO(pmap, haCarry2_f);
 	printf("\n\nHACARRY3 FUNCTIONS: \n");
 	printIO(pmap, haCarry3_f);
 
-	//printf("\n\nCLA3 FUNCTIONS: \n");
-	//printIO(pmap, cla3);
 
-	printf("\n\nFASUM2 FUNCTIONS___DC: \n");
-	printIO(pmap_dc, faSum2);
-	printf("\n\nFASUM3 FUNCTIONS___DC: \n");
-	printIO(pmap_dc, faSum3);
-	printf("\n\nHASUM2 FUNCTIONS___DC: \n");
-	printIO(pmap_dc, haSum2);
-	printf("\n\nHASUM3 FUNCTIONS___DC: \n");
-	printIO(pmap_dc, haSum3);
-	 */
-	//printf("XOR FUNCTIONS___DC: \n");
-	//printIO(pmap_dc, xorFunction);
+
 	/*
-
 		 printf("FACARRY FUNCTIONS___DC: \n");
 		 printIO(pmap_dc, faCarry);
 		 printf("\n\nFASUM FUNCTIONS___DC: \n");
