@@ -95,6 +95,7 @@ class CutFunction{
 		//void processLUTs(Graph*, std::map<std::string, std::set<unsigned long long> >&);
 		//
 		
+		void processSingleListCut(unsigned, std::list<std::set<unsigned> >&, std::set<unsigned long long>&);
 		void processSingleCut(unsigned, std::set<unsigned>&, std::set<unsigned long long>&);
 		unsigned long long calculate(unsigned);
 		unsigned long long calculate2(unsigned);

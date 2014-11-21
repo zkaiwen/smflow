@@ -750,6 +750,84 @@ void CutFunction::processAIGCuts_Perm(bool np){
 
 
 
+/*******************************************************
+ *  processSingleListCut
+ *    Process the cuts of a single node
+ *
+ *    Takes into account permutation at this level
+ ********************************************************/
+void CutFunction::processSingleListCut(unsigned node, std::list<std::set<unsigned> >& cutList, std::set<unsigned long long>& keyVal){
+	printf("[CutFunction] -- Calculating Function of Cuts Permutation Mode\n");
+
+		std::list<std::set<unsigned> >::iterator cuts;
+		//Go through each cut of the node
+		for(cuts = cutList.begin(); cuts != cutList.end(); cuts++){
+
+			//Skip trivial cut
+			unsigned int inputSize = cuts->size();
+			if(inputSize < 2)
+				continue;
+
+			//Permutation of indexes
+			unsigned int* permutation = setPermutation(inputSize);
+
+			std::set<unsigned>::iterator cutIT;
+			//printf("NODE %d\t", i);
+
+			//P-Equivalence Check
+			//Permutation of indexes
+			do{
+				/*printf("Permutation:\n");
+					for(unsigned int i = 0; i < inputSize; i++){
+					printf("%d ", permutation[i]);
+					}
+					printf("\n");
+				 */
+
+				int pIndex= 0;  //Index for permutation
+
+				//printf("\n\nInputSize: %d\n", inputSize);
+				//Set the assignments for the inputs
+				for(cutIT = cuts->begin(); cutIT != cuts->end(); cutIT++){
+					unsigned int permVal = permutation[pIndex];
+					unsigned long long input = m_Xval[permVal];
+
+					m_NodeValue[*cutIT] = input;
+					m_NodeValueIn[*cutIT] = input;
+					//printf("CUT: %d\tIV: %llx\n", *cutIT, input);
+
+					pIndex++;      
+				}
+
+				//Calculate the output at each node up to the current node
+				calculate(node);
+
+				unsigned long long functionVal = m_NodeValue[node];
+				unsigned long long negateVal = ~(functionVal);
+				//printf("OUTPUT: %x\n", negate);
+
+				//N-Equivalence Check the negation of the output
+				//Count the number of occurances for each unique function
+				//Store the function that's smaller, whether negate or nodevalue
+				unsigned long long functionKey = functionVal;
+				if(negateVal < functionVal)
+					functionKey = negateVal;
+
+				//printf("KEY CHOSEN: %llx\n", functionKey);
+				keyVal.insert(functionKey);
+				//  printf("FUNCTION: %llx\n", functionVal);
+				//  printf("NEGATED:  %llx\n\n", negateVal);
+
+				m_NodeValue.clear();
+				m_NodeValueIn.clear();
+
+			}while(std::next_permutation(permutation, permutation+inputSize));
+			delete [] permutation;
+	}
+}
+
+
+
 void CutFunction::processSingleCut(unsigned node, std::set<unsigned>& cut, 	std::set<unsigned long long>& keyVals){
 	printf("[CutFunction] -- Calculating Function of Single Cuts Permutation Mode\n");
 	std::set<unsigned>::iterator cutIT;
@@ -799,7 +877,7 @@ void CutFunction::processSingleCut(unsigned node, std::set<unsigned>& cut, 	std:
 		}
 
 		//Calculate the output at each node up to the current node
-		calculate2(node);
+		calculate(node);
 
 		unsigned long long functionVal = m_NodeValue[node];
 		unsigned long long negateVal = ~(functionVal);
@@ -888,7 +966,8 @@ unsigned long long CutFunction::calculate(unsigned node){
 /*******************************************************
  *  calculate 
  *    Calculates the result of the node of a specific cut 
- *    This calculate ignores negation at inputs
+ *    This calculate ignores negation at inputs (NOT ALWAYS WORKS)
+ *    *FUNCTION OF ADDER4 and ADDER_K_C
  *
  *  @PARAMS:
  *    node:    Node to calculate truth table for

@@ -164,6 +164,8 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_gate;
 	std::vector<std::map<unsigned, unsigned> > stat_equal;
 	
+	std::vector<std::set<unsigned long long> > stat_outFunction;
+	
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT ENDJ 
 	//**************************************************************************
@@ -492,6 +494,8 @@ int main( int argc, char *argv[] )
 		std::vector<unsigned> aigout;
 		aigraph->getOutputs(aigout);
 
+		std::set<unsigned long long> outFunction;
+		std::set<unsigned long long>::iterator iOF;
 		for(unsigned i = 0; i < aigout.size(); i++){
 			std::list<std::set<unsigned> > outCut;
 			cut->getCuts(aigout[i]/2, outCut);
@@ -500,15 +504,30 @@ int main( int argc, char *argv[] )
 			//Calculate the first cut (First cut is usually teh furthest)
 			std::set<unsigned long long> keyVal;
 			std::set<unsigned long long>::iterator iKey;
-			functionCalc->processSingleCut(aigout[i], *(outCut.begin()), keyVal);
+			if(outCut.size() > 1){
+				functionCalc->processSingleCut(aigout[i], *(outCut.begin()), keyVal);
+				//functionCalc->processSingleListCut(aigout[i], outCut, keyVal);
 
-			printf("KEYVAL PERM: \n");
-			for(iKey = keyVal.begin(); iKey != keyVal.end(); iKey++)
-				printf("%llx\n");
-			printf("\n\n");
-
-			
+/*
+				printf("KEYVAL PERM: \n");
+				int count = 0;
+				for(iKey = keyVal.begin(); iKey != keyVal.end(); iKey++){
+					printf("%llx\n", *iKey);
+				}
+				printf("\n\n");
+				*/
+				outFunction.insert(*(keyVal.begin()));
+			}
 		}
+
+/*
+		printf("OUT FUNCTION FOR %s\n", file.c_str());
+		for(iOF = outFunction.begin(); iOF != outFunction.end(); iOF++)
+			printf("%llx\n", *iOF);
+		printf("\n");
+		*/
+		stat_outFunction.push_back(outFunction);
+
 		gettimeofday(&func_e, NULL);//-----------------------------------------------
 
 
@@ -541,27 +560,29 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> addAggResult;
 		std::map<unsigned, std::set<unsigned> > addIOResult;
 		/*
-		std::map<unsigned, unsigned> carryResult;
-		std::map<unsigned, unsigned> carryAggResult;
-		std::map<unsigned, std::set<unsigned> > carryIOResult;
-		*/
+			 std::map<unsigned, unsigned> carryResult;
+			 std::map<unsigned, unsigned> carryAggResult;
+			 std::map<unsigned, std::set<unsigned> > carryIOResult;
+		 */
 		gettimeofday(&add_b, NULL); //-----------------------------------------------
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
-		printf("ADD\n");
-		for(iMapS = addIOResult.begin(); iMapS != addIOResult.end(); iMapS++){
-			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
-			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-		}
+		/*
+			 printf("ADD\n");
+			 for(iMapS = addIOResult.begin(); iMapS != addIOResult.end(); iMapS++){
+			 printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			 for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+			 printf("%d ", *iSet);
+			 printf("\n");
+			 }
+		 */
 
-/*
-		AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
-		stat_carry.push_back(carryResult);
-		stat_carryAgg.push_back(carryAggResult);
-		*/
+		/*
+			 AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
+			 stat_carry.push_back(carryResult);
+			 stat_carryAgg.push_back(carryAggResult);
+		 */
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
 
 
@@ -570,13 +591,15 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> parityResult;
 		std::map<unsigned, std::set<unsigned> > parityIOResult;
 		AGGREGATION::findParityTree(functionCalc, aigraph, parityResult, parityIOResult);
-		printf("PARITY\n");
-		for(iMapS = parityIOResult.begin(); iMapS != parityIOResult.end(); iMapS++){
-			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
-			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-		}
+		/*
+			 printf("PARITY\n");
+			 for(iMapS = parityIOResult.begin(); iMapS != parityIOResult.end(); iMapS++){
+			 printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			 for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+			 printf("%d ", *iSet);
+			 printf("\n");
+			 }
+		 */
 		stat_parity.push_back(parityResult);
 		gettimeofday(&par_e, NULL); //-----------------------------------------------
 
@@ -585,13 +608,15 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> gateResult;
 		std::map<unsigned, std::set<unsigned> > gateIOResult;
 		AGGREGATION::findGateFunction(functionCalc, aigraph, gateResult, gateIOResult);
-		printf("GATE\n");
-		for(iMapS = gateIOResult.begin(); iMapS != gateIOResult.end(); iMapS++){
-			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
-			for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
-				printf("%d ", *iSet);
-			printf("\n");
-		}
+		/*
+			 printf("GATE\n");
+			 for(iMapS = gateIOResult.begin(); iMapS != gateIOResult.end(); iMapS++){
+			 printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			 for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+			 printf("%d ", *iSet);
+			 printf("\n");
+			 }
+		*/
 		stat_gate.push_back(gateResult);
 		gettimeofday(&gate_e, NULL); //-----------------------------------------------
 
@@ -600,6 +625,7 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> equalResult;
 		std::map<unsigned, std::set<unsigned> > equalIOResult;
 		AGGREGATION::findEquality(functionCalc, aigraph, equalResult, equalIOResult);
+		/*
 		printf("EQUAL\n");
 		for(iMapS = equalIOResult.begin(); iMapS != equalIOResult.end(); iMapS++){
 			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
@@ -607,6 +633,7 @@ int main( int argc, char *argv[] )
 				printf("%d ", *iSet);
 			printf("\n");
 		}
+		*/
 		stat_equal.push_back(equalResult);
 		gettimeofday(&eq_e, NULL); //-----------------------------------------------
 
@@ -619,6 +646,7 @@ int main( int argc, char *argv[] )
 		std::map<unsigned, unsigned> muxResult4;
 		std::map<unsigned, std::set<unsigned> > muxIOResult;
 		AGGREGATION::findMux2(functionCalc, aigraph, muxResult2, muxResult3, muxResult4, muxIOResult);
+		/*
 		printf("MUX\n");
 		for(iMapS = muxIOResult.begin(); iMapS != muxIOResult.end(); iMapS++){
 			printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
@@ -626,6 +654,7 @@ int main( int argc, char *argv[] )
 				printf("%d ", *iSet);
 			printf("\n");
 		}
+		*/
 
 		stat_mux2.push_back(muxResult2);		
 		stat_mux3.push_back(muxResult3);		
@@ -865,20 +894,19 @@ int main( int argc, char *argv[] )
 			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
 			totalMux+=iMap->second;
 		}
+		/*
 		printf("\n3-1 MUX:\n");
 		for(iMap = stat_mux3[i].begin(); iMap != stat_mux3[i].end(); iMap++){
 			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
 			totalMux+=iMap->second;
 		}
+		*/
 		printf("\n4-1 MUX:\n");
 		for(iMap = stat_mux4[i].begin(); iMap != stat_mux4[i].end(); iMap++){
 			printf("\t%d-Bit mux...\t\t%d\n", iMap->first, iMap->second);
 			totalMux+=iMap->second;
 		}
 
-		printf("\nDecoders\n");
-		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++)
-			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 
 		printf("\nAdders\n");
 		for(iMap = stat_adder[i].begin(); iMap != stat_adder[i].end(); iMap++)
@@ -894,7 +922,10 @@ int main( int argc, char *argv[] )
 		printf("\nCarryAgg\n");
 		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
-			*/
+		
+		printf("\nDecoders\n");
+		for(iMap = stat_decAgg[i].begin(); iMap != stat_decAgg[i].end(); iMap++)
+			printf("\t%d-Bit decoders...\t\t%d\n", iMap->first, iMap->second);
 
 		printf("\nParity\n");
 		for(iMap = stat_parity[i].begin(); iMap != stat_parity[i].end(); iMap++)
@@ -903,9 +934,15 @@ int main( int argc, char *argv[] )
 		printf("\nGate\n");
 		for(iMap = stat_gate[i].begin(); iMap != stat_gate[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
-		printf("\nequal\n");
+			*/
+		printf("\nEqual\n");
 		for(iMap = stat_equal[i].begin(); iMap != stat_equal[i].end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
+		
+		printf("\nOUTPUT FUNCtIONS\n");
+		std::set<unsigned long long>::iterator iOF;
+		for(iOF = stat_outFunction[i].begin(); iOF != stat_outFunction[i].end(); iOF++)
+			printf("\t%llx\n", *iOF);
 
 		stat_numMux.push_back(totalMux);
 	}
@@ -970,34 +1007,41 @@ int main( int argc, char *argv[] )
 
 	printf("[MAINDB] -- Calculating similarity for 2-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux2, simTable);
+	/*
 	printf("[MAINDB] -- Calculating similarity for 3-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux3, simTable);
+	*/
 	printf("[MAINDB] -- Calculating similarity for 4-1 Multiplexors\n");
 	calculateSimilarity(name, stat_mux4, simTable);
 
 	printf("[MAINDB] -- Calculating similarity for Output Output input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountOut, simTable);
+	/*
 	printf("[MAINDB] -- Calculating similarity for FF FF input dependency size\n");
 	calculateSimilarity(name, stat_spCutCountFF, simTable);
+	*/
 
 	printf("[MAINDB] -- Calculating similarity Adder aggregation\n");
 	calculateSimilarity(name, stat_adder, simTable);
 	printf("[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
 	calculateSimilarity(name, stat_adderAgg, simTable);
-	printf("[MAINDB] -- Calculating similarity carry aggregation\n");
 	/*
+	printf("[MAINDB] -- Calculating similarity carry aggregation\n");
 	calculateSimilarity(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
 	*/
 
+/*
 	printf("[MAINDB] -- Calculating similarity of parity tree aggregation\n");
 	calculateSimilarity(name, stat_parity, simTable);
 	printf("[MAINDB] -- Calculating similarity of gate function aggregation\n");
 	calculateSimilarity(name, stat_gate, simTable);
+	*/
 	printf("[MAINDB] -- Calculating similarity of equality function aggregation\n");
 	calculateSimilarity(name, stat_equal, simTable);
 
+/*
 	printf("[MAINDB] -- Calculating similarity Sequential block M0\n");
 	calculateSimilarity(name, stat_blockFFM0, simTable);
 	printf("[MAINDB] -- Calculating similarity Sequential block M1\n");
@@ -1014,6 +1058,7 @@ int main( int argc, char *argv[] )
 
 	printf("[MAINDB] -- Calculating similarity Counter identification: 3\n");
 	calculateSimilarity(name, stat_counter, simTable);
+	*/
 
 	printf("\n***********************************************************************\n");
 
