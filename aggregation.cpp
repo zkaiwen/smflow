@@ -2060,6 +2060,7 @@ void AGGREGATION::findHAddHeader( AIG* aig,
 		}
 	}
 
+
 	//printAddList(addIn, addOut);
 	/*
 		 iAddIn = addIn.begin();
@@ -2127,7 +2128,6 @@ void AGGREGATION::combineAdder(
 		while(iListOut2 != addOut.end()){
 			unsigned numMatch = 0;
 			unsigned numMatchIn = 0;
-			/*
 				 printf("COMPARING OUT SET1: ");
 				 for(iSet = iListOut1->begin(); iSet != iListOut1->end(); iSet++)
 				 printf("%d ", *iSet);
@@ -2135,7 +2135,6 @@ void AGGREGATION::combineAdder(
 				 for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 				 printf("%d ", *iSet);
 				 printf("\n");
-			 */
 
 			for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 				if(iListOut1->find(*iSet) != iListOut1->end())
@@ -2145,8 +2144,10 @@ void AGGREGATION::combineAdder(
 				if(iListIn1->find(*iSet) != iListIn1->end())
 					numMatchIn++;
 
+					printf("OUTPUT MATCHES: %d\t\tINPUT MATCHES: %d\n", numMatch, numMatchIn);
 
-			if((numMatch == matchLimit) || (numMatchIn == iListIn2->size() || numMatchIn == iListIn1->size())){
+
+			if((numMatch >= matchLimit) || (numMatchIn == iListIn2->size() || numMatchIn == iListIn1->size())){
 				//printf(" * COMBINE!\n");
 				for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
 					iListIn1->insert(*iSet);
@@ -2409,31 +2410,36 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 	//printf("\n\nFINDING ADD HEADER FOR FULL ADDER\n");
 	findHAddHeader(aigraph, faSum, faSum2, sumNodes, outIn, addInputList, addOutputList);
-	/*
+	if(faSum.size() != 0 && faSum2.size() == 0){
+		//Check to see if it is a full adder by checking the input against a full
+
+		for(unsigned int i = 0; i < faSum.size(); i++){
+			addInputList.push_back(faSum[i]->input);
+			std::set<unsigned> out;
+			out.insert(faSum[i]->output);
+			addOutputList.push_back(out);
+		}
+	}
 		 printf("FADD ADD Header #################################\n");
 		 printAddList(addInputList, addOutputList);
-		 */
 
 	findHAddHeader(aigraph, haSum2, haSum3, sumNodes, outIn, addInputList, addOutputList);
-	/*
 		 printf("HADD ADD header #################################\n");
 		 printAddList(addInputList, addOutputList);
-		 */
 	
 	findHAddHeader(aigraph, haSum, haSum2, sumNodes, outIn, addInputList, addOutputList);
-	/*
+
+	//No point in checking to see if there exists a smaller adder since a haSum is just the same as xor
+
 		 printf("HADDlower ADD header #################################\n");
 		 printAddList(addInputList, addOutputList);
-		 */
 
 
 
 	combineAdder(aigraph, addInputList, addOutputList);
 
-	/*
 		 printf("ADD CARRY AggregationAFTER COMBING #################################\n");
 		 printAddList(addInputList, addOutputList);
-	 */
 
 
 	adderAggregation3_heuristic(aigraph, outIn, sumNodes,  addInputList, addOutputList);
@@ -2482,12 +2488,10 @@ void AGGREGATION::findAdder(CutFunction* cf,
 			ioResult[*iSet] = *iList2;
 	}
 
-	/*
 		 printf("\n####################################################################\n");
 		 printf("ADD CARRY Aggregation\n");
 		 printAddList(addInputList, addOutputList);
 		 printf("####################################################################\n");
-	 */
 
 
 	printf(" * -- Complete\n\n");
