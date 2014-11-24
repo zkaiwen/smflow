@@ -460,10 +460,18 @@ std::string Database::formResultXML(std::set<cScore, setCompare>& result){
 	for(iSet = result.begin(); iSet != result.end(); iSet++){
 		ss<<iSet->id;
 
+		xml_node<>* itemNode= xmldoc.allocate_node(node_element, "ITEM");
 		xml_node<>* idNode= xmldoc.allocate_node(node_element, "ID");
+		xml_node<>* simNode= xmldoc.allocate_node(node_element, "sim");
 		idNode->value(xmldoc.allocate_string(ss.str().c_str()));
 		ss.str("");
-		matchNode->append_node(idNode);
+		ss<<iSet->score;
+		simNode->value(xmldoc.allocate_string(ss.str().c_str()));
+		ss.str("");
+
+		itemNode->append_node(idNode);
+		itemNode->append_node(simNode);
+		matchNode->append_node(itemNode);
 	}
 
 	ss<<xmldoc;
