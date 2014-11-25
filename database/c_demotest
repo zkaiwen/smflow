@@ -1,0 +1,11 @@
+circuits/g/primitive/
+circuits/demo/cnl/fa.cnl
+circuits/demo/cnl/add2_c.cnl
+circuits/demo/cnl/add3_c.cnl
+circuits/demo/cnl/addTree2bit_1.cnl
+circuits/demo/cnl/addTree4bit_1.cnl
+circuits/demo/cnl/count1s_8bit.cnl
+circuits/demo/cnl/life_c.cnl
+circuits/demo/cnl/life_8c.cnl
+circuits/demo/cnl/sobel.cnl
+circuits/demo/cnl/prewitt.cnl

@@ -1,0 +1,16 @@
+circuits/g/primitive/
+circuits/testbench/adder4_74283.cnl
+circuits/testbench/adder4_C.cnl
+circuits/testbench/adder4.cnl
+circuits/testbench/adder4_ci.cnl
+circuits/testbench/adder4_chain_fa.cnl
+circuits/testbench/adder4_chain_mux.cnl
+circuits/testbench/adder4_chain_mux_fa.cnl
+circuits/testbench/adder4x2_sharedIn.cnl
+circuits/testbench/adder8x2_sharedIn.cnl
+circuits/testbench/adder8x2.cnl
+circuits/testbench/adder8.cnl
+circuits/testbench/adder16.cnl
+circuits/testbench/adder32.cnl
+circuits/testbench/adder64.cnl
+circuits/testbench/adder34.cnl
