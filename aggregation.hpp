@@ -36,6 +36,17 @@ namespace AGGREGATION{
 
 	//Searches
 	int DFS(AIG* , unsigned , unsigned , std::set<unsigned>& , std::set<unsigned>&, std::set<unsigned>&, std::set<unsigned>&);
+	
+
+	/*
+		PARAM:
+			AIGraph
+			Starting output node
+			Target node you want to see if you can hit
+			a lower bound. Make sure it doesn't fall below this
+			a input set boundary
+			marked set (EMPTY INITIALLY)
+	*/
 	bool DFSearch(AIG* , unsigned , unsigned , unsigned ,  std::set<unsigned>& , std::set<unsigned>& );
 
 	void BFS(AIG* , unsigned , std::set<unsigned>& , std::vector<unsigned>& );
@@ -64,6 +75,16 @@ namespace AGGREGATION{
 	void simplify_output(AIG* , 
 			std::set<unsigned>& , 
 			std::map<unsigned, std::set<unsigned> >&);
+	
+	void simplify_output2(AIG* , 
+			std::map<unsigned, std::set<unsigned> >&,
+			std::list<std::set<unsigned> >& ,	
+			std::list<std::set<unsigned> >&
+		);
+	
+	void simplify_carry(AIG* , 
+		std::set<unsigned>& , 
+		std::map<unsigned, std::set<unsigned> >& );
 
 	void printAddList(std::list<std::set<unsigned> >& ,	std::list<std::set<unsigned> >& );
 
@@ -92,12 +113,22 @@ namespace AGGREGATION{
 			std::map<unsigned , std::set<unsigned> >& , 
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );
+	
+	void findHAHeader( AIG* , 
+			std::vector<InOut*>& , 
+			std::vector<InOut*>& , 
+			std::vector<InOut*>& ,
+			std::set<unsigned>& ,
+			std::list<std::set<unsigned> >& ,
+			std::list<std::set<unsigned> >& );
+
 	void combineAdder(
 			AIG* ,
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );
 	void findAdder(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> > & );
-	void findCarry(CutFunction* , CutEnumeration* , AIG* , std::map<unsigned, unsigned>& , std::map<unsigned, unsigned>&, std::map<unsigned, std::set<unsigned> >& ); 
+	void findCarry(CutFunction* , CutEnumeration* , AIG* , std::set<unsigned>&, std::map<unsigned, unsigned>& , std::map<unsigned, std::set<unsigned> >& ); 
+
 
 
 	/*#############################################################################
