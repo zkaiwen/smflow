@@ -213,7 +213,7 @@ void AIG::getParents(unsigned source, std::list<unsigned>& parents){
 
 void AIG::getSiblings(unsigned source, std::vector<unsigned>& siblings){
 	source = source & 0xFFFFFFFE;
-	int startSearch = source/2+1-getInputSize();
+	int startSearch = 0;//source/2+1-getInputSize();
 
 	for(unsigned int i = startSearch; i < m_Aiger->num_ands; i++){
 		if((m_Aiger->ands[i].rhs0 & 0xFFFFFFFE)  == source)
@@ -791,12 +791,14 @@ void AIG::convertGraph2AIG(Graph* ckt, bool sub){
 	ckt->getOutputs(outNodes);
 	printf("CKT OUT NODES: ");
 	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
-		printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
+		//printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
+		printf("AIG: %d\tNAME: %s\n ", m_GateMap[iMap->second], iMap->first.c_str());
 	outNodes.clear();
 	ckt->getInputs(outNodes);
 	printf("CKT IN NODES: ");
 	for(iMap = outNodes.begin(); iMap != outNodes.end(); iMap++)
-		printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
+		//printf("ID: %d\tAIG: %d\tNAME: %s\n ",iMap->second, m_GateMap[iMap->second], iMap->first.c_str());
+		printf("AIG: %d\tNAME: %s\n ", m_GateMap[iMap->second], iMap->first.c_str());
 
 	//Store the inputs that go into each output
 	for(iOut = cktout.begin(); iOut != cktout.end(); iOut++)

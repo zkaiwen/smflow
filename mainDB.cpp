@@ -150,9 +150,9 @@ int main( int argc, char *argv[] )
 	std::vector<std::map<unsigned, unsigned> > stat_adder;
 	std::vector<std::map<unsigned, unsigned> > stat_adderAgg;
 	/*
-	std::vector<std::map<unsigned, unsigned> > stat_carry;
 	std::vector<std::map<unsigned, unsigned> > stat_carryAgg;
 	*/
+	std::vector<std::map<unsigned, unsigned> > stat_comp;
 
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM1;
 	std::vector<std::map<unsigned, unsigned> > stat_cascadeFFM2;
@@ -565,7 +565,6 @@ int main( int argc, char *argv[] )
 		AGGREGATION::findAdder(functionCalc, cut, aigraph, addResult, addAggResult, addIOResult);
 		stat_adder.push_back(addResult);
 		stat_adderAgg.push_back(addAggResult);
-		/*
 			 printf("ADD\n");
 			 for(iMapS = addIOResult.begin(); iMapS != addIOResult.end(); iMapS++){
 			 printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
@@ -573,14 +572,24 @@ int main( int argc, char *argv[] )
 			 printf("%d ", *iSet);
 			 printf("\n");
 			 }
-		 */
+		 	std::set<unsigned> addInputs;
+			 for(iMapS = addIOResult.begin(); iMapS != addIOResult.end(); iMapS++)
+			 	for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+					addInputs.insert(*iSet);
 
-			 std::map<unsigned, unsigned> carryResult;
-			 std::map<unsigned, unsigned> carryAggResult;
-			 std::map<unsigned, std::set<unsigned> > carryIOResult;
-			 AGGREGATION::findCarry(functionCalc, cut, aigraph, carryResult, carryAggResult, carryIOResult);
+			 std::map<unsigned, unsigned> compResult;
+			 std::map<unsigned, std::set<unsigned> > compIOResult;
+			 AGGREGATION::findCarry(functionCalc, cut, aigraph, addInputs, compResult, compIOResult);
+			 stat_comp.push_back(compResult);
+
+			 printf("COMPARATOR\n");
+			 for(iMapS = compIOResult.begin(); iMapS != compIOResult.end(); iMapS++){
+			 printf("OUTPUT: %3d\tINPUT: ", iMapS->first);
+			 for(iSet = iMapS->second.begin(); iSet != iMapS->second.end(); iSet++)
+			 printf("%d ", *iSet);
+			 printf("\n");
+			 }
 			 /*
-			 stat_carry.push_back(carryResult);
 			 stat_carryAgg.push_back(carryAggResult);
 			 */
 		gettimeofday(&add_e, NULL); //-----------------------------------------------
@@ -783,16 +792,16 @@ int main( int argc, char *argv[] )
 		features.push_back("CNT");
 		features.push_back("OUTIN");
 		features.push_back("FFIN");
+		features.push_back("COMP");
 
 		std::vector<std::map<unsigned, unsigned> > fingerPrints;
-		fingerPrints.reserve(19);
+		fingerPrints.reserve(18);
 		fingerPrints.push_back(stat_mux2.back());
 		fingerPrints.push_back(stat_mux3.back());
 		fingerPrints.push_back(stat_mux4.back());
 		fingerPrints.push_back(stat_adder.back());
 		fingerPrints.push_back(stat_adderAgg.back());
 		/*
-		fingerPrints.push_back(stat_carry.back());
 		fingerPrints.push_back(stat_carryAgg.back());
 		*/
 		fingerPrints.push_back(stat_parity.back());
@@ -807,6 +816,7 @@ int main( int argc, char *argv[] )
 		fingerPrints.push_back(stat_counter.back());
 		fingerPrints.push_back(stat_spCutCountOut.back());
 		fingerPrints.push_back(stat_spCutCountFF.back());
+		fingerPrints.push_back(stat_comp.back());
 
 		int nameStart= file.find_last_of("/") + 1;
 		std::string cktName = file.substr(nameStart, file.length()-nameStart-4);
@@ -827,6 +837,7 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_gate.back().begin(); iMap != stat_gate.back().end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 		printf("\nequal\n");
+
 		for(iMap = stat_equal.back().begin(); iMap != stat_equal.back().end(); iMap++)
 			printf("\t%d-Bit gate...\t\t%d\n", iMap->first, iMap->second);
 		database->addCircuitEntry(cktName, fingerPrints, features);
@@ -916,10 +927,10 @@ int main( int argc, char *argv[] )
 		for(iMap = stat_adderAgg[i].begin(); iMap != stat_adderAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 
+		printf("\nComp\n");
+		for(iMap = stat_comp[i].begin(); iMap != stat_comp[i].end(); iMap++)
+			printf("\t%d-Bit comparator...\t\t%d\n", iMap->first, iMap->second);
 /*
-		printf("\nCarry\n");
-		for(iMap = stat_carry[i].begin(); iMap != stat_carry[i].end(); iMap++)
-			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
 		printf("\nCarryAgg\n");
 		for(iMap = stat_carryAgg[i].begin(); iMap != stat_carryAgg[i].end(); iMap++)
 			printf("\t%d-Bit adder...\t\t%d\n", iMap->first, iMap->second);
@@ -1031,9 +1042,10 @@ int main( int argc, char *argv[] )
 	calculateSimilarity(name, stat_adder, simTable);
 	printf("[MAINDB] -- Calculating similarity Combined Adder aggregation\n");
 	calculateSimilarity(name, stat_adderAgg, simTable);
+	
+	printf("[MAINDB] -- Calculating similarity comp aggregation\n");
+	calculateSimilarity(name, stat_comp, simTable);
 	/*
-	printf("[MAINDB] -- Calculating similarity carry aggregation\n");
-	calculateSimilarity(name, stat_carry, simTable);
 	printf("[MAINDB] -- Calculating similarity combined carry aggregation\n");
 	calculateSimilarity(name, stat_carryAgg, simTable);
 	*/

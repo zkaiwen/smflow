@@ -810,7 +810,6 @@ void AGGREGATION::parsePortMap(std::map<unsigned long long, std::vector<InOut*> 
  *
  *#############################################################################*/
 void AGGREGATION::simplify_carry(AIG* aig, 
-		std::set<unsigned>& sumNodes, 
 		std::map<unsigned, std::set<unsigned> >& outInMap){
 	printf(" * Checking for output containment\n");
 
@@ -916,14 +915,13 @@ void AGGREGATION::simplify_carry(AIG* aig,
 
 /*#############################################################################
  *
- * simplifyingSet 
+ * extractInOut 
  *  Simplifies a set of functions such that the input is at the lowest level
  *  possible. 
  *
  *#############################################################################*/
-void AGGREGATION::simplifyingSet(AIG* aig, 
+void AGGREGATION::extractInOut(AIG* aig, 
 		std::vector<InOut*>& functions, 
-		std::set<unsigned>& sumNodes, 
 		std::map<unsigned, std::set<unsigned> >& outInMap){
 
 	printf(" * Simplifying function sets\n");
@@ -947,6 +945,7 @@ void AGGREGATION::simplifyingSet(AIG* aig,
 
 		//Check to see if the output node has already been mapped
 		iMap = outInMap.find(outnode);
+
 		if(iMap == outInMap.end()){
 			//If output has not been mapped, make a new outnode and push all the inputs into it
 			//printf("New Output node!!!!\n");
@@ -955,7 +954,6 @@ void AGGREGATION::simplifyingSet(AIG* aig,
 				inPort.insert(*iSet);
 
 			outInMap[outnode] = inPort;
-			sumNodes.insert(outnode);
 		}
 		else{
 			//if output has been mapped, make sure to add the new nodes in and then 
@@ -1103,7 +1101,6 @@ void AGGREGATION::simplify_output2(AIG* aig,
  *
  *#############################################################################*/
 void AGGREGATION::simplify_output(AIG* aig, 
-		std::set<unsigned>& sumNodes, 
 		std::map<unsigned, std::set<unsigned> >& outInMap){
 	printf(" * Checking for output containment\n");
 
@@ -2303,7 +2300,6 @@ printf("END\n");
 void AGGREGATION::findHAddHeader( AIG* aig, 
 		std::vector<InOut*>& add2, 
 		std::vector<InOut*>& add3,
-		std::set<unsigned>& sumNodes,
 		std::map<unsigned , std::set<unsigned> >& outIn, 
 		std::list<std::set<unsigned> >& addIn,
 		std::list<std::set<unsigned> >& addOut){
@@ -2693,7 +2689,6 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	std::list<std::set<unsigned> >::iterator iList1;
 	std::list<std::set<unsigned> >::iterator iList2;
 	std::set<unsigned>::iterator iSet;
-	std::set<unsigned> sumNodes;
 	std::set<unsigned> dummy;
 
 	std::vector<InOut*> faSum;
@@ -2714,9 +2709,9 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 	std::map<unsigned, std::set<unsigned> > outIn;
 	std::map<unsigned, std::set<unsigned> >::iterator iMap;
-	simplifyingSet(aigraph, haSum3, sumNodes, outIn);
-	simplifyingSet(aigraph, haSum2, sumNodes, outIn);
-	simplifyingSet(aigraph, haSum, sumNodes, outIn);
+	extractInOut(aigraph, haSum3, outIn);
+	extractInOut(aigraph, haSum2, outIn);
+	extractInOut(aigraph, haSum, outIn);
 	
 	/*
 	for(iMap = outIn.begin(); iMap != outIn.end(); iMap++){
@@ -2733,7 +2728,7 @@ void AGGREGATION::findAdder(CutFunction* cf,
 		 printf("%d ", *iSet);
 		 printf("\n");
 		 }
-	simplify_output(aigraph, sumNodes, outIn);
+	simplify_output(aigraph, outIn);
 		 printf("SIMPLIFYING SET COMPLETE:\n"); 
 		 for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
 		 printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
@@ -2741,25 +2736,32 @@ void AGGREGATION::findAdder(CutFunction* cf,
 		 printf("%d ", *iSet);
 		 printf("\n");
 		 }
-	
-	//findHAHeader(aigraph, haSum, haSum2, haSum3, sumNodes, haddInputList, haddOutputList);
-	findHAddHeader(aigraph, haSum2, haSum3, sumNodes, outIn, haddInputList, haddOutputList);
-		 printf("HADD ADD header #################################\n");
+
+
+	//Store the nodes that are sum outputs
+	 std::set<unsigned> sumNodes;
+	 for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++)
+		 sumNodes.insert(iOutin->first);
+
+		 //findHAHeader(aigraph, haSum, haSum2, haSum3, sumNodes, haddInputList, haddOutputList);
+
+	findHAddHeader(aigraph, haSum2, haSum3, outIn, haddInputList, haddOutputList);
+		 printf("HADD ADD HEADER SUM2-3#################################\n");
 		 printAddList(haddInputList, haddOutputList);
 	
-	findHAddHeader(aigraph, haSum, haSum2, sumNodes, outIn, haddInputList, haddOutputList);
-		 printf("HADD ADD header #################################\n");
+	findHAddHeader(aigraph, haSum, haSum2, outIn, haddInputList, haddOutputList);
+		 printf("HADD ADD HEADER SUM1-2#################################\n");
 		 printAddList(haddInputList, haddOutputList);
 	
 	combineAdder(aigraph, haddInputList, haddOutputList);
-		 printf("ADD AggregationAFTER COMBING #################################\n");
+		 printf("HADD COMBINE#################################\n");
 		 printAddList(haddInputList, haddOutputList);
 	
 	adderAggregation3_heuristic(aigraph, outIn, sumNodes,  haddInputList, haddOutputList);
-		 printf("ADD AggregationAFTER heuristical agg#################################\n");
+		 printf("HADD HEURISTIC#################################\n");
 		 printAddList(haddInputList, haddOutputList);
 	
-	adderAggregation3_cleanup(aigraph, sumNodes, haddInputList, haddOutputList);
+	//adderAggregation3_cleanup(aigraph, sumNodes, haddInputList, haddOutputList);
 
 
 
@@ -2790,18 +2792,19 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	//findHAddHeader(aigraph, haSum2, haSum3, sumNodes, outIn, addInputList, addOutputList);
 	sumNodes.clear();
 	outIn.clear();
-	simplifyingSet(aigraph, faSum, sumNodes, outIn);
-	simplifyingSet(aigraph, faSum2, sumNodes, outIn);
-	simplifyingSet(aigraph, faSum3, sumNodes, outIn);
+	extractInOut(aigraph, faSum,  outIn);
+	extractInOut(aigraph, faSum2, outIn);
+	extractInOut(aigraph, faSum3, outIn);
 	
-	simplify_output(aigraph, sumNodes, outIn);
+	simplify_output(aigraph, outIn);
+	for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++)
+		sumNodes.insert(iOutin->first);
 
 	//printf("\n\nFINDING ADD HEADER FOR FULL ADDER\n");
-	findHAddHeader(aigraph, faSum, faSum2, sumNodes, outIn, faddInputList, faddOutputList);
+	findHAddHeader(aigraph, faSum, faSum2, outIn, faddInputList, faddOutputList);
 	//To find full adder sum TODO: THIS CAUSES SHAREDIN ADDER NOT TO WORK
 	if(faSum.size() != 0 && faSum2.size() == 0){
 		//Check to see if it is a full adder by checking the input against a full
-
 		for(unsigned int i = 0; i < faSum.size(); i++){
 			addInputList.push_back(faSum[i]->input);
 			std::set<unsigned> out;
@@ -2812,22 +2815,29 @@ void AGGREGATION::findAdder(CutFunction* cf,
 		}
 	}
 
-		 printf("FADD ADD Header #################################\n");
+	 printf("FADD ADD Header #################################\n");
 		 printAddList(faddInputList, faddOutputList);
 
 	
 	combineAdder(aigraph, faddInputList, faddOutputList);
-		 printf("ADD CARRY AggregationAFTER COMBING #################################\n");
+		 printf("FADD COMBINE#################################\n");
 		 printAddList(faddInputList, faddOutputList);
+		 
+		 printf("SIMPLIFYING SET COMPLETE:\n"); 
+		 for(iOutin = outIn.begin(); iOutin != outIn.end(); iOutin++){
+		 printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);
+		 for(iSet = iOutin->second.begin(); iSet != iOutin->second.end(); iSet++)
+		 printf("%d ", *iSet);
+		 printf("\n");
+		 }
 
 
 	
 	adderAggregation3_heuristic(aigraph, outIn, sumNodes,  faddInputList, faddOutputList);
-	adderAggregation3_cleanup(aigraph, sumNodes, faddInputList, faddOutputList);
-		 printf("FADD AggregationAFTER heuristical agg#################################\n");
+		 printf("FADD HEURISTIC#################################\n");
 		 printAddList(faddInputList, faddOutputList);
-		 printf("HADD AggregationAFTER heuristical agg#################################\n");
-		 printAddList(haddInputList, haddOutputList);
+
+	//adderAggregation3_cleanup(aigraph, sumNodes, faddInputList, faddOutputList);
 	
 
 
@@ -2902,9 +2912,9 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 
 
-
-	iList2 = addOutputList.begin();
-	for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+	//Prepare the output
+	iList2 = faddOutputList.begin();
+	for(iList1 = faddInputList.begin(); iList1 != faddInputList.end(); iList1++){
 
 		std::set<unsigned>::iterator iSet;
 		if(resultA.find(iList2->size()) == resultA.end()){
@@ -2917,8 +2927,8 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 
 
-	iList2 = addOutputList.begin();
-	for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
+	iList2 = haddOutputList.begin();
+	for(iList1 = haddInputList.begin(); iList1 != haddInputList.end(); iList1++){
 		bool contained= verifyContainment(aigraph, *iList1, *iList2);
 		if(!contained) {
 			printf("Verify Containment Failed\n");
@@ -2988,11 +2998,11 @@ void AGGREGATION::findCarry(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 
 	//Get the map for function tt and every set of input and output with that function
 	//Function, Vector of every set of inputs with that function. Last item is the output node
+	//std::map<unsigned long long, std::vector<InOut*> > pmap_dc;
+	//cf->getPortMap_DC(pmap_dc);
 	std::map<unsigned long long, std::vector<InOut*> > pmap;
-	std::map<unsigned long long, std::vector<InOut*> > pmap_dc;
 	std::map<unsigned long long, std::vector<InOut*> >::iterator iPMAP;
 	cf->getPortMap(pmap);
-	cf->getPortMap_DC(pmap_dc);
 
 
 	printf("FACARRY FUNCTIONS: \n");
@@ -3007,63 +3017,44 @@ void AGGREGATION::findCarry(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 
 
 	/*
-		 printf("FACARRY FUNCTIONS___DC: \n");
-		 printIO(pmap_dc, faCarry);
-		 printf("\n\nFASUM FUNCTIONS___DC: \n");
-		 printIO(pmap_dc, faSum);
-		 printf("\n\nFACARRY2 FUNCTIONS___DC: \n");
-		 printIO(pmap_dc, faCarry2);
-		 printf("\n\nHACARRY2 FUNCTIONS___DC: \n");
-		 printIO(pmap_dc, haCarry2);
-		 printf("\n\nHACARRY3 FUNCTIONS___DC: \n");
-		 printIO(pmap_dc, haCarry3);
-	//printf("\n\nCLA3 FUNCTIONS___DC: \n");
-	//printIO(pmap_dc, cla3);
-	printf("\n\nHACARRY2 FUNCTIONS: \n");
-	printIO(pmap, haCarry2_f);
-	printf("\n\nHACARRY3 FUNCTIONS: \n");
-	printIO(pmap, haCarry3_f);
-	printf("\n\nFACARRY FUNCTIONS: \n");
-	printIO(pmap, faCarry_f);
-	printf("\n\nFACARRY2 FUNCTIONS: \n");
-	printIO(pmap, faCarry2_f);
+		printf("FACARRY FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faCarry);
+		printf("\n\nFASUM FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faSum);
+		printf("\n\nFACARRY2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, faCarry2);
+		printf("\n\nHACARRY2 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haCarry2);
+		printf("\n\nHACARRY3 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, haCarry3);
+		printf("\n\nCLA3 FUNCTIONS___DC: \n");
+		printIO(pmap_dc, cla3);
 	 */
 
 
 
 
 	std::vector<InOut*> faCarry;
-	std::vector<InOut*> faSum;
 	std::vector<InOut*> faCarry2;
-	std::vector<InOut*> faSum2;
-	std::vector<InOut*> faSum3;
-	std::vector<InOut*> haCarry2;
-	std::vector<InOut*> haCarry3;
-	std::vector<InOut*> haSum2;
-	std::vector<InOut*> haEmpty;
-	std::vector<InOut*> haSum3;
+	//std::vector<InOut*> haCarry2;
+	//std::vector<InOut*> haCarry3;
 
 	parsePortMap(pmap, faCarry_f, faCarry);
 	parsePortMap(pmap, faCarry2_f, faCarry2);
-	parsePortMap(pmap, haCarry2_f, haCarry2);
-	parsePortMap(pmap, haCarry3_f, haCarry3);
+	//parsePortMap(pmap, haCarry2_f, haCarry2);
+	//parsePortMap(pmap, haCarry3_f, haCarry3);
 
 
 
 	//Aggregation
 	std::list<std::set<unsigned> > addOutputList;
 	std::list<std::set<unsigned> > addInputList;
-	std::list<std::set<unsigned> > haddOutputList;
-	std::list<std::set<unsigned> > haddInputList;
 	std::list<std::set<unsigned> >::iterator iList1;
 	std::list<std::set<unsigned> >::iterator iList2;
 	std::set<unsigned>::iterator iSet;
-	std::set<unsigned> sumNodes;
 
-	simplifyingSet(aigraph, faCarry, sumNodes, ioResult);
-	simplifyingSet(aigraph, faCarry2, sumNodes, ioResult);
-	simplifyingSet(aigraph, haCarry3, sumNodes, ioResult);
-	simplifyingSet(aigraph, haCarry2, sumNodes, ioResult);
+	extractInOut(aigraph, faCarry, ioResult);
+	extractInOut(aigraph, faCarry2, ioResult);
 
 	std::map<unsigned, std::set<unsigned> >::iterator iOutin;
 	printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
@@ -3074,7 +3065,7 @@ void AGGREGATION::findCarry(CutFunction* cf, CutEnumeration* cut, AIG* aigraph, 
 		printf("\n");
 	}
 
-	simplify_carry(aigraph, sumNodes, ioResult);
+	simplify_carry(aigraph, ioResult);
 	printf("COMPRESSED IN OUT PORT FOR POSSIBLE SUM NODES:\n"); 
 	for(iOutin = ioResult.begin(); iOutin != ioResult.end(); iOutin++){
 		printf("OUTPUT NODE: %3d\t\tINPUT NODES: ", iOutin->first);

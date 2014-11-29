@@ -125,6 +125,7 @@ int main( int argc, char *argv[] )
 	std::string xmlData;
 	while(1){
 		xmlData = server->receiveAllData() ;
+
 		if(xmlData == "SOCKET_CLOSE"){
 			if(! server->waitForClient()) return 0;
 			xmlData = server->receiveAllData() ;

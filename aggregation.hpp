@@ -67,13 +67,11 @@ namespace AGGREGATION{
 			std::list<std::set<unsigned> >& );
 
 
-	void simplifyingSet(AIG* , 
+	void extractInOut(AIG* , 
 			std::vector<InOut*>& , 
-			std::set<unsigned>& , 
 			std::map<unsigned, std::set<unsigned> >&);
 
 	void simplify_output(AIG* , 
-			std::set<unsigned>& , 
 			std::map<unsigned, std::set<unsigned> >&);
 	
 	void simplify_output2(AIG* , 
@@ -83,7 +81,6 @@ namespace AGGREGATION{
 		);
 	
 	void simplify_carry(AIG* , 
-		std::set<unsigned>& , 
 		std::map<unsigned, std::set<unsigned> >& );
 
 	void printAddList(std::list<std::set<unsigned> >& ,	std::list<std::set<unsigned> >& );
@@ -109,7 +106,6 @@ namespace AGGREGATION{
 	void findHAddHeader( AIG* , 
 			std::vector<InOut*>& , 
 			std::vector<InOut*>& ,
-			std::set<unsigned>& ,
 			std::map<unsigned , std::set<unsigned> >& , 
 			std::list<std::set<unsigned> >& ,
 			std::list<std::set<unsigned> >& );

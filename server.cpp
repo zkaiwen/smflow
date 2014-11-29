@@ -150,7 +150,7 @@ bool Server::sendData(std::string data){
 		printf("[SERVER] -- Please wait for connected client before sending data\n");
 		return false;
 	}
-	int result = write(m_ClientSktID, data.c_str(), data.length()+1);	
+	int result = write(m_ClientSktID, data.c_str(), data.length());	
 
 	if(result < 0){
 		printf("[SERVER] -- Writing to client seemed to have encountered an error...\n");

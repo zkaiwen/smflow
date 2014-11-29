@@ -14,3 +14,15 @@ circuits/testbench/adder16.cnl
 circuits/testbench/adder32.cnl
 circuits/testbench/adder64.cnl
 circuits/testbench/adder34.cnl
+circuits/netlist/s344_og.cnl
+circuits/netlist/s349_og.cnl
+circuits/demo/cnl/fa.cnl
+circuits/demo/cnl/add2_c.cnl
+circuits/demo/cnl/add3_c.cnl
+circuits/demo/cnl/sobel.cnl
+circuits/demo/cnl/prewitt.cnl
+circuits/demo/cnl/firfilter4.cnl
+circuits/demo/cnl/firfilter8.cnl
+circuits/demo/cnl/count1s_8bit.cnl
+circuits/demo/cnl/addTree4bit_4L_4I.cnl
+circuits/demo/cnl/addTree4bit_4L_4I_ACTUAL.cnl
