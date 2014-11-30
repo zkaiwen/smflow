@@ -12,7 +12,7 @@
 
 Server::Server(unsigned port){
 	m_Port = port;
-	m_bufferLength = 1024;
+	m_bufferLength = 8;
 	m_ServerSktID = -1;
 	m_ClientSktID = -1;
 }
@@ -37,11 +37,13 @@ bool Server::waitForClient(){
 	bzero((char *) &server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;                   //Address format is host and port number
 	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(m_Port);
 
-	if (bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
+	if(bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
 				sizeof(server_addr)) < 0){
-			printf("[ERROR] -- Error has occured during binding\n");
-			return false;
+
+		printf("[ERROR] -- Error has occured during binding\n");
+		return false;
 	}
 
 	print();
@@ -148,7 +150,7 @@ bool Server::sendData(std::string data){
 		printf("[SERVER] -- Please wait for connected client before sending data\n");
 		return false;
 	}
-	int result = write(m_ClientSktID, data.c_str(), data.length());	
+	int result = write(m_ClientSktID, data.c_str(), data.length()+1);	
 
 	if(result < 0){
 		printf("[SERVER] -- Writing to client seemed to have encountered an error...\n");
