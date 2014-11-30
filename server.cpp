@@ -12,7 +12,7 @@
 
 Server::Server(unsigned port){
 	m_Port = port;
-	m_bufferLength = 8;
+	m_bufferLength = 1024;
 	m_ServerSktID = -1;
 	m_ClientSktID = -1;
 }
@@ -23,13 +23,13 @@ Server::Server(unsigned port){
 bool Server::waitForClient(){
 	closeSocket();
 	printf("[SERVER] -- Preparing TCP/IP connection with client front-end\n");
-
-	printf("[SERVER] -- Opening Socket...\n");
+	printf("[SERVER] -- Opening Socket...");
 	m_ServerSktID= socket(AF_INET, SOCK_STREAM, 0);
 	if(m_ServerSktID< 0){
 		printf("[ERROR] -- Server socket cannot be opened\n");
 		return false;
 	}
+	printf("ID: %d\n", m_ServerSktID);
 
 	printf("[SERVER] -- Preparing to bind...\n");
 	socklen_t clientLength;
@@ -37,13 +37,12 @@ bool Server::waitForClient(){
 	bzero((char *) &server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;                   //Address format is host and port number
 	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(m_Port);
+	server_addr.sin_port= htons(m_Port);
 
-	if(bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
+	if (bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
 				sizeof(server_addr)) < 0){
-
-		printf("[ERROR] -- Error has occured during binding\n");
-		return false;
+			printf("[ERROR] -- Error has occured during binding\n");
+			return false;
 	}
 
 	print();
@@ -150,7 +149,7 @@ bool Server::sendData(std::string data){
 		printf("[SERVER] -- Please wait for connected client before sending data\n");
 		return false;
 	}
-	int result = write(m_ClientSktID, data.c_str(), data.length()+1);	
+	int result = write(m_ClientSktID, data.c_str(), data.length());	
 
 	if(result < 0){
 		printf("[SERVER] -- Writing to client seemed to have encountered an error...\n");
