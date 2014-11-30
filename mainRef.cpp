@@ -126,7 +126,7 @@ int main( int argc, char *argv[] )
 	while(1){
 		xmlData = server->receiveAllData() ;
 		if(xmlData == "SOCKET_CLOSE"){
-			if(! server->waitForClient()) return 0;
+			if(!server->waitForClient()) return 0;
 			xmlData = server->receiveAllData() ;
 			if(xmlData == "SOCKET_CLOSE"){
 				printf("[MAIN] -- Client has disconnected twice in a row...exiting...\n");

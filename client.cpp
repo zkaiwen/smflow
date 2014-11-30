@@ -20,7 +20,8 @@ int main(int argc, char *argv[])
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
-    char buffer[256];
+		unsigned buflen = 1000000;
+    char buffer[buflen];
     if (argc < 3) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
        exit(0);
@@ -43,9 +44,9 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
-    bzero(buffer,256);
+    bzero(buffer,buflen);
     printf("Press Enter to send reference XML: ");
-    fgets(buffer,255,stdin);
+    fgets(buffer,buflen-1,stdin);
 
 
 
@@ -54,14 +55,14 @@ int main(int argc, char *argv[])
     if (n < 0) 
          error("ERROR writing to socket");
 
-    bzero(buffer,256);
-    n = read(sockfd,buffer,255);
+    bzero(buffer,buflen);
+    n = read(sockfd,buffer,buflen-1);
     if (n < 0) 
          error("ERROR reading from socket");
     printf("RESULT FROM SERVER:\t%s\n",buffer);
-    bzero(buffer,256);
+    bzero(buffer,buflen);
     printf("Press Enter to send reference XML: ");
-    fgets(buffer,255,stdin);
+    fgets(buffer,buflen-1,stdin);
 
 
 
@@ -70,8 +71,8 @@ int main(int argc, char *argv[])
     if (n < 0) 
          error("ERROR writing to socket");
 
-    bzero(buffer,256);
-    n = read(sockfd,buffer,255);
+    bzero(buffer,buflen);
+    n = read(sockfd,buffer,buflen-1);
     if (n < 0) 
          error("ERROR reading from socket");
     printf("RESULT FROM SERVER:\t%s\n",buffer);
