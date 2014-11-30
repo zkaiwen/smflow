@@ -12,7 +12,7 @@
 
 Server::Server(unsigned port){
 	m_Port = port;
-	m_bufferLength = 8;
+	m_bufferLength = 1024;
 	m_ServerSktID = -1;
 	m_ClientSktID = -1;
 }
@@ -37,13 +37,11 @@ bool Server::waitForClient(){
 	bzero((char *) &server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;                   //Address format is host and port number
 	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(m_Port);
 
-	if(bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
+	if (bind(m_ServerSktID, (struct sockaddr *) &server_addr, 
 				sizeof(server_addr)) < 0){
-
-		printf("[ERROR] -- Error has occured during binding\n");
-		return false;
+			printf("[ERROR] -- Error has occured during binding\n");
+			return false;
 	}
 
 	print();

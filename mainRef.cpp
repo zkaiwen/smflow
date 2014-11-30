@@ -70,7 +70,7 @@ int main( int argc, char *argv[] )
 	printf("********************************************************************************\n");
 	printf("********************************************************************************\n\n");
 
-	if(argc < 2){
+	if(argc != 2){
 		printf("./xfpgeniusRef <database xml file>\n\n\n");
 		return 0;
 	}
@@ -118,14 +118,13 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT END
 	//**************************************************************************
-	Server* server = new Server(8000);
+	Server* server = new Server(9000);
 	if(! server->waitForClient()) return 0;
 
 
 	std::string xmlData;
 	while(1){
 		xmlData = server->receiveAllData() ;
-
 		if(xmlData == "SOCKET_CLOSE"){
 			if(! server->waitForClient()) return 0;
 			xmlData = server->receiveAllData() ;
