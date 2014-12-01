@@ -104,7 +104,6 @@ class Database{
 		std::list<CircuitFingerprint*> m_Datastore;
 
 		//TODO:IF MODIFIED, MODIFY THE NUMBER ABOVE
-		int string2int(char*);
 
 	public:
 		Database();
@@ -125,6 +124,7 @@ class Database{
 		void printDatabase();
 
 		bool verify_CircuitFingerprint();
+		int string2int(const char*);
 };
 
 

@@ -54,16 +54,22 @@ double SIMILARITY::tanimotoWindow_size(std::map<unsigned, unsigned>& data1, std:
 	std::set<unsigned> marked1;
 	std::set<unsigned> marked2;
 
+	std::map<unsigned, unsigned> temp;
+	std::map<unsigned, unsigned> map;
+
 	const double multiplier[windowSize+1] = {
 		1.000, 0.9938, 0.9772, 0.9332, 0.8413, 0.6915
 	};
+
 	
 	//Count the number of bits that are the same
 	for(iMap = data1.begin(); iMap != data1.end(); iMap++){
 		iTemp = data2.find(iMap->first);	
 
 		if(iTemp != data2.end()){
+			printf("Both sets have : %d\n", iTemp->first); 
 			N_f1f2_ratio += 1.000;
+
 			marked1.insert(iMap->first);
 			marked2.insert(iTemp->first);
 		}
@@ -105,7 +111,7 @@ double SIMILARITY::tanimotoWindow_size(std::map<unsigned, unsigned>& data1, std:
 
 
 
-double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<unsigned,unsigned>& data2){
+double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned> data1, std::map<unsigned,unsigned> data2){
 	if(data1.size() == 0 || data2.size() == 0){
 		//return -1.0;
 		return 0.0;
@@ -147,6 +153,13 @@ double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<
 		 printf("%d ", iMap->second);
 		 }
 		 printf("\n");
+	
+	printf("Data 1:\n");
+	for(iMap = data1.begin(); iMap != data1.end(); iMap++)
+		printf("%d-bit - %d\n", iMap->first, iMap->second);
+	printf("Data 2:\n");
+	for(iMap = data2.begin(); iMap != data2.end(); iMap++)
+		printf("%d-bit - %d\n", iMap->first, iMap->second);
 	 */
 
 	//Count the number of bits that are the same
@@ -155,23 +168,34 @@ double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<
 		//printf("Looking for %d in data1...", iMap->first);
 
 		if(iTemp != data2.end()){
-			//printf("found\n");
-			double ratio;
-			if(iTemp->second < iMap->second)
-				ratio = (double)iTemp->second / (double) iMap->second; 
-			else
-				ratio = (double)iMap->second / (double) iTemp->second;
+			//printf("Both data has: %d\n", iTemp->first);
 
-			N_f1f2_ratio += ratio;
-			marked1.insert(iMap->first);
-			marked2.insert(iTemp->first);
+			N_f1f2_ratio += 1.000;
+			if(iMap->second > iTemp->second){
+				marked2.insert(iTemp->first);
+				iMap->second = iMap->second - iTemp->second;
+				//printf("data 1- %d: has %d left unmapped\n", iMap->first, iMap->second);
+			}
+			else if(iTemp->second >  iMap->second){
+				marked1.insert(iMap->first);
+				iTemp->second = iTemp->second - iMap->second;
+				//printf("data 2- %d: has %d left unmapped\n", iTemp->first, iTemp->second);
+			}
+			else{
+				//printf("EQUAL COUNTS\n");
+				marked1.insert(iMap->first);
+				marked2.insert(iTemp->first);
+			}
 		}
 		//else printf("\n");
 	}
 
 	//Go through the vector again and try and find similar matches in the bits (WINDOWING)
+	//printf("\nWindowing on data1:\n");
 	for(iMap = data1.begin(); iMap != data1.end(); iMap++){
+		//printf("Checking %d\n", iMap->first);
 		if(marked1.find(iMap->first) == marked1.end()){
+			//printf("*Not Marked\n");
 			int minDistance1 = findMinDistance(data2, marked2, iMap->first, iTemp);
 			int minDistance2 = findMinDistance(data1, marked1, iTemp->first, iMapF);
 
@@ -184,10 +208,30 @@ double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<
 			//Similar size found within window
 			if(minDistance1 <= windowSize){
 				double ratio;
-				if(iTemp->second < iMap->second) 
-					ratio = ((double)iTemp->second / (double)iMap->second);
-				else
-					ratio = ((double)iMap->second / (double)iTemp->second);
+			
+
+
+			if(iMap->second > iTemp->second){
+				marked2.insert(iTemp->first);
+				//printf("data 1- %d: has %d left unmapped\n", iMap->first, iMap->second-iTemp->second);
+				ratio = ((double)iTemp->second / (double)iMap->second);
+				iMap->second = iMap->second - iTemp->second;
+			}
+			else if(iTemp->second >  iMap->second){
+				marked1.insert(iMap->first);
+				//printf("data 2- %d: has %d left unmapped\n", iTemp->first, iTemp->second-iMap->second);
+				ratio = ((double)iMap->second / (double)iTemp->second);
+				iTemp->second = iTemp->second - iMap->second;
+			}
+			else{
+				ratio = 1.000;
+				//printf("EQUAL COUNTS\n");
+				marked1.insert(iMap->first);
+				marked2.insert(iTemp->first);
+			}
+
+
+
 
 				ratio = multiplier[minDistance1]*ratio;// * (1.0 - ratio);
 
@@ -196,6 +240,7 @@ double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned>& data1, std::map<
 				marked2.insert(iTemp->first);
 			}
 		}
+		//printf("\n");
 	}
 
 	double denom = (N_f1+N_f2-N_f1f2_ratio);

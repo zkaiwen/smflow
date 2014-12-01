@@ -70,8 +70,8 @@ int main( int argc, char *argv[] )
 	printf("********************************************************************************\n");
 	printf("********************************************************************************\n\n");
 
-	if(argc != 2){
-		printf("./xfpgeniusRef <database xml file>\n\n\n");
+	if(argc != 3){
+		printf("./xfpgeniusRef <database xml file> <port number>\n\n\n");
 		return 0;
 	}
 
@@ -83,6 +83,8 @@ int main( int argc, char *argv[] )
 	//*  Declarations
 	//**************************************************************************
 	std::string databaseFile = argv[1];            //Location of database file
+	std::string portNumber_str= argv[2];            //Location of database file
+	
 	std::string option= "";                    //Command line option
 
 	//Time tracking
@@ -118,7 +120,7 @@ int main( int argc, char *argv[] )
 	//**************************************************************************
 	//* MKR- CONECTING WITH FRONT END
 	//**************************************************************************
-	Server* server = new Server(8001);
+	Server* server = new Server(database->string2int(portNumber_str.c_str()));
 	if(!server->waitForClient()) return 0;
 
 

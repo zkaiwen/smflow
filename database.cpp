@@ -15,17 +15,20 @@ using namespace rapidxml;
 
 
 Database::Database(){
-		m_IndexSkip.insert(1);
-		m_IndexSkip.insert(5);
-		m_IndexSkip.insert(6);
-		m_IndexSkip.insert(8);
-		m_IndexSkip.insert(9);
-		m_IndexSkip.insert(10);
-		m_IndexSkip.insert(11);
-		m_IndexSkip.insert(12);
-		m_IndexSkip.insert(13);
-		m_IndexSkip.insert(14);
-		m_IndexSkip.insert(16);
+		m_IndexSkip.insert(1);//mux3
+		m_IndexSkip.insert(4);//addera
+		m_IndexSkip.insert(5);//party
+		m_IndexSkip.insert(6);//gate
+		m_IndexSkip.insert(7);//equal
+		m_IndexSkip.insert(8);//blk0
+		m_IndexSkip.insert(9);//blk1
+		m_IndexSkip.insert(10);//blk2
+		m_IndexSkip.insert(11);//cas1
+		m_IndexSkip.insert(12);//cas2
+		m_IndexSkip.insert(13);//cas3
+		m_IndexSkip.insert(14);//cnt
+		m_IndexSkip.insert(16);//ffin
+		m_IndexSkip.insert(17);//comp
 }
 
 
@@ -291,7 +294,7 @@ bool Database::importDatabase(std::string path){
 
 
 
-int Database::string2int(char* string){
+int Database::string2int(const char* string){
 		char *end;
     long  l;
     l = strtol(string, &end, 10);
@@ -340,7 +343,14 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 		while (attrNode!= NULL){
 			std::string attrNodeName = attrNode->name();
 			
-			if(attrNodeName == "Adder8"){
+			if(attrNodeName == "Adder1"){
+				int value = string2int(attrNode->value());
+				if(value != 0) {
+					cktfp->fingerprint[3][1] = value;
+					cktfp->fingerprint[4][1] = value;
+				}
+			}
+			else if(attrNodeName == "Adder8"){
 				int value = string2int(attrNode->value());
 				if(value != 0) {
 					cktfp->fingerprint[3][8] = value;
@@ -417,17 +427,25 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 
 	for(iList = m_Datastore.begin(); iList != m_Datastore.end(); iList++){
 		double sum = 0.00;
+		double doubleNeg = 0.00;
 		for(unsigned int i = 0; i < s_NumFeatures; i++){
 			if(m_IndexSkip.find(i) != m_IndexSkip.end()) continue;
 
 			if(cktfp->fingerprint[i].size() == 0 && (*iList)->fingerprint[i].size() == 0)
 				sum += 1.00;
-			else
-				sum += SIMILARITY::tanimotoWindow(cktfp->fingerprint[i], (*iList)->fingerprint[i]);
+			else{
+				double sim =  SIMILARITY::tanimotoWindow(cktfp->fingerprint[i], (*iList)->fingerprint[i]);
+				sum += sim;
+				/*
+				if(sim == 0 && i == 4)
+					doubleNeg = 1.00;
+					*/
+
+			}
 		}
 
 		cScore cscore;
-		cscore.score = sum/(s_NumFeatures - m_IndexSkip.size());
+		cscore.score = sum/(s_NumFeatures - doubleNeg - m_IndexSkip.size());
 		cscore.cName = (*iList)->name;
 		cscore.id = (*iList)->id;
 		results.insert(cscore);

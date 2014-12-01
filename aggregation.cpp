@@ -2806,10 +2806,10 @@ void AGGREGATION::findAdder(CutFunction* cf,
 	if(faSum.size() != 0 && faSum2.size() == 0){
 		//Check to see if it is a full adder by checking the input against a full
 		for(unsigned int i = 0; i < faSum.size(); i++){
-			addInputList.push_back(faSum[i]->input);
+			faddInputList.push_back(faSum[i]->input);
 			std::set<unsigned> out;
 			out.insert(faSum[i]->output);
-			addOutputList.push_back(out);
+			faddOutputList.push_back(out);
 		 printf("Added single fa:\n");
 		 printAddList(faddInputList, faddOutputList);
 		}
@@ -2913,8 +2913,8 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 
 	//Prepare the output
-	iList2 = faddOutputList.begin();
-	for(iList1 = faddInputList.begin(); iList1 != faddInputList.end(); iList1++){
+	iList2 = addOutputList.begin();
+	for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
 
 		std::set<unsigned>::iterator iSet;
 		if(resultA.find(iList2->size()) == resultA.end()){
@@ -2927,8 +2927,8 @@ void AGGREGATION::findAdder(CutFunction* cf,
 
 
 
-	iList2 = haddOutputList.begin();
-	for(iList1 = haddInputList.begin(); iList1 != haddInputList.end(); iList1++){
+	iList2 = addOutputList.begin();
+	for(iList1 = addInputList.begin(); iList1 != addInputList.end(); iList1++){
 		bool contained= verifyContainment(aigraph, *iList1, *iList2);
 		if(!contained) {
 			printf("Verify Containment Failed\n");

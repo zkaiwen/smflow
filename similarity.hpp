@@ -26,7 +26,7 @@
 namespace SIMILARITY{
 
 	int findMinDistance(std::map<unsigned, unsigned>& , std::set<unsigned>& , unsigned , std::map<unsigned, unsigned>::iterator& );
-	double tanimotoWindow(std::map<unsigned, unsigned>& , std::map<unsigned,unsigned>& );
+	double tanimotoWindow(std::map<unsigned, unsigned> , std::map<unsigned,unsigned> );
 	double tanimotoWindow_size(std::map<unsigned, unsigned>& , std::map<unsigned,unsigned>& );
 
 

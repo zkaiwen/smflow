@@ -28,128 +28,76 @@
 			<ATTR size="3" count="2"/>
 		</OUTIN>
 		<FFIN/>
+		<COMP/>
 	</CIRCUIT>
-	<CIRCUIT name="add2_c" id="1">
+	<CIRCUIT name="add8_c" id="1">
 		<MUX21>
-			<ATTR size="1" count="2"/>
+			<ATTR size="1" count="14"/>
 		</MUX21>
 		<MUX31/>
 		<MUX41/>
 		<ADDER>
-			<ATTR size="2" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="2" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="1"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="1"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="2" count="1"/>
-			<ATTR size="4" count="2"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="add3_c" id="2">
-		<MUX21>
-			<ATTR size="1" count="4"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER>
-			<ATTR size="3" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="3" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="2"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="1"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="2" count="1"/>
-			<ATTR size="4" count="1"/>
-			<ATTR size="6" count="2"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="addTree2bit_1" id="3">
-		<MUX21>
-			<ATTR size="1" count="3"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER>
-			<ATTR size="2" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="2" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="1"/>
-			<ATTR size="4" count="1"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="1"/>
-			<ATTR size="5" count="1"/>
-		</GATE>
-		<EQUAL>
-			<ATTR size="6" count="1"/>
-		</EQUAL>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="4" count="3"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="addTree4bit_1" id="4">
-		<MUX21>
-			<ATTR size="1" count="8"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER>
-			<ATTR size="3" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="3" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="4"/>
-			<ATTR size="4" count="3"/>
 			<ATTR size="8" count="1"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="8" count="1"/>
+		</ADDERC>
+		<PARITY>
+			<ATTR size="3" count="7"/>
 		</PARITY>
 		<GATE>
-			<ATTR size="4" count="4"/>
-			<ATTR size="5" count="2"/>
+			<ATTR size="4" count="1"/>
+		</GATE>
+		<EQUAL/>
+		<BLK0/>
+		<BLK1/>
+		<BLK2/>
+		<CAS1/>
+		<CAS2/>
+		<CAS3/>
+		<CNT/>
+		<OUTIN>
+			<ATTR size="2" count="1"/>
+			<ATTR size="4" count="1"/>
 			<ATTR size="6" count="1"/>
+			<ATTR size="8" count="1"/>
+			<ATTR size="10" count="1"/>
+			<ATTR size="12" count="1"/>
+			<ATTR size="14" count="1"/>
+			<ATTR size="16" count="2"/>
+		</OUTIN>
+		<FFIN/>
+		<COMP/>
+	</CIRCUIT>
+	<CIRCUIT name="addTree8bit_3L_8I" id="2">
+		<MUX21>
+			<ATTR size="1" count="32"/>
+		</MUX21>
+		<MUX31/>
+		<MUX41/>
+		<ADDER>
+			<ATTR size="3" count="1"/>
+			<ATTR size="7" count="4"/>
+			<ATTR size="8" count="4"/>
+		</ADDER>
+		<ADDERC>
+			<ATTR size="3" count="1"/>
+			<ATTR size="7" count="4"/>
+			<ATTR size="8" count="4"/>
+		</ADDERC>
+		<PARITY>
+			<ATTR size="3" count="28"/>
+			<ATTR size="4" count="2"/>
+			<ATTR size="6" count="14"/>
+			<ATTR size="7" count="18"/>
+			<ATTR size="8" count="1"/>
+			<ATTR size="13" count="15"/>
+			<ATTR size="14" count="7"/>
+			<ATTR size="15" count="6"/>
+		</PARITY>
+		<GATE>
+			<ATTR size="4" count="25"/>
+			<ATTR size="6" count="3"/>
 		</GATE>
 		<EQUAL>
 			<ATTR size="6" count="3"/>
@@ -162,11 +110,21 @@
 		<CAS3/>
 		<CNT/>
 		<OUTIN>
-			<ATTR size="8" count="4"/>
+			<ATTR size="8" count="1"/>
+			<ATTR size="16" count="1"/>
+			<ATTR size="24" count="1"/>
+			<ATTR size="32" count="1"/>
+			<ATTR size="40" count="1"/>
+			<ATTR size="48" count="1"/>
+			<ATTR size="56" count="1"/>
+			<ATTR size="64" count="1"/>
 		</OUTIN>
 		<FFIN/>
+		<COMP>
+			<ATTR size="15" count="4"/>
+		</COMP>
 	</CIRCUIT>
-	<CIRCUIT name="count1s_8bit" id="5">
+	<CIRCUIT name="count1s_8bit" id="3">
 		<MUX21>
 			<ATTR size="1" count="6"/>
 		</MUX21>
@@ -174,9 +132,11 @@
 		<MUX41/>
 		<ADDER>
 			<ATTR size="3" count="1"/>
+			<ATTR size="4" count="1"/>
 		</ADDER>
 		<ADDERC>
 			<ATTR size="3" count="1"/>
+			<ATTR size="4" count="1"/>
 		</ADDERC>
 		<PARITY>
 			<ATTR size="3" count="4"/>
@@ -202,56 +162,23 @@
 			<ATTR size="8" count="4"/>
 		</OUTIN>
 		<FFIN/>
+		<COMP/>
 	</CIRCUIT>
-	<CIRCUIT name="life_c" id="6">
-		<MUX21>
-			<ATTR size="1" count="2"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER>
-			<ATTR size="3" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="3" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="4"/>
-			<ATTR size="4" count="3"/>
-			<ATTR size="8" count="1"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="5"/>
-			<ATTR size="5" count="2"/>
-			<ATTR size="6" count="1"/>
-		</GATE>
-		<EQUAL>
-			<ATTR size="6" count="3"/>
-			<ATTR size="7" count="1"/>
-		</EQUAL>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="9" count="1"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="life_8c" id="7">
+	<CIRCUIT name="life_8c" id="4">
 		<MUX21>
 			<ATTR size="1" count="32"/>
 		</MUX21>
 		<MUX31/>
 		<MUX41/>
 		<ADDER>
-			<ATTR size="8" count="1"/>
+			<ATTR size="3" count="1"/>
+			<ATTR size="7" count="4"/>
+			<ATTR size="8" count="4"/>
 		</ADDER>
 		<ADDERC>
-			<ATTR size="8" count="1"/>
+			<ATTR size="3" count="1"/>
+			<ATTR size="7" count="4"/>
+			<ATTR size="8" count="4"/>
 		</ADDERC>
 		<PARITY>
 			<ATTR size="3" count="28"/>
@@ -284,61 +211,11 @@
 			<ATTR size="65" count="1"/>
 		</OUTIN>
 		<FFIN/>
+		<COMP>
+			<ATTR size="15" count="4"/>
+		</COMP>
 	</CIRCUIT>
-	<CIRCUIT name="firfilter4" id="8">
-		<MUX21>
-			<ATTR size="1" count="22"/>
-			<ATTR size="2" count="4"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER>
-			<ATTR size="3" count="1"/>
-		</ADDER>
-		<ADDERC>
-			<ATTR size="3" count="1"/>
-		</ADDERC>
-		<PARITY>
-			<ATTR size="3" count="2"/>
-			<ATTR size="4" count="3"/>
-			<ATTR size="5" count="5"/>
-			<ATTR size="7" count="2"/>
-			<ATTR size="9" count="1"/>
-		</PARITY>
-		<GATE>
-			<ATTR size="4" count="11"/>
-			<ATTR size="5" count="9"/>
-			<ATTR size="6" count="20"/>
-			<ATTR size="7" count="1"/>
-			<ATTR size="8" count="2"/>
-			<ATTR size="9" count="5"/>
-			<ATTR size="10" count="2"/>
-		</GATE>
-		<EQUAL>
-			<ATTR size="6" count="2"/>
-			<ATTR size="7" count="8"/>
-		</EQUAL>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="8" count="1"/>
-			<ATTR size="16" count="1"/>
-			<ATTR size="24" count="1"/>
-			<ATTR size="28" count="1"/>
-		</OUTIN>
-		<FFIN>
-			<ATTR size="8" count="1"/>
-			<ATTR size="16" count="1"/>
-			<ATTR size="24" count="1"/>
-			<ATTR size="28" count="1"/>
-		</FFIN>
-	</CIRCUIT>
-	<CIRCUIT name="firfilter8" id="9">
+	<CIRCUIT name="firfilter8" id="5">
 		<MUX21>
 			<ATTR size="1" count="74"/>
 			<ATTR size="2" count="2"/>
@@ -400,8 +277,11 @@
 			<ATTR size="40" count="1"/>
 			<ATTR size="44" count="1"/>
 		</FFIN>
+		<COMP>
+			<ATTR size="3" count="8"/>
+		</COMP>
 	</CIRCUIT>
-	<CIRCUIT name="sobel" id="10">
+	<CIRCUIT name="sobel" id="6">
 		<MUX21>
 			<ATTR size="1" count="93"/>
 			<ATTR size="2" count="1"/>
@@ -411,12 +291,10 @@
 			<ATTR size="1" count="2"/>
 		</MUX41>
 		<ADDER>
-			<ATTR size="4" count="2"/>
-			<ATTR size="6" count="4"/>
+			<ATTR size="7" count="6"/>
 		</ADDER>
 		<ADDERC>
-			<ATTR size="4" count="2"/>
-			<ATTR size="6" count="4"/>
+			<ATTR size="7" count="6"/>
 		</ADDERC>
 		<PARITY>
 			<ATTR size="3" count="44"/>
@@ -467,8 +345,12 @@
 			<ATTR size="64" count="8"/>
 		</OUTIN>
 		<FFIN/>
+		<COMP>
+			<ATTR size="3" count="10"/>
+			<ATTR size="11" count="1"/>
+		</COMP>
 	</CIRCUIT>
-	<CIRCUIT name="prewitt" id="11">
+	<CIRCUIT name="prewitt" id="7">
 		<MUX21>
 			<ATTR size="1" count="93"/>
 			<ATTR size="2" count="3"/>
@@ -478,10 +360,10 @@
 			<ATTR size="1" count="2"/>
 		</MUX41>
 		<ADDER>
-			<ATTR size="5" count="6"/>
+			<ATTR size="7" count="6"/>
 		</ADDER>
 		<ADDERC>
-			<ATTR size="5" count="6"/>
+			<ATTR size="7" count="6"/>
 		</ADDERC>
 		<PARITY>
 			<ATTR size="3" count="44"/>
@@ -529,124 +411,11 @@
 			<ATTR size="64" count="8"/>
 		</OUTIN>
 		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="lt4" id="12">
-		<MUX21/>
-		<MUX31/>
-		<MUX41/>
-		<ADDER/>
-		<ADDERC/>
-		<PARITY/>
-		<GATE>
-			<ATTR size="7" count="5"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="8" count="1"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="lt8" id="13">
-		<MUX21>
-			<ATTR size="1" count="1"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER/>
-		<ADDERC/>
-		<PARITY/>
-		<GATE>
-			<ATTR size="4" count="10"/>
-			<ATTR size="7" count="3"/>
-			<ATTR size="8" count="1"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="16" count="1"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="node" id="14">
-		<MUX21>
-			<ATTR size="1" count="1"/>
-			<ATTR size="13" count="1"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER/>
-		<ADDERC/>
-		<PARITY/>
-		<GATE>
-			<ATTR size="4" count="11"/>
-			<ATTR size="7" count="2"/>
-			<ATTR size="8" count="13"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="2" count="2"/>
-			<ATTR size="4" count="1"/>
-			<ATTR size="16" count="13"/>
-		</OUTIN>
-		<FFIN/>
-	</CIRCUIT>
-	<CIRCUIT name="median" id="15">
-		<MUX21>
-			<ATTR size="1" count="2"/>
-			<ATTR size="2" count="1"/>
-		</MUX21>
-		<MUX31/>
-		<MUX41/>
-		<ADDER/>
-		<ADDERC/>
-		<PARITY/>
-		<GATE>
-			<ATTR size="4" count="31"/>
-			<ATTR size="5" count="5"/>
-			<ATTR size="6" count="2"/>
-			<ATTR size="7" count="11"/>
-			<ATTR size="8" count="13"/>
-			<ATTR size="9" count="9"/>
-			<ATTR size="10" count="37"/>
-			<ATTR size="13" count="12"/>
-			<ATTR size="16" count="2"/>
-			<ATTR size="19" count="3"/>
-			<ATTR size="20" count="4"/>
-			<ATTR size="24" count="3"/>
-		</GATE>
-		<EQUAL/>
-		<BLK0/>
-		<BLK1/>
-		<BLK2/>
-		<CAS1/>
-		<CAS2/>
-		<CAS3/>
-		<CNT/>
-		<OUTIN>
-			<ATTR size="3" count="1"/>
-			<ATTR size="24" count="7"/>
-		</OUTIN>
-		<FFIN/>
+		<COMP>
+			<ATTR size="3" count="16"/>
+			<ATTR size="11" count="1"/>
+			<ATTR size="45" count="1"/>
+		</COMP>
 	</CIRCUIT>
 </DATABASE>
 
