@@ -158,7 +158,7 @@ int main( int argc, char *argv[] )
 			printf("[MAIN] -- Writing to client seemed to have encountered an error...\n");
 			break;
 		}
-		printf("RESULT: %s\n", xmlResult.c_str());
+		//printf("RESULT: %s\n", xmlResult.c_str());
 
 		delete cktfp;	
 	}

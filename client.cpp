@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     printf("Press Enter to send reference XML: (8-bit adder)");
     fgets(buffer,buflen-1,stdin);
 
-	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>2</InputCount><Name>Z_Out_2</Name><InputCount>2</InputCount></Outputs></Circuit0>";
+	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>1</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>8</InputCount></Outputs></Circuit0>";
     n = write(sockfd,refXML.c_str(), refXML.length()+1);
     if (n < 0) 
          error("ERROR writing to socket");
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     printf("Press Enter to send reference XML: (8-bit adder tree)");
     fgets(buffer,buflen-1,stdin);
 
-	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>7</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>8</InputCount></Outputs></Circuit0>";
+	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>7</Adder8><Adder16>0</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>64</InputCount></Outputs></Circuit0>";
     n = write(sockfd,refXML.c_str(), refXML.length()+1);
     if (n < 0) 
          error("ERROR writing to socket");
@@ -119,6 +119,39 @@ int main(int argc, char *argv[])
 		
 		
 
+		printf("***************************************************************************\n");
+		bzero(buffer,buflen);
+    printf("Press Enter to send reference XML: (16-bit adder)");
+    fgets(buffer,buflen-1,stdin);
+
+	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>7</Adder8><Adder16>1</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>16</InputCount></Outputs></Circuit0>";
+    n = write(sockfd,refXML.c_str(), refXML.length()+1);
+    if (n < 0) 
+         error("ERROR writing to socket");
+
+    bzero(buffer,buflen);
+    n = read(sockfd,buffer,buflen-1);
+    if (n < 0) 
+         error("ERROR reading from socket");
+    printf("RESULT FROM SERVER:\t%s\n",buffer);
+		
+		
+		
+		printf("***************************************************************************\n");
+		bzero(buffer,buflen);
+    printf("Press Enter to send reference XML: (3 16-bit adder)");
+    fgets(buffer,buflen-1,stdin);
+
+	refXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Circuit0><Adder1>0</Adder1><Adder8>7</Adder8><Adder16>16</Adder16><Adder32>0</Adder32><Mux2>0</Mux2><Mux4>0</Mux4><Outputs><Name>Out_2</Name><InputCount>16</InputCount></Outputs></Circuit0>";
+    n = write(sockfd,refXML.c_str(), refXML.length()+1);
+    if (n < 0) 
+         error("ERROR writing to socket");
+
+    bzero(buffer,buflen);
+    n = read(sockfd,buffer,buflen-1);
+    if (n < 0) 
+         error("ERROR reading from socket");
+    printf("RESULT FROM SERVER:\t%s\n",buffer);
     close(sockfd);
     return 0;
 }

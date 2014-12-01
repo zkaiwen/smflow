@@ -169,23 +169,26 @@ double SIMILARITY::tanimotoWindow(std::map<unsigned, unsigned> data1, std::map<u
 
 		if(iTemp != data2.end()){
 			//printf("Both data has: %d\n", iTemp->first);
-
-			N_f1f2_ratio += 1.000;
+			double ratio;
 			if(iMap->second > iTemp->second){
+				ratio = ((double)iTemp->second / (double)iMap->second);
 				marked2.insert(iTemp->first);
 				iMap->second = iMap->second - iTemp->second;
 				//printf("data 1- %d: has %d left unmapped\n", iMap->first, iMap->second);
 			}
 			else if(iTemp->second >  iMap->second){
+				ratio = ((double)iMap->second / (double)iTemp->second);
 				marked1.insert(iMap->first);
 				iTemp->second = iTemp->second - iMap->second;
 				//printf("data 2- %d: has %d left unmapped\n", iTemp->first, iTemp->second);
 			}
 			else{
 				//printf("EQUAL COUNTS\n");
+				ratio = 1.000;
 				marked1.insert(iMap->first);
 				marked2.insert(iTemp->first);
 			}
+			N_f1f2_ratio += ratio;
 		}
 		//else printf("\n");
 	}

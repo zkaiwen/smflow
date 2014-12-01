@@ -1027,6 +1027,7 @@ void AGGREGATION::simplify_output2(AIG* aig,
 	iListO = addOut.begin(); 
 	while(iListO != addOut.end()){
 		bool erased = false;
+		/*
 				printf("\n\n");
 				printf("INPUT: ");
 				for(iSet = iListI->begin(); iSet != iListI->end(); iSet++)
@@ -1035,13 +1036,14 @@ void AGGREGATION::simplify_output2(AIG* aig,
 				for(iSet = iListO->begin(); iSet != iListO->end(); iSet++)
 					printf("%d ", *iSet);
 					printf("\n");
+					*/
 
 		for(iSetO = iListO->begin(); iSetO != iListO->end(); iSetO++){
-			printf("CHECKING ADDLIST OUTNODE: %d\n", *iSetO);
+			//printf("CHECKING ADDLIST OUTNODE: %d\n", *iSetO);
 			if(toRemoveTop.find(*iSetO) != toRemoveTop.end()){
 
 
-				printf("ERASING ADDER\n");
+				//printf("ERASING ADDER\n");
 				erased = true;
 				iListO = addOut.erase(iListO);
 				iListI = addIn.erase(iListI);
@@ -1054,22 +1056,26 @@ void AGGREGATION::simplify_output2(AIG* aig,
 			for(iMap = outIn.begin(); iMap != outIn.end(); iMap++){
 				//If the output bit is between the possible adder's output and input
 				//CHeck if it is contained in-between
+				/*
 				printf("OUTLIST NODE: %d\tINPUT: ", iMap->first);
 				for(iSet = iMap->second.begin(); iSet != iMap->second.end(); iSet++)
 					printf("%d ", *iSet);
 					printf("\n");
+					*/
 
 				unsigned lb = *(iListI->begin());
 				if(iMap->first < *iSetO  && iMap->first > lb){
-					printf(" * WITHIN BOUNDS...PERFORMING DFS...");
+					//printf(" * WITHIN BOUNDS...PERFORMING DFS...");
 					std::set<unsigned> marked;
 					bool isContain = DFSearch(aig, *iSetO, iMap->first, lb, *iListI,  marked);
 					if(isContain){
-						printf("CONTAINED\n");
+						//printf("CONTAINED\n");
 						toRemove.insert(iMap->first);
 					}
+					/*
 					else
 						printf("NODE IS OKAY\n");
+						*/
 				}
 			}
 
@@ -1077,7 +1083,7 @@ void AGGREGATION::simplify_output2(AIG* aig,
 			//Remove the nodes that are contained;
 			if(toRemove.size() > 0){
 				for(iSet = toRemove.begin(); iSet != toRemove.end(); iSet++){
-					printf("Removing outnode: %d\n", *iSet);
+					//printf("Removing outnode: %d\n", *iSet);
 					outIn.erase(*iSet);
 				}
 
@@ -1125,13 +1131,13 @@ void AGGREGATION::simplify_output(AIG* aig,
 		for(; iMap2 != outInMap.rend(); iMap2++){
 
 			if(tobedeleted.find(iMap->first) != tobedeleted.end()) continue;
-			printf("COMPARING OUTNODE: %3d\t%3d\n", outnode, iMap2->first);
+			//printf("COMPARING OUTNODE: %3d\t%3d\n", outnode, iMap2->first);
 			unsigned lb = iMap2->first;
 
 			std::set<unsigned> markedS;
 			bool isContain = DFSearch(aig, outnode, iMap2->first, lb, iMap->second,  markedS);
 			if(isContain){
-				printf(" * NODE: %d is contained under %d\n", iMap2->first, outnode);
+				//printf(" * NODE: %d is contained under %d\n", iMap2->first, outnode);
 
 				//Combine the two inputs
 				/*
@@ -2166,15 +2172,19 @@ void AGGREGATION::findHAHeader( AIG* aig,
 
 	//Go through each adder function
 	for(unsigned int i = 0; i < add3.size(); i++){
+		/*
 		printf("LARGE OUTPUT: %d\t\tINPUT: ", add3[i]->output);
 		for(iSet2 = add3[i]->input.begin(); iSet2 != add3[i]->input.end(); iSet2++)
 			printf("%d ", *iSet2);
 		printf("\n");
+		*/
 		for(unsigned int q = 0; q < add2.size(); q++){
+			/*
 		printf("SMALL OUTPUT: %d\t\tINPUT: ", add3[i]->output);
 		for(iSet2 = add2[q]->input.begin(); iSet2 != add2[q]->input.end(); iSet2++)
 			printf("%d ", *iSet2);
 		printf("\n");
+		*/
 			//Check to see if all the nodes in SUM2 can be found in the SUM3
 			unsigned numMatch = 0;
 			for(iSet2 = add2[q]->input.begin(); iSet2 != add2[q]->input.end(); iSet2++){
@@ -2187,8 +2197,8 @@ void AGGREGATION::findHAHeader( AIG* aig,
 			}
 
 			if(numMatch == add2[q]->input.size()) {
-					 printf("\n************************************\n");
-					 printf("SUM3 OUT: %d MATCHES SUM2 OUT: %d COMBINE THEM\n", add3[i]->output, add2[q]->output);
+					 //printf("\n************************************\n");
+					 //printf("SUM3 OUT: %d MATCHES SUM2 OUT: %d COMBINE THEM\n", add3[i]->output, add2[q]->output);
 				std::set<unsigned> outputCopy;
 				outputCopy.insert(add3[i]->output);
 				outputCopy.insert(add2[q]->output);
@@ -2463,6 +2473,7 @@ void AGGREGATION::combineAdder(
 		while(iListOut2 != addOut.end()){
 			unsigned numMatch = 0;
 			unsigned numMatchIn = 0;
+			/*
 				 printf("\nCOMPARING OUT SET1: ");
 				 for(iSet = iListOut1->begin(); iSet != iListOut1->end(); iSet++)
 				 printf("%d ", *iSet);
@@ -2470,6 +2481,7 @@ void AGGREGATION::combineAdder(
 				 for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 				 printf("%d ", *iSet);
 				 printf("\n");
+				 */
 
 			for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)
 				if(iListOut1->find(*iSet) != iListOut1->end())
@@ -2479,7 +2491,7 @@ void AGGREGATION::combineAdder(
 				if(iListIn1->find(*iSet) != iListIn1->end())
 					numMatchIn++;
 
-					printf("OUTPUT MATCHES: %d\t\tINPUT MATCHES: %d\n", numMatch, numMatchIn);
+					//printf("OUTPUT MATCHES: %d\t\tINPUT MATCHES: %d\n", numMatch, numMatchIn);
 
 
 			if(numMatch == iListOut2->size() ){
@@ -2492,7 +2504,7 @@ void AGGREGATION::combineAdder(
 				iListIn2 = iPrevIn;
 			}
 			else if((numMatch >= matchLimit) || (numMatchIn == iListIn2->size() || numMatchIn == iListIn1->size())){
-				printf(" * COMBINE!\n");
+				//printf(" * COMBINE!\n");
 				for(iSet = iListIn2->begin(); iSet != iListIn2->end(); iSet++)
 					iListIn1->insert(*iSet);
 				for(iSet = iListOut2->begin(); iSet != iListOut2->end(); iSet++)

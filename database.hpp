@@ -64,7 +64,7 @@ struct cScore{
 //Used to compare the cScore so that it is sorted by the score
 struct setCompare{
 	bool operator()(const cScore& lhs, const cScore& rhs) const{
-		return lhs.score > rhs.score;
+		return lhs.score >= rhs.score;
 	}
 };
 

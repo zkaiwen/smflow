@@ -395,9 +395,8 @@ CircuitFingerprint* Database::extractFingerprint(std::string& xmlData){
 				}
 
 				if(outputFP.size() != 0)
-					cktfp->fingerprint[17] = outputFP; 
+					cktfp->fingerprint[15] = outputFP; 
 			}
-
 			else throw eUnknownFeature;
 
 			attrNode = attrNode->next_sibling();
@@ -440,7 +439,6 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 				if(sim == 0 && i == 4)
 					doubleNeg = 1.00;
 					*/
-
 			}
 		}
 
@@ -452,8 +450,10 @@ void Database::compareFingerprint(CircuitFingerprint* cktfp, std::set<cScore, se
 	}
 
 		
+	printf("Fingerprint comparison result:\n");
 	for(iSet = results.begin(); iSet != results.end(); iSet++)
-		printf("CIRCUIT: %-15s\tID: %3d\tSCORE:%f\n", iSet->cName.c_str(), iSet->id, iSet->score);
+		printf("CIRCUIT: %-15s\tID: %3d\t\tSCORE: %f\n", iSet->cName.c_str(), iSet->id, iSet->score);
+	printf("\n");
 	
 }
 
