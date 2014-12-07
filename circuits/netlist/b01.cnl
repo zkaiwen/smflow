@@ -1,0 +1,17 @@
+14
+4 3 clock  0 line1  1 line2  2 reset  
+2 4 outp  5 overflw  
+0 IN line1 0 4 12 O 13 O 10 O 11 O 
+1 IN line2 0 4 12 O 10 O 11 O 13 O 
+2 IN reset 0 5 4 O 5 O 6 O 7 O 8 O 
+3 IN clock 0 5 4 O 5 O 6 O 7 O 8 O 
+4 FDC outp_renamed_0 3 2 CLR 3 C 13 D 0 
+5 FDC overflw_renamed_1 3 2 CLR 3 C 9 D 0 
+6 FDC stato_FSM_FFd3_renamed_2 3 2 CLR 3 C 12 D 5 9 Q 12 Q 13 Q 10 Q 11 Q 
+7 FDC stato_FSM_FFd2_renamed_3 3 2 CLR 3 C 10 D 5 9 Q 12 Q 10 Q 11 Q 13 Q 
+8 FDC stato_FSM_FFd1_renamed_4 3 2 CLR 3 C 11 D 5 9 Q 12 Q 10 Q 11 Q 13 Q 
+9 LUT3 stato_stato_2__GND_2_o_Mux_10_o1 3 8 I2 7 I1 6 I0 1 5 O 8
+10 LUT5 stato_FSM_FFd2_In1 5 0 I1 1 I0 8 I2 7 I3 6 I4 1 7 O e0f78f10
+11 LUT5 stato_FSM_FFd1_In1 5 0 I0 1 I1 8 I3 7 I4 6 I2 1 8 O 8ffe88
+12 LUT5 stato_FSM_FFd3_In1 5 0 I0 1 I1 8 I4 7 I3 6 I2 1 6 O e8ee7887
+13 LUT5 Mmux_stato_2__line1_Mux_9_o11 5 0 I1 1 I0 8 I4 7 I2 6 I3 1 4 O 99696666

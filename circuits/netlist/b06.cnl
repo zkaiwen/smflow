@@ -1,0 +1,23 @@
+20
+4 1 clock  3 cont_eql  0 eql  2 reset  
+6 4 ackout  6 cc_mux_0  5 cc_mux_1  4 enable_count  8 uscite_0  7 uscite_1  
+0 IN eql 0 8 17 O 12 O 13 O 14 O 15 O 16 O 18 O 19 O 
+1 IN clock 0 8 4 O 5 O 6 O 7 O 8 O 9 O 10 O 11 O 
+2 IN reset 0 8 4 O 5 O 6 O 7 O 8 O 9 O 10 O 11 O 
+3 IN cont_eql 0 1 12 O 
+4 FDC enable_count_renamed_1 3 1 C 2 CLR 12 D 0 
+5 FDC cc_mux_1 3 1 C 2 CLR 15 D 0 
+6 FDC cc_mux_2 3 1 C 2 CLR 17 D 0 
+7 FDC uscite_1 3 1 C 2 CLR 16 D 0 
+8 FDC uscite_2 3 1 C 2 CLR 13 D 0 
+9 FDC state_FSM_FFd3_renamed_2 3 1 C 2 CLR 19 D 8 17 Q 19 Q 12 Q 13 Q 14 Q 15 Q 16 Q 18 Q 
+10 FDC state_FSM_FFd2_renamed_3 3 1 C 2 CLR 14 D 8 13 Q 17 Q 12 Q 14 Q 15 Q 16 Q 18 Q 19 Q 
+11 FDC state_FSM_FFd1_renamed_4 3 1 C 2 CLR 18 D 8 17 Q 12 Q 13 Q 14 Q 15 Q 16 Q 18 Q 19 Q 
+12 LUT5 Mmux_state_2__X_2_o_Mux_20_o11 5 0 I0 3 I1 11 I4 10 I2 9 I3 1 4 O 33333373
+13 LUT4 Mmux_state_2__X_2_o_wide_mux_17_OUT21 4 0 I0 11 I3 10 I2 9 I1 1 8 O a100
+14 LUT4 state_FSM_FFd2_In1 4 0 I0 11 I1 10 I2 9 I3 1 10 O a2b4
+15 LUT4 Mmux_state_2__X_2_o_wide_mux_16_OUT11 4 0 I0 11 I3 10 I1 9 I2 1 5 O 76ef
+16 LUT4 Mmux_state_2__X_2_o_wide_mux_17_OUT11 4 0 I0 11 I2 10 I3 9 I1 1 7 O fd57
+17 LUT4 Mmux_state_2__X_2_o_wide_mux_16_OUT21 4 0 I0 11 I3 10 I2 9 I1 1 6 O ab2c
+18 LUT4 state_FSM_FFd1_In1 4 0 I0 11 I3 10 I2 9 I1 1 11 O ab04
+19 LUT4 state_FSM_FFd3_In1 4 0 I0 11 I1 10 I3 9 I2 1 9 O f553
