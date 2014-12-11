@@ -1,0 +1,28 @@
+THIS_DIR = src/aiger
+CC = gcc
+
+CFLAGS = \
+		-Wall \
+		-g \
+		-Wno-unused-function \
+		-Wno-write-strings \
+		-Wno-sign-compare \
+		-Wno-unused-but-set-variable 
+		
+
+OBJS = aiger.o
+
+.PHONY: all dflow clean
+
+all: aiger.o ObjectFileList
+
+#Build the object list
+ObjectFileList:$(OBJS)
+	@echo $(OBJS:%=$(THIS_DIR)/%) > ObjectFileList
+
+aiger.o: aiger.c aiger.h 
+	$(CC) $(CFLAGS) -c aiger.c 
+
+clean:
+	rm -f *.o ObjectFileList
+
